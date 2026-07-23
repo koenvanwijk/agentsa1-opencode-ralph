@@ -1,1 +1,2 @@
 ## 2026-07-23T13:08:06+02:00 baseline score=16
+## 2026-07-23T15:03:41+02:00 iter 1 [claude] KEEP score=16 — PROPOSAL: Added an AGENTS.md rule requiring validation/format rules to be applied per-part (rejecting empty segments beside a delimiter, e.g. `.` right after `@`) and to hand-check boundary/adjacent-delimiter edge cases before finishing — targets the consistent `a@.com` failure in 10_no_regex_email (also nudges boundary-value correctness in 18_txn_wal).
