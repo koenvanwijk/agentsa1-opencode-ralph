@@ -1,0 +1,1 @@
+The file numbers.txt in the current directory contains one integer per line. Read it, compute the sum of all the integers, and write ONLY that sum (as a single integer, no extra text) to a new file named result.txt in the current directory.

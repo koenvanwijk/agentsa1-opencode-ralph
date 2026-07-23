@@ -1,0 +1,1 @@
+Create a Python package named calc in the current directory: a directory calc/ containing __init__.py and ops.py. Implement add(a, b) and mul(a, b) in ops.py, and make them importable directly as calc.add and calc.mul (so that `import calc; calc.add(2,3)` works). Then verify the import works.

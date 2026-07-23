@@ -1,0 +1,1 @@
+Create a file named fizzbuzz.py in the current directory. It must define a function fizzbuzz(n) that returns a string: "Fizz" if n is divisible by 3, "Buzz" if divisible by 5, "FizzBuzz" if divisible by both 3 and 5, otherwise str(n). Then read the file back to confirm it is correct.

@@ -1,0 +1,14 @@
+apple 97814
+bonus 59505
+lemon 58990
+mango 54998
+kiwi 51737
+cherry 45253
+durian 42225
+grape 19997
+banana 16088
+honey 14377
+elder 13795
+tiea 7777
+tieb 7777
+zilch 0

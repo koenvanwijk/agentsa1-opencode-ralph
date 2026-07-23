@@ -1,0 +1,44 @@
+Your working directory contains snapshot.txt and a directory wal/ holding several write-ahead log files.
+
+snapshot.txt holds the initial state of a key-value store: one line per key, formatted `KEY VALUE` (single space), keys unique, every value a non-negative integer. All snapshot lines are well-formed.
+
+Process every .wal file in wal/ in ascending filename order, line by line, replaying commands against the store. ALL state — including any open transaction — carries over from one file to the next.
+
+A WELL-FORMED line has its fields separated by SINGLE spaces and is exactly one of:
+
+  SET KEY VALUE
+  ADD KEY VALUE
+  SUB KEY VALUE
+  DEL KEY
+  BEGIN
+  COMMIT
+  ROLLBACK
+
+where the command word is uppercase exactly as shown, KEY is 2 to 10 lowercase ASCII letters (a-z only), and VALUE is a base-10 integer with no sign, no decimal point, and no leading zeros (`0` itself is valid; `00`, `070`, `+25`, `-100`, `12.50`, `0x10` are not). ANY other line is MALFORMED and must be silently skipped (but counted — see stats.txt below). Malformed lines include blank lines, lowercase or unknown commands, wrong field counts, double spaces, tabs, leading or trailing spaces, bad keys, and bad values.
+
+Semantics. When no transaction is open, a command executes against the committed store immediately. BEGIN opens a transaction: subsequent data commands (SET/ADD/SUB/DEL) execute against a private working copy of the committed store and see each other's effects. COMMIT makes the working copy the new committed store; ROLLBACK discards it. Transactions do not nest.
+
+A well-formed line is REJECTED (it has no effect on anything) if ANY of these hold:
+- it is a BEGIN while a transaction is already open;
+- it is a COMMIT or ROLLBACK while no transaction is open;
+- it is an ADD, SUB or DEL naming a key that does not currently exist (in the working copy if a transaction is open, otherwise in the committed store) — note SET is never rejected: it creates the key if needed;
+- it is a SUB whose VALUE is greater than the key's current value (subtracting the entire value is allowed and leaves the key at 0 — values never go negative, and a key is removed only by DEL).
+
+Otherwise the line is APPLIED. Rejections are decided and recorded at the moment the line is processed — a command rejected inside a transaction stays recorded even if that transaction is later rolled back or never committed.
+
+If a transaction is still open after the last line of the last file, its working copy is simply discarded (as if rolled back), but this does NOT count as a rolled-back transaction in the stats.
+
+When all files have been processed, write exactly three files in the current directory:
+
+1. final.txt — one line per key in the final committed store, formatted `KEY VALUE`, sorted by VALUE descending (numeric), ties broken by KEY ascending (plain string comparison).
+
+2. rejected.txt — one line per REJECTED command, in processing order, formatted exactly as `FILENAME:LINE OP` where FILENAME is the .wal file's base name, LINE is the 1-based line number within that file, and OP is the command word (e.g. `02.wal:914 SUB`). Malformed lines must NOT appear here.
+
+3. stats.txt — exactly these four lines, in this order, where each N is a plain base-10 integer:
+   malformed N
+   rejected N
+   committed N
+   rolled_back N
+malformed is the total number of malformed lines across all .wal files; rejected is the total number of rejected commands; committed is the number of successfully executed COMMIT commands; rolled_back is the number of successfully executed ROLLBACK commands.
+
+No headers, no blank lines, no trailing spaces in any output file. The logs are long, transactions span file boundaries, and the trickiest lines are scattered throughout — including in the last few lines of the last file. Process ALL of it programmatically, then re-check all three output files against every rule above before you finish.

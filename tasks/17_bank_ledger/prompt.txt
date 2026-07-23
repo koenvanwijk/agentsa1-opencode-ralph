@@ -1,0 +1,25 @@
+Your working directory contains accounts.csv and a directory txns/ holding several transaction log files.
+
+accounts.csv has a header line `id,owner,opening_cents` followed by one row per account; opening_cents is that account's starting balance as an integer number of cents.
+
+Process every .log file in txns/ in ascending filename order, line by line, replaying transactions against the account balances. A WELL-FORMED line has its fields separated by SINGLE spaces and is exactly one of:
+
+  DEPOSIT ACCOUNT AMOUNT
+  WITHDRAW ACCOUNT AMOUNT
+  TRANSFER SRC DST AMOUNT
+
+where the operation word is uppercase exactly as shown, ACCOUNT/SRC/DST is the letter A followed by exactly 4 digits (e.g. A1001), and AMOUNT is a positive base-10 integer number of cents with no leading zeros, no sign, and no decimal point. ANY other line is MALFORMED and must be silently ignored — this includes blank lines, lowercase or unknown operations, wrong field counts, double spaces, tabs, leading or trailing spaces, amounts like 0, 0500, -100 or 12.50, and ids like A123 or B1234.
+
+A well-formed line is REJECTED (it has no effect on any balance) if ANY of these hold:
+- it names an account id that does not appear in accounts.csv;
+- it is a WITHDRAW or TRANSFER whose AMOUNT is greater than the current balance of ACCOUNT/SRC at that moment (withdrawing or transferring the entire balance is allowed);
+- it is a TRANSFER where SRC and DST are the same account.
+Otherwise the line is APPLIED: DEPOSIT adds AMOUNT to ACCOUNT, WITHDRAW subtracts AMOUNT from ACCOUNT, TRANSFER moves AMOUNT from SRC to DST.
+
+When all files have been processed, write exactly two files in the current directory:
+
+1. rejected.txt — one line per REJECTED transaction, in processing order, formatted exactly as `FILENAME:LINE OP` where FILENAME is the log file's base name, LINE is the 1-based line number within that file, and OP is the operation word (e.g. `2024-02.log:317 WITHDRAW`). Malformed lines must NOT appear here.
+
+2. statement.txt — one line per account in accounts.csv (ALL of them, including accounts no valid transaction ever touched), formatted exactly as `ID OWNER $BALANCE` where BALANCE is the final balance in dollars with exactly two decimal places (123456 cents -> $1234.56; 0 cents -> $0.00). Sort lines by final balance DESCENDING, ties broken by ID ASCENDING (plain string comparison).
+
+No headers, no blank lines, no trailing spaces in either file. The logs are long and the trickiest lines are scattered throughout, including near the very end of the last file — process ALL of it programmatically, then re-check your two output files against every rule above before you finish.

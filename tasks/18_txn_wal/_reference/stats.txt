@@ -1,0 +1,4 @@
+malformed 27
+rejected 16
+committed 5
+rolled_back 3

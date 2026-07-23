@@ -1,0 +1,14 @@
+apple 10000
+banana 8400
+cherry 7200
+durian 6100
+elder 5000
+grape 4400
+honey 3900
+kiwi 3300
+lemon 2800
+mango 2500
+nutmeg 2100
+tiea 7777
+tieb 7777
+zilch 654

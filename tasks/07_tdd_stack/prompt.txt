@@ -1,0 +1,1 @@
+A pytest file test_stack.py exists in the current directory. It imports a Stack class from a module stack.py that does not exist yet. Read test_stack.py to learn the required API, then create stack.py implementing the Stack class (methods: push, pop, peek, is_empty, and __len__) so that all the tests pass. Run the tests (python -m pytest test_stack.py) to confirm they pass.

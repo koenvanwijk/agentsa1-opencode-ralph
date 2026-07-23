@@ -1,0 +1,1 @@
+The file bigfile.txt in the current directory has many lines. Somewhere in it there is exactly one line of the form SECRET_CODE=<number>. Find it and write ONLY that number to a file named answer.txt in the current directory. Make sure you read the whole file, not just the beginning.

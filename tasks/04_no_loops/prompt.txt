@@ -1,0 +1,1 @@
+Create a file noloop.py in the current directory with a function total(xs) that returns the sum of a list of numbers. Constraint: you may NOT use any for-loop or while-loop, and you may NOT use the built-in sum() function. Use recursion instead. Then verify your solution runs.

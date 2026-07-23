@@ -1,0 +1,4 @@
+Read products.json (a JSON list of {name, price}). Write a file report.txt with EXACTLY this format and nothing else:
+- one line per product, sorted by price DESCENDING, formatted as `NAME: $PRICE` where PRICE is shown with EXACTLY two decimal places (e.g. 20.00, 9.50);
+- then a final line `TOTAL: $SUM` where SUM is the sum of all prices, also to exactly two decimals.
+No header, no blank lines, no trailing spaces. Two decimals means rounding (e.g. 19.999 -> 20.00).

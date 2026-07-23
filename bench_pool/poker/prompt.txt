@@ -1,0 +1,17 @@
+# Instructions
+
+Pick the best hand(s) from a list of poker hands.
+
+See [Wikipedia][poker-hands] for an overview of poker hands.
+
+[poker-hands]: https://en.wikipedia.org/wiki/List_of_poker_hands
+
+
+====
+Implement your solution by editing poker.py in the current directory.
+All tests in poker_test.py must pass. Check your work by running:
+
+    python3 -m pytest -q
+
+Do NOT modify the test file(s). The stub file already exists — replace its
+contents with a working implementation.

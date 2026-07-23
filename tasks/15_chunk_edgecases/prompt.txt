@@ -1,0 +1,6 @@
+Create chunk.py in the current directory with a function chunk(lst, n) that splits lst into consecutive sublists of length n; the final sublist may be shorter if there aren't enough elements. Requirements:
+- chunk([1,2,3,4,5], 2) == [[1,2],[3,4],[5]]
+- chunk([], 3) == []
+- chunk([1,2], 5) == [[1,2]]
+- if n <= 0, raise ValueError (do NOT loop forever or return something else).
+Test ALL of these cases yourself (including n <= 0 and the empty list) by running the file before you declare it done.

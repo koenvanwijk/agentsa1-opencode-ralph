@@ -1,0 +1,1 @@
+The file input.json in the current directory contains a JSON array of user objects (each with name, age, city). Read it and write a new file output.json containing a JSON array, in the same order, where for each user: "name" is uppercased, "age" is incremented by 1, and the "city" field is dropped entirely. Keys must be exactly "name" and "age". Write valid JSON to output.json.

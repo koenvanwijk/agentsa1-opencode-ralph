@@ -1,0 +1,15 @@
+The file events.log in the current directory is a large authentication log, one event per line. A WELL-FORMED line has exactly three fields separated by single spaces:
+
+  TIMESTAMP EVENT USER
+
+where TIMESTAMP is exactly the format YYYY-MM-DDTHH:MM:SS (e.g. 2024-03-01T09:15:00) and EVENT is LOGIN or LOGOUT (uppercase, case-sensitive). ANY other line is malformed and must be silently ignored — this includes lowercase events, unknown events, missing or extra fields, fields separated by double spaces or tabs, blank lines, and timestamps in any other format (e.g. missing seconds, or an invalid month).
+
+Compute each user's total connected time in seconds, using these exact rules:
+- A LOGIN opens a session for that user. If the user already has an open session, the extra LOGIN is ignored (the original session keeps its start time).
+- A LOGOUT closes the user's open session and adds (logout time - login time) in whole seconds to that user's total. A LOGOUT for a user with no open session is ignored.
+- A session still open at the end of the file contributes nothing. A user whose only activity is an unclosed session (or only ignored events) must NOT appear in the report at all.
+- A user with at least one completed session DOES appear, even if their total is 0 seconds.
+
+Write the result to report.txt in the current directory: one line per reported user, formatted exactly as `USER SECONDS` (a single space; SECONDS as a plain base-10 integer), sorted by SECONDS descending, ties broken by USER ascending (plain string comparison). No header, no blank lines, no trailing spaces.
+
+The log is long and the trickiest events are scattered throughout, including near the very end — process ALL of it programmatically, then re-check your output against every rule above before you finish.

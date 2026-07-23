@@ -1,0 +1,1 @@
+The file stats.py in the current directory has two bugs: mean(xs) and var(xs) both return wrong values. Fix both so that mean([1,2,3,4]) == 2.5 and var([1,2,3,4]) == 1.25 (population variance around the mean). Edit stats.py in place and run it to confirm.
