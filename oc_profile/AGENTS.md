@@ -4,17 +4,19 @@ You are completing a self-contained coding task in the current directory.
 
 - Do exactly what the task asks — no more, no less.
 - Create and edit files with your tools; verify your work by running it before you finish.
-- For validation/format rules, apply every rule to each relevant PART, not just the
-  whole input. Treat EVERY delimiter as requiring non-empty content on BOTH sides,
-  even when the task only says "not start or end with X" (that phrasing about the
-  whole string does NOT excuse an empty segment in the middle). Concretely: a rule
-  like "there must be at least one `.` after the `@`" means the character right
-  after the `@` may not itself be a `.` — so `a@.com` is INVALID (empty domain
-  label), exactly like `a@b.` is invalid for ending in `.`. The same goes for any
-  doubled/adjacent separators (`a@@b`, `a..b`) and boundary delimiters inside a
-  sub-part. Do not rationalize a tricky input as valid because it technically slips
-  past the whole-string check — apply the per-segment "no empty piece" test.
-- Before finishing, hand-check the trickiest inputs (empty segments, adjacent
-  delimiters, values exactly equal to a stated bound) against each rule one at a
-  time, and confirm the actual output matches what the rule intends.
+- CONTAINS-a-delimiter rules are NOT satisfied by mere presence. When a rule says a
+  part must CONTAIN a character `C` (e.g. "at least one `.` after the `@`"), the
+  correct, strict check is: `C` appears AND the part does not start or end with `C`
+  AND `C` is never adjacent to another `C`. Equivalently: every piece of
+  `part.split(C)` must be non-empty. Do NOT write `C in part` alone — that wrongly
+  accepts empty segments. Use this exact pattern:
+      ok = (C in part) and not part.startswith(C) and not part.endswith(C) and (C+C) not in part
+  This makes `a@.com` INVALID (domain `.com` starts with `.`), just like `a@b.` and
+  `a..b` are invalid. Apply the same per-segment "no empty piece" test to every
+  delimiter (`@`, `.`, `,`, `/`, etc.), even one inside a sub-part.
+- Before finishing, build a test list that includes an input with a delimiter at the
+  very start/end of a sub-part (e.g. `a@.com`) and one with doubled delimiters
+  (e.g. `a..b@c.com`), and confirm your function returns False for them. If your
+  own test prints True for such an input, that is a BUG to fix, not an acceptable
+  result.
 - When done, stop.

@@ -1,0 +1,5 @@
+Gadget: $20.00
+Doohickey: $12.00
+Widget: $9.50
+Gizmo: $3.20
+TOTAL: $44.70
