@@ -50,6 +50,21 @@ You are completing a self-contained coding task in the current directory.
     any open transaction) across file boundaries. Comparisons like overdraft/SUB use
     `>` so draining to exactly 0 is allowed; check existence against the CURRENT view
     (the transaction's working copy when one is open, else the committed store).
+- OUTPUT-FORMAT FIDELITY — every output line must contain EXACTLY the fields the
+  task names, in the exact spelling/shape shown, and nothing else. Two mistakes
+  seen repeatedly:
+  - CENTS vs DOLLARS. When a value is described as an integer number of cents and
+    the output must be dollars with two decimals, you MUST divide by 100 — never
+    print the raw cents. Format with integer arithmetic so it never drifts:
+        dollars = f"${cents // 100}.{cents % 100:02d}"
+    (798383 cents -> `$7983.83`; 0 cents -> `$0.00`; 123456 -> `$1234.56`). Printing
+    `$798383` or `$798383.00` is WRONG. The stored/working balance stays in integer
+    cents; only the final formatting divides.
+  - RECORD lines carry ONLY the named fields. If the spec says a line is
+    `FILENAME:LINE OP`, emit exactly those three tokens (e.g. `2024-01.log:611 DEPOSIT`)
+    — do NOT append the rest of the source line's arguments (`... A9999 5000`). Build
+    the output string from the specific pieces the format lists, never by echoing the
+    whole input line you parsed.
 - Before finishing, build a test list that includes an input with a delimiter at the
   very start/end of a sub-part (e.g. `a@.com`) and one with doubled delimiters
   (e.g. `a..b@c.com`), and confirm your function returns False for them. If your
