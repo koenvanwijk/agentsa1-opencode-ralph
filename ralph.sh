@@ -54,7 +54,15 @@ bash scripts/apply_profile.sh
 bash scripts/run_all.sh | tee -a "$REPO/ralph.log"
 bash scripts/score.sh
 best=$(cat runs/current/SCORE_NUM.txt 2>/dev/null || echo 0)
-log "baseline score=$best"
+# `bar` is the DECAYING high-water mark the loop must beat. A keep raises it to
+# the achieved score; every rollback pulls it toward the just-observed score by
+# an EMA (DECAY), so a lucky one-off peak erodes over a few rounds instead of
+# blocking all future progress — while a reproducible high keeps re-matching the
+# bar and never decays. Comparison is on the rounded bar.
+DECAY="${DECAY:-0.7}"
+bar="$best"
+round(){ awk -v x="$1" 'BEGIN{printf "%d",(x<0?x-0.5:x+0.5)}'; }
+log "baseline score=$best (bar=$bar, DECAY=$DECAY)"
 echo "## $(date -Is) baseline score=$best" >> RESULTS.md
 commit "baseline score=$best"
 
@@ -84,16 +92,22 @@ for i in $(seq 1 "$N"); do
   bash scripts/run_all.sh | tee -a "$REPO/ralph.log"
   bash scripts/score.sh
   new=$(cat runs/current/SCORE_NUM.txt 2>/dev/null || echo 0)
-  log "iter $i score=$new (best=$best)"
-  if [ "${new:-0}" -ge "${best:-0}" ]; then
-    best=$new
-    echo "## $(date -Is) iter $i [$mode] KEEP score=$new — $prop" >> RESULTS.md
+  thr=$(round "$bar")
+  log "iter $i score=$new (bar=$(printf '%.2f' "$bar") -> need >=$thr)"
+  if [ "${new:-0}" -ge "${thr:-0}" ]; then
+    # keep: ratchet the bar up to the achieved score (never lower it on a keep)
+    bar=$(awk -v b="$bar" -v n="$new" 'BEGIN{print (n>b)?n:b}')
+    best=$(round "$bar")
+    echo "## $(date -Is) iter $i [$mode] KEEP score=$new (bar->$(printf '%.2f' "$bar")) — $prop" >> RESULTS.md
     commit "iter $i [$mode] keep score=$new — $prop"
   else
-    echo "## $(date -Is) iter $i [$mode] ROLLBACK score=$new<$best — $prop" >> RESULTS.md
+    # rollback the edit, and decay the bar toward the observed score (EMA)
+    bar=$(awk -v b="$bar" -v n="$new" -v d="$DECAY" 'BEGIN{printf "%.4f", d*b+(1-d)*n}')
+    best=$(round "$bar")
+    echo "## $(date -Is) iter $i [$mode] ROLLBACK score=$new<$thr (bar decays ->$(printf '%.2f' "$bar")) — $prop" >> RESULTS.md
     git checkout -- oc_profile/ 2>/dev/null || true
     git clean -fdq oc_profile/ 2>/dev/null || true
-    commit "iter $i [$mode] rollback (score $new<$best)"
+    commit "iter $i [$mode] rollback (score $new<$thr, bar->$(printf '%.2f' "$bar"))"
   fi
 
   # Auto-escalate: when saturated (all tasks pass) for 2 rounds, import a harder
@@ -109,8 +123,9 @@ for i in $(seq 1 "$N"); do
       bash scripts/run_all.sh | tee -a "$REPO/ralph.log"
       bash scripts/score.sh
       best=$(cat runs/current/SCORE_NUM.txt 2>/dev/null || echo 0)
+      bar="$best"   # reset the decaying bar to the new (larger) task set's baseline
       nt=$(ls -d tasks/*/ 2>/dev/null | wc -l)
-      log "re-baseline after escalation: best=$best/$nt"
+      log "re-baseline after escalation: best=$best/$nt (bar reset)"
       echo "## $(date -Is) re-baseline after escalation: $best/$nt tasks" >> RESULTS.md
       commit "re-baseline after escalation: best=$best/$nt"
     fi

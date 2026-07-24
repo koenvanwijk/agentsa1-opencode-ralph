@@ -24,6 +24,32 @@ You are completing a self-contained coding task in the current directory.
   This makes `a@.com` INVALID (domain `.com` starts with `.`), just like `a@b.` and
   `a..b` are invalid. Apply the same per-segment "no empty piece" test to every
   delimiter (`@`, `.`, `,`, `/`, etc.), even one inside a sub-part.
+- SPACE-SEPARATED RECORD rules (log/command lines like `WITHDRAW A1001 500` or
+  `SET key 12`, where fields are separated by SINGLE spaces and ANY deviation is
+  MALFORMED and must be silently ignored — not rejected). Validate EXACTLY like this
+  and treat a line as malformed the moment any check fails:
+  - Split on a single space ONLY: `parts = line.split(' ')`. Do NOT use `.split()`
+    with no argument (it collapses runs of whitespace and hides double spaces/tabs)
+    and do NOT `.strip()` the line first (that hides leading/trailing spaces).
+  - Require the EXACT field count for that operation, AND require `'' not in parts`.
+    A blank field means a leading space, trailing space, or a double space — all
+    malformed. A field containing a tab or other whitespace fails its regex below.
+  - Match the operation word with `==` against the EXACT uppercase spelling. NEVER
+    call `.upper()`/`.lower()`/`.casefold()` on it — lowercase or mixed-case ops
+    (`deposit`, `Set`) are malformed, not valid.
+  - Validate every remaining field with `re.fullmatch` (NOT `re.match`, which allows
+    trailing junk): an integer amount with no leading zeros/sign/decimal is
+    `[1-9][0-9]*` when it must be positive, or `0|[1-9][0-9]*` when `0` is allowed
+    (so `0500`, `00`, `-5`, `+5`, `12.50`, `0x10` are all malformed). Ids/keys use
+    their own exact pattern, e.g. `A[0-9]{4}` or `[a-z]{2,10}`.
+  - MALFORMED (bad syntax) is silently dropped and NEVER written to rejected output;
+    REJECTED (well-formed but not allowed, e.g. overdraft, unknown/duplicate,
+    self-transfer, txn-state violation) IS recorded. Keep these two paths separate.
+  - Process files in ascending filename order (`sorted(...)`), read EVERY line of
+    EVERY file programmatically, and carry all mutable state (balances, the store,
+    any open transaction) across file boundaries. Comparisons like overdraft/SUB use
+    `>` so draining to exactly 0 is allowed; check existence against the CURRENT view
+    (the transaction's working copy when one is open, else the committed store).
 - Before finishing, build a test list that includes an input with a delimiter at the
   very start/end of a sub-part (e.g. `a@.com`) and one with doubled delimiters
   (e.g. `a..b@c.com`), and confirm your function returns False for them. If your
