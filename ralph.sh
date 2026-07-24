@@ -37,6 +37,18 @@ wait_for_model(){
 
 claude_up(){ timeout 90 claude -p "reply with exactly OK" --dangerously-skip-permissions 2>/dev/null | grep -q OK; }
 
+copilot_up(){ timeout 120 hermes -m "${HERMES_ALIAS:-ghe-copilot}" -z "reply with exactly OK" 2>/dev/null | grep -q OK; }
+
+# A proposer log is a VALID proposal only if its first PROPOSAL line is not a
+# parenthesised sentinel like "PROPOSAL: (copilot error)" / "(... no-op ...)".
+proposal_valid(){
+  case "$(grep -m1 '^PROPOSAL:' "$1" 2>/dev/null)" in
+    "PROPOSAL: ("*|"") return 1;;
+    "PROPOSAL: "*)     return 0;;
+    *)                 return 1;;
+  esac
+}
+
 propose_claude(){  # $1=iter ; returns 0 ok, 1 quota/failure
   local logf="runs/proposer_$1.log"
   timeout 900 claude -p "$(cat proposer/PROPOSER.md)" \
@@ -50,10 +62,12 @@ propose_local(){  # $1=iter ; uses Agents-A1 itself
   "$PROP_PY" local_propose.py > "runs/proposer_$1.log" 2>&1 || echo "PROPOSAL: (local error)" >> "runs/proposer_$1.log"
 }
 
-propose_copilot(){  # $1=iter ; Claude Sonnet 5 via GitHub Copilot (no Anthropic usage credits)
+propose_copilot(){  # $1=iter ; Claude Sonnet 5 via Copilot. Returns 0 iff a valid proposal was produced.
+  local logf="runs/proposer_$1.log"
   PROPOSER_ENGINE=copilot HERMES_ALIAS="${HERMES_ALIAS:-ghe-copilot}" \
-    "$PROP_PY" local_propose.py > "runs/proposer_$1.log" 2>&1 \
-    || echo "PROPOSAL: (copilot error)" >> "runs/proposer_$1.log"
+    "$PROP_PY" local_propose.py > "$logf" 2>&1 \
+    || echo "PROPOSAL: (copilot error)" >> "$logf"
+  proposal_valid "$logf"
 }
 
 commit(){ git add -A && git commit -q -m "$1" && git push -q 2>/dev/null || true; }
@@ -83,16 +97,24 @@ case "$PROPOSER" in
 esac
 for i in $(seq 1 "$N"); do
   wait_for_model
-  # adaptive Claude recovery only applies to the credit-using 'claude' proposer
-  if [ "$PROPOSER" = claude ] && [ "$mode" = local ] && claude_up; then mode=claude; log "Claude quota recovered -> back to Claude"; fi
+  # adaptive recovery: when we've fallen back to local, probe the preferred
+  # proposer each round and switch back as soon as it works again.
+  if [ "$mode" = local ]; then
+    if [ "$PROPOSER" = claude ] && claude_up; then mode=claude; log "Claude quota recovered -> back to Claude"; fi
+    if [ "$PROPOSER" = copilot ] && copilot_up; then mode=copilot; log "Copilot recovered -> back to Copilot"; fi
+  fi
 
   case "$mode" in
     claude)
       if propose_claude "$i"; then :; else
-        mode=local; log "Claude exhausted -> switching to LOCAL proposer (Agents-A1)"
+        mode=local; log "Claude exhausted -> falling back to LOCAL proposer (Agents-A1)"
         propose_local "$i"
       fi ;;
-    copilot) propose_copilot "$i" ;;
+    copilot)
+      if propose_copilot "$i"; then :; else
+        mode=local; log "Copilot proposer unavailable -> falling back to LOCAL proposer (Agents-A1)"
+        propose_local "$i"
+      fi ;;
     local)   propose_local "$i" ;;
   esac
   prop=$(grep -m1 '^PROPOSAL:' "runs/proposer_$i.log" 2>/dev/null || echo "PROPOSAL: (none)")
