@@ -15,13 +15,34 @@ valid JSON and keep the provider wiring) and prints the PROPOSAL line. On any
 parse/guard failure it prints "PROPOSAL: (local proposer no-op)" and changes
 nothing.
 """
-import os, re, json, glob, pathlib
-from openai import OpenAI
+import os, re, json, glob, shutil, subprocess, pathlib
 
 REPO = pathlib.Path(__file__).resolve().parent
+# ENGINE: "openai" -> local Agents-A1 via OpenAI SDK (no credits, weaker);
+#         "copilot" -> Claude Sonnet 5 via GitHub Copilot through `hermes -z`
+#         (real Claude, billed to the org Copilot subscription, NOT Anthropic usage credits).
+ENGINE = os.environ.get("PROPOSER_ENGINE", "openai")
 PROP_URL = os.environ.get("PROPOSER_URL", "http://192.168.86.32:8000/v1")
 PROP_MODEL = os.environ.get("PROPOSER_MODEL", "Agents-A1")
+HERMES_ALIAS = os.environ.get("HERMES_ALIAS", "ghe-copilot")
 WIRING = "192.168.86.32:8000"  # provider baseURL must survive any opencode.json edit
+
+
+def complete(system, user):
+    """Return the proposer model's raw text via the selected engine."""
+    if ENGINE == "copilot":
+        hermes = shutil.which("hermes") or os.path.expanduser("~/.local/bin/hermes")
+        prompt = system + "\n\n=== EVIDENCE ===\n\n" + user
+        r = subprocess.run([hermes, "-m", HERMES_ALIAS, "-z", prompt],
+                           capture_output=True, text=True, timeout=1200)
+        return r.stdout or ""
+    from openai import OpenAI
+    client = OpenAI(base_url=PROP_URL, api_key="none", timeout=1200)
+    r = client.chat.completions.create(
+        model=PROP_MODEL, temperature=0.4, max_tokens=4000,
+        messages=[{"role": "system", "content": system},
+                  {"role": "user", "content": user}])
+    return r.choices[0].message.content or ""
 
 def read(p, n=2500):
     try:
@@ -53,13 +74,8 @@ def main():
         "Prefer editing oc_profile/AGENTS.md. If editing opencode.json, keep the "
         "provider block (baseURL http://192.168.86.32:8000/v1) intact."
     )
-    client = OpenAI(base_url=PROP_URL, api_key="none", timeout=1200)
     try:
-        r = client.chat.completions.create(
-            model=PROP_MODEL, temperature=0.4, max_tokens=4000,
-            messages=[{"role": "system", "content": instructions + protocol},
-                      {"role": "user", "content": gather()}])
-        out = r.choices[0].message.content or ""
+        out = complete(instructions + protocol, gather())
     except Exception as e:
         print(f"PROPOSAL: (local proposer error: {e})"); return
 

@@ -50,6 +50,12 @@ propose_local(){  # $1=iter ; uses Agents-A1 itself
   "$PROP_PY" local_propose.py > "runs/proposer_$1.log" 2>&1 || echo "PROPOSAL: (local error)" >> "runs/proposer_$1.log"
 }
 
+propose_copilot(){  # $1=iter ; Claude Sonnet 5 via GitHub Copilot (no Anthropic usage credits)
+  PROPOSER_ENGINE=copilot HERMES_ALIAS="${HERMES_ALIAS:-ghe-copilot}" \
+    "$PROP_PY" local_propose.py > "runs/proposer_$1.log" 2>&1 \
+    || echo "PROPOSAL: (copilot error)" >> "runs/proposer_$1.log"
+}
+
 commit(){ git add -A && git commit -q -m "$1" && git push -q 2>/dev/null || true; }
 
 log "=== ralph start (opencode/Agents-A1): up to $N iterations, TRIALS=$TRIALS ==="
@@ -71,20 +77,24 @@ echo "## $(date -Is) baseline score=$best" >> RESULTS.md
 commit "baseline score=$best"
 
 mode="$PROPOSER"
-[ "$PROPOSER" = local ] && log "PROPOSER=local: Claude disabled, using Agents-A1 proposer only (no Claude credits)"
+case "$PROPOSER" in
+  local)   log "PROPOSER=local: Agents-A1 proposer only (no Claude, no credits)";;
+  copilot) log "PROPOSER=copilot: Claude Sonnet 5 via GitHub Copilot (no Anthropic usage credits)";;
+esac
 for i in $(seq 1 "$N"); do
   wait_for_model
-  # only probe Claude for recovery when Claude is actually allowed
-  if [ "$PROPOSER" != local ] && [ "$mode" = local ] && claude_up; then mode=claude; log "Claude quota recovered -> back to Claude"; fi
+  # adaptive Claude recovery only applies to the credit-using 'claude' proposer
+  if [ "$PROPOSER" = claude ] && [ "$mode" = local ] && claude_up; then mode=claude; log "Claude quota recovered -> back to Claude"; fi
 
-  if [ "$mode" = claude ]; then
-    if propose_claude "$i"; then :; else
-      mode=local; log "Claude exhausted -> switching to LOCAL proposer (Agents-A1)"
-      propose_local "$i"
-    fi
-  else
-    propose_local "$i"
-  fi
+  case "$mode" in
+    claude)
+      if propose_claude "$i"; then :; else
+        mode=local; log "Claude exhausted -> switching to LOCAL proposer (Agents-A1)"
+        propose_local "$i"
+      fi ;;
+    copilot) propose_copilot "$i" ;;
+    local)   propose_local "$i" ;;
+  esac
   prop=$(grep -m1 '^PROPOSAL:' "runs/proposer_$i.log" 2>/dev/null || echo "PROPOSAL: (none)")
   log "--- iter $i [$mode] $prop"
 
