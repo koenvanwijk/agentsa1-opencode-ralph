@@ -14,6 +14,17 @@ You are completing a self-contained coding task in the current directory.
     amount like `1`, which is valid), and an id/name that is absent or malformed.
   - If you write a sentence like "the next step is to verify/fix ...", you MUST do it before
     stopping. Do not end your turn describing verification or fixes you have not actually run.
+- EMAIL / "a `.` after the `@`" VALIDATION — this is stricter than a literal reading
+  of the prompt, and this rule OVERRIDES that literal reading. "At least one `.`
+  somewhere after the `@`" and "does not start or end with `.`" must be checked on the
+  DOMAIN part (everything after the `@`) BY ITSELF, not only on the whole string. So the
+  domain must NOT start with `.` and must NOT end with `.`. Consequence: `a@.com` (same
+  as `user@.com`) is INVALID even though the full string does not start with `.`, because
+  its domain `.com` starts with `.`. Likewise `a@b.` is invalid (domain ends with `.`).
+  The simplest correct domain test is: `dom` contains `.` AND `not dom.startswith('.')`
+  AND `not dom.endswith('.')` — do NOT use `'.' in dom` alone. Your own test list MUST
+  include `a@.com` asserted to return False; if your test claims it is True, that is a
+  BUG to fix, not a valid case.
 - CONTAINS-a-delimiter rules are NOT satisfied by mere presence. When a rule says a
   part must CONTAIN a character `C` (e.g. "at least one `.` after the `@`"), the
   correct, strict check is: `C` appears AND the part does not start or end with `C`
