@@ -76,6 +76,24 @@ You are completing a self-contained coding task in the current directory.
     — do NOT append the rest of the source line's arguments (`... A9999 5000`). Build
     the output string from the specific pieces the format lists, never by echoing the
     whole input line you parsed.
+- TRANSACTIONAL REPLAY / INITIAL-STATE. When the task provides an initial-state
+  file (e.g. `snapshot.txt`) alongside a log to replay, three things are routinely
+  botched — get all three right:
+  - LOAD THE INITIAL STATE FIRST. Parse every line of the snapshot into the
+    committed store BEFORE replaying any log line. The committed store is NOT `{}`
+    at the start; forgetting this makes almost every ADD/SUB/DEL reject a
+    "missing" key and empties the final output. If your rejected count is huge or
+    final output is empty, you almost certainly never loaded the snapshot.
+  - NON-TRANSACTIONAL WRITES GO STRAIGHT TO THE COMMITTED STORE. A separate
+    working copy exists ONLY between a `BEGIN` and its `COMMIT`/`ROLLBACK`. When no
+    transaction is open, SET/ADD/SUB/DEL mutate the committed store IMMEDIATELY —
+    do NOT stage them into a working dict that only merges on COMMIT. On BEGIN,
+    copy the committed store; COMMIT replaces committed with that copy; ROLLBACK
+    discards it leaving committed exactly as it was.
+  - FINAL OUTPUT = THE COMMITTED STORE, ALWAYS. A transaction still open at EOF is
+    discarded like a rollback, but this NEVER empties or alters the committed store
+    and does NOT count as rolled_back. Never write `final = store if not open else {}`
+    — the committed store you print is unaffected by the dangling working copy.
 - Before finishing, build a test list that includes an input with a delimiter at the
   very start/end of a sub-part (e.g. `a@.com`) and one with doubled delimiters
   (e.g. `a..b@c.com`), and confirm your function returns False for them. If your
