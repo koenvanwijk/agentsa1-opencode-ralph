@@ -14,6 +14,10 @@ N="${1:-30}"
 export PATH="$HOME/.local/bin:$PATH"
 export TRIALS="${TRIALS:-3}"
 PROP_PY="${PROP_PY:-$HOME/.openclaw/workspace/agents-a1-repro/.venv/bin/python}"
+# PROPOSER=local forces the local (Agents-A1) proposer and NEVER invokes
+# `claude -p` — no Claude usage credits are consumed. Default 'claude' keeps the
+# adaptive behaviour (Claude primary, local fallback).
+PROPOSER="${PROPOSER:-claude}"
 log(){ echo "[$(date -Is)] $*" | tee -a "$REPO/ralph.log"; }
 
 # Model-server health gate: no tuning signal exists when the backend is down.
@@ -66,10 +70,12 @@ log "baseline score=$best (bar=$bar, DECAY=$DECAY)"
 echo "## $(date -Is) baseline score=$best" >> RESULTS.md
 commit "baseline score=$best"
 
-mode=claude
+mode="$PROPOSER"
+[ "$PROPOSER" = local ] && log "PROPOSER=local: Claude disabled, using Agents-A1 proposer only (no Claude credits)"
 for i in $(seq 1 "$N"); do
   wait_for_model
-  if [ "$mode" = local ] && claude_up; then mode=claude; log "Claude quota recovered -> back to Claude"; fi
+  # only probe Claude for recovery when Claude is actually allowed
+  if [ "$PROPOSER" != local ] && [ "$mode" = local ] && claude_up; then mode=claude; log "Claude quota recovered -> back to Claude"; fi
 
   if [ "$mode" = claude ]; then
     if propose_claude "$i"; then :; else
