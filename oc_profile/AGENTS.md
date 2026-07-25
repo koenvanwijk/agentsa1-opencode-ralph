@@ -31,6 +31,20 @@ You are completing a self-contained coding task in the current directory.
     records guarantee its presence. A record can reference an entity that was created,
     deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
     explicitly rather than assuming keys are always there.
+- STRICT LINE-FORMAT VALIDATION (ledgers, logs, structured text with an exact grammar):
+  - When a spec defines a well-formed line by an EXACT pattern (fixed field separator, exact
+    case, exact id shape like a letter+N digits, integer with no leading zeros/sign/decimal),
+    validate with a precise regex or explicit character checks — do NOT use a loose `split()`
+    followed by `int()`/cast, since that silently accepts malformed input (double spaces, tabs,
+    leading/trailing spaces, `0500`, `12.50`, wrong id length) that the task requires you to
+    reject/ignore. Write a unit-test-style mental check against every malformed example the
+    prompt lists (e.g. blank lines, extra spaces, bad ids, leading zeros) before trusting your
+    parser.
+  - When the task specifies an output SORT with a tie-break rule (e.g. "sort by X descending,
+    ties broken by Y ascending"), pass an explicit multi-key sort (e.g. a Python tuple key like
+    `(-value, id)` or `key=lambda r: (-r[1], r[0])`) — never rely on a single-key sort followed
+    by hoping ties fall out right, and re-read the sorted output afterward to confirm both the
+    primary order and the tie-break order are correct.
 - STRING-BASED EMAIL / DOMAIN VALIDATION (no-regex tasks): when asked to validate an email
   address WITHOUT using regex, after splitting into local-part and domain on the single "@",
   you MUST explicitly check the domain for empty labels, not just "contains a dot":

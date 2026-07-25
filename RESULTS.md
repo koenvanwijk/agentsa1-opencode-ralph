@@ -21,3 +21,4 @@
 ## 2026-07-25T07:04:18+02:00 iter 3 [copilot] KEEP score=17 (bar->17.49) — PROPOSAL: Add AGENTS.md rule requiring defensive dict/key handling and full-file iteration when writing log/WAL-replay parsers, since 18_txn_wal crashed with unhandled KeyError instead of being run to completion and fixed.
 ## 2026-07-25T08:48:54+02:00 iter 4 [copilot] ROLLBACK score=16<17 (bar decays ->17.04) — PROPOSAL: Add AGENTS.md rule to rewrite whole files instead of retrying failed find/replace edits, fixing 16_log_sessions's stuck edit-tool loop.
 ## 2026-07-25T10:45:50+02:00 iter 5 [copilot] KEEP score=17 (bar->17.04) — PROPOSAL: Add AGENTS.md rule for string-based email validation to explicitly reject domain labels that are empty (e.g. a dot immediately after '@' or two consecutive dots), fixing 10_no_regex_email's user@.com false positive.
+## 2026-07-25T12:33:50+02:00 iter 6 [local] KEEP score=18 (bar->18.00) — PROPOSAL: (local proposer no-op — unparseable)
