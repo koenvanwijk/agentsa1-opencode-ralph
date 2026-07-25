@@ -31,29 +31,19 @@ You are completing a self-contained coding task in the current directory.
     records guarantee its presence. A record can reference an entity that was created,
     deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
     explicitly rather than assuming keys are always there.
-- STRICT LINE-FORMAT VALIDATION (ledgers, logs, structured text with an exact grammar):
-  - When a spec defines a well-formed line by an EXACT pattern (fixed field separator, exact
-    case, exact id shape like a letter+N digits, integer with no leading zeros/sign/decimal),
-    validate with a precise regex or explicit character checks — do NOT use a loose `split()`
-    followed by `int()`/cast, since that silently accepts malformed input (double spaces, tabs,
-    leading/trailing spaces, `0500`, `12.50`, wrong id length) that the task requires you to
-    reject/ignore. Write a unit-test-style mental check against every malformed example the
-    prompt lists (e.g. blank lines, extra spaces, bad ids, leading zeros) before trusting your
-    parser.
-  - When the task specifies an output SORT with a tie-break rule (e.g. "sort by X descending,
-    ties broken by Y ascending"), pass an explicit multi-key sort (e.g. a Python tuple key like
-    `(-value, id)` or `key=lambda r: (-r[1], r[0])`) — never rely on a single-key sort followed
-    by hoping ties fall out right, and re-read the sorted output afterward to confirm both the
-    primary order and the tie-break order are correct.
-- STRING-BASED EMAIL / DOMAIN VALIDATION (no-regex tasks): when asked to validate an email
-  address WITHOUT using regex, after splitting into local-part and domain on the single "@",
-  you MUST explicitly check the domain for empty labels, not just "contains a dot":
-  - Split the domain on "." and reject if ANY resulting label is the empty string — this
-    catches a dot immediately after "@" (e.g. "user@.com" -> domain ".com" -> labels
-    ["", "com"] -> invalid), a trailing dot (e.g. "user@domain." -> ["domain", ""] -> invalid),
-    and consecutive dots (e.g. "user@do..main.com").
-  - Also require at least 2 labels in the domain (i.e. at least one dot with non-empty parts
-    on both sides), and reject a domain that starts or ends with ".".
-  - After writing the validator, hand-test it against inputs like "user@.com", "user@domain.",
-    and "user@domain..com" specifically — these empty-label cases are the most commonly missed
-    edge case — before finishing.
+- EMAIL / STRING-FORMAT VALIDATION WITHOUT REGEX — when asked to validate a format (like an
+  email address) using string methods instead of `re`, do not settle for a naive `'@' in s and
+  '.' in s` check. You MUST explicitly test ALL of these edge cases against your implementation
+  before finishing, and fix the code until every one gives the CORRECT answer:
+  - Exactly one `@` (reject zero or multiple `@`, e.g. `a@b@c.com`).
+  - Non-empty local part before `@` and non-empty domain after `@`.
+  - Domain must contain at least one `.`, with a non-empty label on both sides of every dot
+    (reject `a@b..com`, `a@.com`, `a@b.com.`, `a@b.`).
+  - Reject leading or trailing `.` in the local part, and reject `..` anywhere in the local
+    part (e.g. `.user@x.com`, `user.@x.com`, `us..er@x.com`).
+  - Reject any whitespace anywhere in the string.
+  - Reject empty string and strings missing `@` entirely.
+  - The final domain label (TLD) must be alphabetic and at least 2 characters long.
+  - Write out the exact list of test cases the task/prompt implies (valid and invalid) as
+    actual assertions or printed comparisons in your verification run — do not just eyeball
+    a couple of examples and stop.
