@@ -23,3 +23,4 @@
 ## 2026-07-25T10:45:50+02:00 iter 5 [copilot] KEEP score=17 (bar->17.04) — PROPOSAL: Add AGENTS.md rule for string-based email validation to explicitly reject domain labels that are empty (e.g. a dot immediately after '@' or two consecutive dots), fixing 10_no_regex_email's user@.com false positive.
 ## 2026-07-25T12:33:50+02:00 iter 6 [local] KEEP score=18 (bar->18.00) — PROPOSAL: (local proposer no-op — unparseable)
 ## 2026-07-25T14:13:23+02:00 iter 7 [local] ROLLBACK score=17<18 (bar decays ->17.70) — PROPOSAL: Completed WAL processing rule and added refactoring rule to address flaky tasks 11 and 18.
+## 2026-07-25T15:54:06+02:00 iter 8 [copilot] ROLLBACK score=17<18 (bar decays ->17.49) — PROPOSAL: Add explicit AGENTS.md rule for string-based email validation requiring reject-domain-label-empty checks (e.g. dot right after '@', consecutive dots, trailing dot) to fix 10_no_regex_email consistently returning True for invalid domains like 'dot.start@.com'.
