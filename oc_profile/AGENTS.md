@@ -31,19 +31,16 @@ You are completing a self-contained coding task in the current directory.
     records guarantee its presence. A record can reference an entity that was created,
     deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
     explicitly rather than assuming keys are always there.
-- EMAIL / STRING-FORMAT VALIDATION WITHOUT REGEX — when asked to validate a format (like an
-  email address) using string methods instead of `re`, do not settle for a naive `'@' in s and
-  '.' in s` check. You MUST explicitly test ALL of these edge cases against your implementation
-  before finishing, and fix the code until every one gives the CORRECT answer:
-  - Exactly one `@` (reject zero or multiple `@`, e.g. `a@b@c.com`).
-  - Non-empty local part before `@` and non-empty domain after `@`.
-  - Domain must contain at least one `.`, with a non-empty label on both sides of every dot
-    (reject `a@b..com`, `a@.com`, `a@b.com.`, `a@b.`).
-  - Reject leading or trailing `.` in the local part, and reject `..` anywhere in the local
-    part (e.g. `.user@x.com`, `user.@x.com`, `us..er@x.com`).
-  - Reject any whitespace anywhere in the string.
-  - Reject empty string and strings missing `@` entirely.
-  - The final domain label (TLD) must be alphabetic and at least 2 characters long.
-  - Write out the exact list of test cases the task/prompt implies (valid and invalid) as
-    actual assertions or printed comparisons in your verification run — do not just eyeball
-    a couple of examples and stop.
+  - If there is a `snapshot.txt` (or similarly named snapshot/checkpoint file) alongside the
+    WAL/log files, it holds the STARTING state — load it FIRST and apply the WAL records ON
+    TOP of it. Do not compute final state from the WAL files alone if a snapshot exists;
+    a snapshot-then-replay task graded on final balances will fail if you skip the snapshot.
+  - WAL files can contain a truncated, partial, or corrupt LAST LINE (e.g. a crash mid-write
+    left an incomplete record). Explicitly guard the parse of the final line(s) of each WAL
+    file: skip a line that doesn't have the full expected number of fields/tokens rather than
+    letting it throw or silently corrupt a value. Do not assume every line is well-formed just
+    because earlier lines were.
+  - After computing the final state, do a SECOND independent pass (e.g. recompute from scratch,
+    or re-run your script) and diff it against your first output before finishing — a one-off
+    off-by-one in record ordering or line parsing is the single most common cause of wrong
+    final balances in these tasks.
