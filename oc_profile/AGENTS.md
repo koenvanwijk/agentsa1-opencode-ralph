@@ -31,26 +31,15 @@ You are completing a self-contained coding task in the current directory.
     records guarantee its presence. A record can reference an entity that was created,
     deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
     explicitly rather than assuming keys are always there.
-  - Also handle partial/incomplete/corrupt trailing records (e.g. a truncated last line) by
-    skipping or ignoring them rather than crashing, unless the task explicitly says otherwise.
-  - After implementing the parser, run it against every provided log file end-to-end and
-    confirm it completes without exceptions AND the final output matches the exact format
-    the task's verify step expects, before considering the task done.
-- EMAIL / "a `.` after the `@`" VALIDATION — this is stricter than a literal reading
-  of the prompt, and this rule OVERRIDES that literal reading. "At least one `.`
-  somewhere after the `@`" and "does not start or end with `.`" must be checked on the
-  DOMAIN part (everything after the `@`) BY ITSELF, not only on the whole string. So the
-  domain must NOT start with `.` and must NOT end with `.`. Consequence: `a@.com` (same
-  as `user@.com`) is INVALID even though the full string does not start with `.`, because
-  its domain `.com` starts with `.`. Likewise `a@b.` is invalid (domain ends with `.`).
-  The simplest correct domain test is: `dom` contains `.` AND `not dom.startswith('.')`
-  AND `not dom.endswith('.')` — do NOT use `'.' in dom` alone. Your own test list MUST
-  include `a@.com` asserted to return False; if your test claims it is True, that is a
-  BUG to fix, not a valid case.
-- CONTAINS-a-delimiter rules are NOT satisfied by mere presence. When a rule says a
-  part must CONTAIN a character `C` (e.g. "at least one `.` after the `@`"), the
-  correct, strict check is: `C` appears AND the part does not start or end with `C`
-  AND `C` is never adjacent to another `C`. Equivalently: every piece of
-  `part.split(C)` must be non-empty. Do NOT write `C in part` alone — that wrongly
-  accepts empty segments. Use this exact pattern:
-      ok = 
+- STRING-BASED EMAIL / DOMAIN VALIDATION (no-regex tasks): when asked to validate an email
+  address WITHOUT using regex, after splitting into local-part and domain on the single "@",
+  you MUST explicitly check the domain for empty labels, not just "contains a dot":
+  - Split the domain on "." and reject if ANY resulting label is the empty string — this
+    catches a dot immediately after "@" (e.g. "user@.com" -> domain ".com" -> labels
+    ["", "com"] -> invalid), a trailing dot (e.g. "user@domain." -> ["domain", ""] -> invalid),
+    and consecutive dots (e.g. "user@do..main.com").
+  - Also require at least 2 labels in the domain (i.e. at least one dot with non-empty parts
+    on both sides), and reject a domain that starts or ends with ".".
+  - After writing the validator, hand-test it against inputs like "user@.com", "user@domain.",
+    and "user@domain..com" specifically — these empty-label cases are the most commonly missed
+    edge case — before finishing.
