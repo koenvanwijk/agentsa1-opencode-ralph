@@ -54,7 +54,7 @@ propose_claude(){  # $1=iter ; returns 0 ok, 1 quota/failure
   timeout 900 claude -p "$(cat proposer/PROPOSER.md)" \
     --dangerously-skip-permissions --add-dir "$REPO" > "$logf" 2>&1
   local rc=$?
-  grep -qiE "session limit|usage limit|credit balance|rate.?limit|invalid api key|please run /login|quota" "$logf" && return 1
+  grep -qiE "session limit|usage limit|spend limit|monthly spend|credit balance|rate.?limit|invalid api key|please run /login|quota" "$logf" && return 1
   [ $rc -eq 0 ] && [ -s "$logf" ]
 }
 
