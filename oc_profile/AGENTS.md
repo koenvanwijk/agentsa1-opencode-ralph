@@ -31,16 +31,23 @@ You are completing a self-contained coding task in the current directory.
     records guarantee its presence. A record can reference an entity that was created,
     deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
     explicitly rather than assuming keys are always there.
-  - If there is a `snapshot.txt` (or similarly named snapshot/checkpoint file) alongside the
-    WAL/log files, it holds the STARTING state — load it FIRST and apply the WAL records ON
-    TOP of it. Do not compute final state from the WAL files alone if a snapshot exists;
-    a snapshot-then-replay task graded on final balances will fail if you skip the snapshot.
-  - WAL files can contain a truncated, partial, or corrupt LAST LINE (e.g. a crash mid-write
-    left an incomplete record). Explicitly guard the parse of the final line(s) of each WAL
-    file: skip a line that doesn't have the full expected number of fields/tokens rather than
-    letting it throw or silently corrupt a value. Do not assume every line is well-formed just
-    because earlier lines were.
-  - After computing the final state, do a SECOND independent pass (e.g. recompute from scratch,
-    or re-run your script) and diff it against your first output before finishing — a one-off
-    off-by-one in record ordering or line parsing is the single most common cause of wrong
-    final balances in these tasks.
+- NO-REGEX EMAIL VALIDATION — when a task asks you to validate emails WITHOUT using regex
+  (no `re` module, no regex library), implement `is_valid_email` using plain string
+  operations (`.split`, `.count`, indexing, `.isalnum`, etc.) and explicitly handle ALL of
+  these edge cases, testing each one by hand against your implementation before finishing:
+  - Exactly one `@` character: reject empty string, reject no `@`, reject more than one `@`
+    (e.g. `user@@domain.com`, `user@domain@com`).
+  - Local part (before `@`) must be non-empty and must NOT start or end with a `.`
+    (e.g. `.name@domain.com` is invalid).
+  - Domain part (after `@`) must be non-empty, must contain at least one `.`, must NOT
+    start with `.` (e.g. `invalid@.com`), must NOT end with `.` (e.g. `user@domain.com.`),
+    and the substring immediately after the LAST `.` (the TLD) must be non-empty and
+    alphabetic with length >= 1 (e.g. `test@domain.c` is valid; `test@domain` with no
+    dot is invalid).
+  - Reject any email containing whitespace anywhere (spaces, tabs) — e.g.
+    `user name@domain.com` and a trailing space `user@domain.com ` are both invalid.
+  - Do not strip/trim the input before validating — leading/trailing whitespace or a
+    trailing dot must cause rejection, not silent cleanup.
+  - After writing the function, run it against a test list that includes every edge case
+    above (both valid and invalid examples) and confirm each result matches expectations
+    before considering the task done — do not stop after a single crash or an unverified run.

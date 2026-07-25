@@ -28,3 +28,4 @@
 ## 2026-07-25T19:12:28+02:00 iter 10 [copilot] ROLLBACK score=16<17 (bar decays ->16.52) — PROPOSAL: Add rule requiring correct initial values/types for per-key running state (e.g. balances) to prevent int-vs-dict crashes like the 17_bank_ledger TypeError.
 ## 2026-07-25T21:08:55+02:00 iter 11 [copilot] KEEP score=17 (bar->17.00) — PROPOSAL: Add explicit no-regex email-validation edge-case checklist to AGENTS.md targeting 10_no_regex_email's consistent 0/3 failure.
 ## 2026-07-25T23:01:39+02:00 iter 12 [copilot] KEEP score=17 (bar->17.00) — PROPOSAL: Add WAL-specific rules (use snapshot.txt as base state, handle truncated/corrupt trailing lines, verify final balances by re-deriving from scratch) to fix 18_txn_wal's 1/3 consistent failure.
+## 2026-07-26T00:36:49+02:00 iter 13 [copilot] KEEP score=17 (bar->17.00) — PROPOSAL: Add explicit no-regex email-validation edge-case checklist to AGENTS.md targeting 10_no_regex_email's consistent 0/3 failure.
