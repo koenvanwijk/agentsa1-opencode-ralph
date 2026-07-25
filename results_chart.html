@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en" data-palette="#2a78d6">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Ralph loop — score over time (Agents-A1 · OpenCode)</title>
+<style>
+  :root{
+    --surface-1:#fcfcfb; --text-primary:#0b0b0b; --text-secondary:#52514e; --muted:#8a8984;
+    --series-1:#2a78d6; --bar:#8a8984; --good:#008300; --crit:#e34948;
+    --grid:#e7e7e3; --ring:#fcfcfb;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --surface-1:#1a1a19; --text-primary:#ffffff; --text-secondary:#c3c2b7; --muted:#8f8e86;
+      --series-1:#3987e5; --bar:#8f8e86; --good:#3a9a3a; --crit:#e66767; --grid:#302f2d; --ring:#1a1a19; }
+  }
+  html,body{margin:0;background:var(--surface-1);color:var(--text-primary);
+    font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:900px;margin:0 auto;padding:28px 20px 40px;}
+  h1{font-size:19px;margin:0 0 2px;}
+  .sub{color:var(--text-secondary);font-size:13px;margin:0 0 18px;}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin:0 0 10px;font-size:12.5px;color:var(--text-secondary);}
+  .legend .k{display:inline-flex;align-items:center;gap:6px;}
+  .sw{width:22px;height:0;border-top:2px solid var(--series-1);}
+  .sw.bar{border-top:2px dashed var(--bar);}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--series-1);display:inline-block;}
+  .dot.ring{background:var(--surface-1);border:2px solid var(--series-1);width:7px;height:7px;}
+  svg{display:block;width:100%;height:auto;}
+  .axis text{fill:var(--muted);font-size:11px;}
+  .axis line{stroke:var(--grid);}
+  .tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;background:var(--text-primary);
+    color:var(--surface-1);padding:7px 9px;border-radius:6px;font-size:12px;white-space:nowrap;z-index:9;
+    box-shadow:0 2px 10px rgba(0,0,0,.25);}
+  table{border-collapse:collapse;margin-top:22px;font-size:12.5px;width:100%;}
+  th,td{text-align:left;padding:4px 10px;border-bottom:1px solid var(--grid);}
+  th{color:var(--text-secondary);font-weight:600;}
+  td.r{color:var(--crit);} td.k{color:var(--good);}
+  .note{color:var(--muted);font-size:11.5px;margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Ralph loop — tasks passed over time</h1>
+  <p class="sub">Agents-A1 (spark-480b) tuned via OpenCode. Score = tasks passing (majority of 3 trials), out of 18.</p>
+  <div class="legend">
+    <span class="k"><span class="sw"></span> measured score</span>
+    <span class="k"><span class="sw bar"></span> acceptance bar (score to beat)</span>
+    <span class="k"><span class="dot"></span> KEEP</span>
+    <span class="k"><span class="dot ring"></span> ROLLBACK</span>
+  </div>
+  <svg id="chart" viewBox="0 0 900 380" role="img" aria-label="Score over time"></svg>
+  <div class="note" id="divnote"></div>
+  <table id="tbl"><thead><tr><th>time</th><th>phase</th><th>score</th><th>bar</th><th>action</th></tr></thead><tbody></tbody></table>
+</div>
+<div class="tip" id="tip"></div>
+<script>
+const D = [
+  // run A — hard ratchet (got stuck on a lucky 18)
+  {t:"2026-07-23T13:08", run:"A", lbl:"baseline", s:16, bar:16, a:"baseline"},
+  {t:"2026-07-23T15:03", run:"A", lbl:"iter 1", s:16, bar:16, a:"KEEP"},
+  {t:"2026-07-23T17:13", run:"A", lbl:"iter 2", s:15, bar:16, a:"ROLLBACK"},
+  {t:"2026-07-23T19:22", run:"A", lbl:"iter 3", s:16, bar:16, a:"KEEP"},
+  {t:"2026-07-23T21:34", run:"A", lbl:"iter 4", s:16, bar:16, a:"KEEP"},
+  {t:"2026-07-23T23:53", run:"A", lbl:"iter 5", s:18, bar:18, a:"KEEP"},
+  {t:"2026-07-24T02:02", run:"A", lbl:"iter 6", s:17, bar:18, a:"ROLLBACK"},
+  {t:"2026-07-24T04:17", run:"A", lbl:"iter 7", s:16, bar:18, a:"ROLLBACK"},
+  {t:"2026-07-24T05:52", run:"A", lbl:"iter 8", s:16, bar:18, a:"ROLLBACK"},
+  {t:"2026-07-24T08:24", run:"A", lbl:"iter 9", s:16, bar:18, a:"ROLLBACK"},
+  {t:"2026-07-24T10:27", run:"A", lbl:"iter 10", s:16, bar:18, a:"ROLLBACK"},
+  {t:"2026-07-24T12:29", run:"A", lbl:"iter 11", s:16, bar:18, a:"ROLLBACK"},
+  // run B — decaying bar (healthy climb)
+  {t:"2026-07-24T15:09", run:"B", lbl:"baseline", s:16, bar:16, a:"baseline"},
+  {t:"2026-07-24T17:10", run:"B", lbl:"iter 1", s:17, bar:17, a:"KEEP"},
+  {t:"2026-07-24T19:33", run:"B", lbl:"iter 2", s:17, bar:17, a:"KEEP"},
+  {t:"2026-07-24T21:51", run:"B", lbl:"iter 3", s:18, bar:18, a:"KEEP"},
+  {t:"2026-07-24T23:50", run:"B", lbl:"iter 4", s:17, bar:17.70, a:"ROLLBACK"},
+];
+const W=900,H=380, m={l:44,r:16,t:16,b:54};
+const x0=m.l, x1=W-m.r, y0=H-m.b, y1=m.t;
+const xs = D.map(d=>Date.parse(d.t));
+const xmin=Math.min(...xs), xmax=Math.max(...xs);
+const ymin=14, ymax=18.4;
+const X = t => x0 + (x1-x0)*(t-xmin)/(xmax-xmin);
+const Y = v => y0 + (y1-y0)*(v-ymin)/(ymax-ymin);
+const svg = document.getElementById('chart');
+const NS="http://www.w3.org/2000/svg";
+const el=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+// gridlines + y labels (integers 14..18)
+const g=el('g',{class:'axis'}); svg.appendChild(g);
+for(let v=14; v<=18; v++){
+  g.appendChild(el('line',{x1:x0,y1:Y(v),x2:x1,y2:Y(v)}));
+  const tx=el('text',{x:x0-8,y:Y(v)+4,'text-anchor':'end'}); tx.textContent=v; g.appendChild(tx);
+}
+// x labels: one per day boundary + a couple of ticks
+const dayTicks=["2026-07-23T12:00","2026-07-24T00:00","2026-07-24T12:00","2026-07-25T00:00"];
+dayTicks.forEach(dt=>{const t=Date.parse(dt); if(t<xmin-3.6e6||t>xmax+3.6e6)return;
+  const lab=dt.slice(5,10)+" "+dt.slice(11,16);
+  const tx=el('text',{x:X(t),y:H-30,'text-anchor':'middle'}); tx.textContent=lab; g.appendChild(tx);});
+// divider between run A and run B
+const splitT=(Date.parse("2026-07-24T12:29")+Date.parse("2026-07-24T15:09"))/2;
+svg.appendChild(el('line',{x1:X(splitT),y1:y1,x2:X(splitT),y2:y0,stroke:'var(--crit)','stroke-width':1,'stroke-dasharray':'3 3',opacity:.7}));
+const dl=el('text',{x:X(splitT)+5,y:y1+12,'text-anchor':'start',fill:'var(--crit)','font-size':11}); dl.textContent="decaying-bar fix"; svg.appendChild(dl);
+// helper: draw a path for a run
+function path(run, key, cls, dash){
+  const pts=D.filter(d=>d.run===run);
+  let dd="";
+  pts.forEach((p,i)=>{ dd+=(i?"L":"M")+X(Date.parse(p.t))+" "+Y(p[key]); });
+  svg.appendChild(el('path',{d:dd,fill:'none',stroke:cls,'stroke-width':2,'stroke-linejoin':'round',
+    ...(dash?{'stroke-dasharray':dash}:{})}));
+}
+// bar (dashed grey) then score (blue) per run
+path("A","bar","var(--bar)","5 4"); path("B","bar","var(--bar)","5 4");
+path("A","s","var(--series-1)"); path("B","s","var(--series-1)");
+// markers: filled KEEP / baseline, ring ROLLBACK
+const tip=document.getElementById('tip');
+D.forEach(d=>{
+  const cx=X(Date.parse(d.t)), cy=Y(d.s);
+  const roll = d.a==="ROLLBACK";
+  const c=el('circle',{cx,cy,r:roll?4:5,
+    fill:roll?'var(--surface-1)':'var(--series-1)',
+    stroke:'var(--series-1)','stroke-width':2});
+  c.style.cursor='pointer';
+  c.addEventListener('mousemove',e=>{tip.style.opacity=1;tip.style.left=(e.clientX+12)+'px';
+    tip.style.top=(e.clientY-10)+'px';
+    tip.innerHTML=`<b>${d.lbl}</b> · run ${d.run}<br>${d.t.replace('T',' ')}<br>score ${d.s}/18 · bar ${d.bar}<br>${d.a}`;});
+  c.addEventListener('mouseleave',()=>tip.style.opacity=0);
+  svg.appendChild(c);
+});
+// direct labels for the peaks/notable points
+[["2026-07-23T23:53",18,"lucky 18"],["2026-07-24T21:51",18,"reproduced 18"]].forEach(([t,v,txt])=>{
+  const tx=el('text',{x:X(Date.parse(t)),y:Y(v)-9,'text-anchor':'middle',fill:'var(--text-secondary)','font-size':11}); tx.textContent=txt; svg.appendChild(tx);});
+document.getElementById('divnote').textContent=
+  "Run A (hard ratchet): a one-off 18 at iter 5 froze the bar → iters 6–11 all rolled back, no progress for ~10h. "+
+  "Run B (decaying bar): the bar tracks reproducible gains 16→17→18; a missed 18 lets it decay (→17.7) so tuning keeps moving.";
+// table
+const tb=document.querySelector('#tbl tbody');
+D.forEach(d=>{const tr=document.createElement('tr');
+  tr.innerHTML=`<td>${d.t.replace('T',' ')}</td><td>run ${d.run} · ${d.lbl}</td><td>${d.s}/18</td><td>${d.bar}</td>`+
+    `<td class="${d.a==='ROLLBACK'?'r':d.a==='KEEP'?'k':''}">${d.a}</td>`;
+  tb.appendChild(tr);});
+</script>
+</body>
+</html>
