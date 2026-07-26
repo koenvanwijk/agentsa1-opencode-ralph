@@ -31,16 +31,15 @@ You are completing a self-contained coding task in the current directory.
     records guarantee its presence. A record can reference an entity that was created,
     deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
     explicitly rather than assuming keys are always there.
-- STRING / FORMAT VALIDATION WITHOUT REGEX — when a task asks you to validate a string format
-  (e.g. an email address, an id, a structured token) by hand (splitting/scanning characters
-  instead of a regex library), explicitly test and handle EVERY one of these boundary-punctuation
-  cases before declaring the validator done, since they are the most commonly missed:
-  - A dot immediately adjacent to a delimiter: e.g. a `.` right before the `@` (`user.@x.com`)
-    or right after the `@` (`user@.x.com`) — both must be REJECTED, not just leading/trailing
-    dots at the very start/end of the whole string.
-  - Two dots in a row anywhere in the string (`user..name@x.com`) — must be REJECTED.
-  - A dot at the very start or very end of the local part or domain part — must be REJECTED.
-  Write out the full list of provided test cases (if any exist in the task/tests) and mentally
-  (or by running the script) confirm your validator's actual output matches the expected output
-  for EVERY case — not just the first several — before finishing.
+- NO-REGEX STRING VALIDATION (e.g. email/format validators written by hand without regex):
+  when the task calls out edge cases, explicitly hand-test EVERY boundary condition, not just
+  the obvious ones:
+  - A dot immediately before or after the `@` (e.g. `user@.com`, `user.@x.com`).
+  - A leading or trailing dot on the local part or domain (e.g. `.user@x.com`, `user@x.com.`).
+  - Two or more consecutive dots anywhere in the string (e.g. `user@x..com`, `user..name@x.com`)
+    — split on `.` and reject if any resulting piece is empty.
+  - Multiple `@` characters, or zero `@` characters.
+  Write a small test list covering all of these exact patterns and run it before finishing;
+  do not trust a fix until you have re-run the full test list and confirmed every case flips
+  to the expected True/False.
 - 
