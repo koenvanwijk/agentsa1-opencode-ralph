@@ -31,32 +31,19 @@ You are completing a self-contained coding task in the current directory.
     records guarantee its presence. A record can reference an entity that was created,
     deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
     explicitly rather than assuming keys are always there.
-  - STRICT LINE VALIDATION ("well-formed" checks): when a spec defines a strict line format,
-    do NOT use a loose `split()`/regex that silently tolerates violations. Explicitly reject
-    (count as malformed) lines with: extra/missing fields; double spaces or tabs anywhere;
-    leading or trailing whitespace; wrong case on the command word or key; a VALUE with a
-    leading zero (e.g. `00`, `070`) unless the value is exactly `0`; a VALUE with a sign,
-    decimal point, or non-decimal digits (`+25`, `-100`, `12.50`, `0x10`); a KEY outside the
-    allowed character set/length. Verify field-splitting on a SINGLE space only (splitting on
-    generic whitespace silently accepts tabs/multiple spaces as one separator — a common bug).
-    Write a few inline unit-style checks against the file's OWN edge-case examples (if the
-    prompt calls specific ones out, e.g. tie values, drains to 0, boundary values) before
-    trusting the aggregate counts.
-- NO-REGEX EMAIL VALIDATION — when asked to validate emails WITHOUT using regex, split on
-  structure and check every one of these edge cases explicitly before considering the function
-  done (a naive "has an @ and a dot" check WILL fail these):
-  - Exactly one `@` — reject zero or multiple `@` characters.
-  - Local part (before `@`) must be non-empty and must not start or end with a `.`; reject
-    consecutive dots (`..`) in the local part.
-  - Domain part (after `@`) must be non-empty, must contain at least one `.`, and must not
-    start or end with a `.`; reject consecutive dots (`..`) in the domain.
-  - Every label between dots in the domain (e.g. `example`, `com` in `example.com`) must be
-    non-empty — an email like `test@.com` or `test@example..com` or `test@com.` is INVALID
-    because it produces an empty label; do not just check "domain contains a dot", actually
-    split the domain on `.` and verify no resulting piece is empty and the last piece (TLD)
-    has length >= 2.
-  - Reject whitespace anywhere in the address.
-  - After writing the function, test it against BOTH valid examples (`a@b.co`) and ALL the
-    invalid edge cases above (`test@.com`, `test@example..com`, `a@b.`, `@b.com`, `a@`,
-    `a b@c.com`) and confirm each returns the expected True/False — do not stop after only
-    testing the obviously-valid case.
+- EMAIL VALIDATION WITHOUT REGEX — when asked to validate an email address without using the
+  `re` module, split on `@` and `.` manually and check ALL of the following explicitly (do not
+  rely on "looks reasonable" heuristics):
+  - Exactly one `@`, with a non-empty local part and non-empty domain part.
+  - The domain must contain at least one `.`, and splitting the domain on `.` must yield a TLD
+    (last label) that is non-empty and at least 2 characters.
+  - NO domain label (the parts between dots, including the first and last) may be empty —
+    reject a domain starting with `.` (e.g. `bad@.com`), ending with `.` (e.g. `bad@com.`), or
+    containing consecutive dots (e.g. `bad@ex..com`). Splitting `.com` on `.` gives `['', 'com']`
+    — an empty first element means the domain is invalid; check for this explicitly.
+  - Reject leading/trailing whitespace or dots in the local part, and reject a local part that
+    is empty, is just dots, or contains consecutive dots.
+  - After writing the function, explicitly test it against boundary cases including
+    `bad@.com`, `bad@com.`, `bad@ex..com`, `a@b.co` (valid minimal), and a local part with a
+    leading dot, before finishing.
+  
