@@ -31,23 +31,21 @@ You are completing a self-contained coding task in the current directory.
     records guarantee its presence. A record can reference an entity that was created,
     deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
     explicitly rather than assuming keys are always there.
-- NO-REGEX EMAIL VALIDATION — when a task asks you to validate emails WITHOUT using regex
-  (no `re` module, no regex library), implement `is_valid_email` using plain string
-  operations (`.split`, `.count`, indexing, `.isalnum`, etc.) and explicitly handle ALL of
-  these edge cases, testing each one by hand against your implementation before finishing:
-  - Exactly one `@` character: reject empty string, reject no `@`, reject more than one `@`
-    (e.g. `user@@domain.com`, `user@domain@com`).
-  - Local part (before `@`) must be non-empty and must NOT start or end with a `.`
-    (e.g. `.name@domain.com` is invalid).
-  - Domain part (after `@`) must be non-empty, must contain at least one `.`, must NOT
-    start with `.` (e.g. `invalid@.com`), must NOT end with `.` (e.g. `user@domain.com.`),
-    and the substring immediately after the LAST `.` (the TLD) must be non-empty and
-    alphabetic with length >= 1 (e.g. `test@domain.c` is valid; `test@domain` with no
-    dot is invalid).
-  - Reject any email containing whitespace anywhere (spaces, tabs) — e.g.
-    `user name@domain.com` and a trailing space `user@domain.com ` are both invalid.
-  - Do not strip/trim the input before validating — leading/trailing whitespace or a
-    trailing dot must cause rejection, not silent cleanup.
-  - After writing the function, run it against a test list that includes every edge case
-    above (both valid and invalid examples) and confirm each result matches expectations
-    before considering the task done — do not stop after a single crash or an unverified run.
+- NO-REGEX EMAIL VALIDATION — when asked to validate emails WITHOUT using regex, split on
+  structure and check every one of these edge cases explicitly before considering the function
+  done (a naive "has an @ and a dot" check WILL fail these):
+  - Exactly one `@` — reject zero or multiple `@` characters.
+  - Local part (before `@`) must be non-empty and must not start or end with a `.`; reject
+    consecutive dots (`..`) in the local part.
+  - Domain part (after `@`) must be non-empty, must contain at least one `.`, and must not
+    start or end with a `.`; reject consecutive dots (`..`) in the domain.
+  - Every label between dots in the domain (e.g. `example`, `com` in `example.com`) must be
+    non-empty — an email like `test@.com` or `test@example..com` or `test@com.` is INVALID
+    because it produces an empty label; do not just check "domain contains a dot", actually
+    split the domain on `.` and verify no resulting piece is empty and the last piece (TLD)
+    has length >= 2.
+  - Reject whitespace anywhere in the address.
+  - After writing the function, test it against BOTH valid examples (`a@b.co`) and ALL the
+    invalid edge cases above (`test@.com`, `test@example..com`, `a@b.`, `@b.com`, `a@`,
+    `a b@c.com`) and confirm each returns the expected True/False — do not stop after only
+    testing the obviously-valid case.
