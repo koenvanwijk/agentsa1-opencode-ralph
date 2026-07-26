@@ -31,14 +31,16 @@ You are completing a self-contained coding task in the current directory.
     records guarantee its presence. A record can reference an entity that was created,
     deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
     explicitly rather than assuming keys are always there.
-- OUTPUT FILE NAMING AND FORMAT — before finishing:
-  - Re-read the task prompt's exact required output filename(s) (character-for-character,
-    including extension) and confirm with `ls`/ your read tool that the file(s) you actually
-    created match EXACTLY — no typos, no doubled extensions (e.g. `process.process.py`), no
-    extra/renamed files. If a wrong-named file was created earlier in the session, delete or
-    rename it so only the correct filename remains.
-  - Re-read the task prompt's exact output FORMAT rules (field order, delimiters, headers,
-    rounding, line endings, whether rejected/invalid records get their own file or line) and
-    diff what you actually produced against those rules line-by-line, not just "does it look
-    right". A script that runs without crashing can still produce a subtly wrong format —
-    completion of a run is not the same as correctness.
+- STRING / FORMAT VALIDATION WITHOUT REGEX — when a task asks you to validate a string format
+  (e.g. an email address, an id, a structured token) by hand (splitting/scanning characters
+  instead of a regex library), explicitly test and handle EVERY one of these boundary-punctuation
+  cases before declaring the validator done, since they are the most commonly missed:
+  - A dot immediately adjacent to a delimiter: e.g. a `.` right before the `@` (`user.@x.com`)
+    or right after the `@` (`user@.x.com`) — both must be REJECTED, not just leading/trailing
+    dots at the very start/end of the whole string.
+  - Two dots in a row anywhere in the string (`user..name@x.com`) — must be REJECTED.
+  - A dot at the very start or very end of the local part or domain part — must be REJECTED.
+  Write out the full list of provided test cases (if any exist in the task/tests) and mentally
+  (or by running the script) confirm your validator's actual output matches the expected output
+  for EVERY case — not just the first several — before finishing.
+- 
