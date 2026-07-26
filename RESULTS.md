@@ -42,3 +42,4 @@
 ## 2026-07-26T19:23:48+02:00 iter 24 [local] ROLLBACK score=16<18 (bar decays ->17.40) — PROPOSAL: (local proposer no-op — unparseable)
 ## 2026-07-26T20:49:34+02:00 iter 25 [copilot] KEEP score=17 (bar->17.40) — PROPOSAL: Add AGENTS.md rule requiring domain-boundary-dot checks (leading/trailing/double dots, consecutive dots) for no-regex email validation, targeting 10_no_regex_email.
 ## 2026-07-26T22:25:21+02:00 iter 26 [copilot] ROLLBACK score=15<17 (bar decays ->16.68) — PROPOSAL: Add "external_directory": "allow" to opencode.json permissions so wal/*.wal files aren't auto-rejected, targeting 18_txn_wal.
+## 2026-07-27T00:27:49+02:00 iter 27 [copilot] ROLLBACK score=15<17 (bar decays ->16.18) — PROPOSAL: Add AGENTS.md rule for validation/reconciliation checks on multi-file numeric ledger tasks (bank_ledger, txn_wal) requiring totals to reconcile and edge-case account states to be spot-checked before finishing
