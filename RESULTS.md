@@ -31,3 +31,4 @@
 ## 2026-07-26T00:36:49+02:00 iter 13 [copilot] KEEP score=17 (bar->17.00) — PROPOSAL: Add explicit no-regex email-validation edge-case checklist to AGENTS.md targeting 10_no_regex_email's consistent 0/3 failure.
 ## 2026-07-26T01:58:15+02:00 iter 14 [copilot] ROLLBACK score=15<17 (bar decays ->16.40) — PROPOSAL: Add explicit rules for session/event-log tasks (pair start/end events by id, handle unmatched/out-of-order/malformed lines, verify report.txt is non-empty and matches expected format) targeting 16_log_sessions's 1/3 failure.
 ## 2026-07-26T03:36:31+02:00 iter 15 [copilot] KEEP score=17 (bar->17.00) — PROPOSAL: Add explicit no-regex email-validation checklist to AGENTS.md (reject empty domain labels like `test@.com`, consecutive dots, leading/trailing dots, missing TLD) to fix 10_no_regex_email's consistent 0/3 failure.
+## 2026-07-26T05:04:57+02:00 iter 16 [local] KEEP score=18 (bar->18.00) — PROPOSAL: (local proposer no-op — unparseable)

@@ -31,6 +31,17 @@ You are completing a self-contained coding task in the current directory.
     records guarantee its presence. A record can reference an entity that was created,
     deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
     explicitly rather than assuming keys are always there.
+  - STRICT LINE VALIDATION ("well-formed" checks): when a spec defines a strict line format,
+    do NOT use a loose `split()`/regex that silently tolerates violations. Explicitly reject
+    (count as malformed) lines with: extra/missing fields; double spaces or tabs anywhere;
+    leading or trailing whitespace; wrong case on the command word or key; a VALUE with a
+    leading zero (e.g. `00`, `070`) unless the value is exactly `0`; a VALUE with a sign,
+    decimal point, or non-decimal digits (`+25`, `-100`, `12.50`, `0x10`); a KEY outside the
+    allowed character set/length. Verify field-splitting on a SINGLE space only (splitting on
+    generic whitespace silently accepts tabs/multiple spaces as one separator — a common bug).
+    Write a few inline unit-style checks against the file's OWN edge-case examples (if the
+    prompt calls specific ones out, e.g. tie values, drains to 0, boundary values) before
+    trusting the aggregate counts.
 - NO-REGEX EMAIL VALIDATION — when asked to validate emails WITHOUT using regex, split on
   structure and check every one of these edge cases explicitly before considering the function
   done (a naive "has an @ and a dot" check WILL fail these):
