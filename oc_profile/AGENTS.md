@@ -31,19 +31,14 @@ You are completing a self-contained coding task in the current directory.
     records guarantee its presence. A record can reference an entity that was created,
     deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
     explicitly rather than assuming keys are always there.
-- EMAIL VALIDATION WITHOUT REGEX — when asked to validate an email address without using the
-  `re` module, split on `@` and `.` manually and check ALL of the following explicitly (do not
-  rely on "looks reasonable" heuristics):
-  - Exactly one `@`, with a non-empty local part and non-empty domain part.
-  - The domain must contain at least one `.`, and splitting the domain on `.` must yield a TLD
-    (last label) that is non-empty and at least 2 characters.
-  - NO domain label (the parts between dots, including the first and last) may be empty —
-    reject a domain starting with `.` (e.g. `bad@.com`), ending with `.` (e.g. `bad@com.`), or
-    containing consecutive dots (e.g. `bad@ex..com`). Splitting `.com` on `.` gives `['', 'com']`
-    — an empty first element means the domain is invalid; check for this explicitly.
-  - Reject leading/trailing whitespace or dots in the local part, and reject a local part that
-    is empty, is just dots, or contains consecutive dots.
-  - After writing the function, explicitly test it against boundary cases including
-    `bad@.com`, `bad@com.`, `bad@ex..com`, `a@b.co` (valid minimal), and a local part with a
-    leading dot, before finishing.
-  
+- OUTPUT FILE NAMING AND FORMAT — before finishing:
+  - Re-read the task prompt's exact required output filename(s) (character-for-character,
+    including extension) and confirm with `ls`/ your read tool that the file(s) you actually
+    created match EXACTLY — no typos, no doubled extensions (e.g. `process.process.py`), no
+    extra/renamed files. If a wrong-named file was created earlier in the session, delete or
+    rename it so only the correct filename remains.
+  - Re-read the task prompt's exact output FORMAT rules (field order, delimiters, headers,
+    rounding, line endings, whether rejected/invalid records get their own file or line) and
+    diff what you actually produced against those rules line-by-line, not just "does it look
+    right". A script that runs without crashing can still produce a subtly wrong format —
+    completion of a run is not the same as correctness.
