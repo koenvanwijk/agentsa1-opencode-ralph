@@ -12,12 +12,31 @@ You are completing a self-contained coding task in the current directory.
     against the task's format and rules. Hand-check the tricky edge cases the task calls out —
     e.g. a value at a boundary (an account drained to exactly 0), a minimal input (a single-digit
     amount like `1`, which is valid), and an id/name that is absent or malformed.
+  - Writing your OWN quick test cases and seeing them pass is NOT sufficient proof of
+    correctness — your self-written tests can share the same blind spots as your
+    implementation. Deliberately try to construct inputs that violate the rules stated in the
+    task prompt, not just inputs that resemble the examples given. If the task lists specific
+    validation rules (e.g. "no consecutive dots", "must not start/end with a dot"), write a
+    dedicated test for EACH rule stated, both a case that violates it and a case that satisfies
+    it, before concluding your implementation is correct.
   - If you write a sentence like "the next step is to verify/fix ...", you MUST do it before
     stopping. Do not end your turn describing verification or fixes you have not actually run.
   - If a script you run RAISES AN EXCEPTION or crashes (Traceback, KeyError, IndexError, etc.),
     that is NOT the end of the task — you MUST read the traceback, find the root cause, fix the
     code, and RUN IT AGAIN until it completes cleanly and produces the expected output. Never
     leave a crashed run as your final action.
+- NO-REGEX STRING VALIDATION TASKS (e.g. email/address/id validators implemented without the
+  `re` module) — the task's stated rules are the full spec, not just the examples shown. In
+  particular, for domain/local-part validation, explicitly check ALL of the following unless
+  the task says otherwise:
+  - No leading dot, no trailing dot, in EITHER the local part or the domain.
+  - No two consecutive dots anywhere (`..`) in EITHER the local part or the domain.
+  - No empty label: a domain of the form `a@.com`, `a@b..com`, or a domain ending right after
+    `@` is invalid — every dot-separated domain label must be non-empty.
+  - Exactly one `@`, with non-empty content on both sides.
+  Do not assume an example like `test@.com` is valid just because it wasn't in your own quick
+  test list — re-derive expected True/False for every boundary case explicitly from the stated
+  rules before trusting a "PASS" from a self-authored test script.
 - LOG / WAL / MULTI-RECORD FILE PROCESSING — when a task involves replaying or parsing a
   sequence of records (e.g. write-ahead logs, transaction logs, journals) across one or more
   files:
@@ -31,15 +50,3 @@ You are completing a self-contained coding task in the current directory.
     records guarantee its presence. A record can reference an entity that was created,
     deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
     explicitly rather than assuming keys are always there.
-- NO-REGEX STRING VALIDATION (e.g. email/format validators written by hand without regex):
-  when the task calls out edge cases, explicitly hand-test EVERY boundary condition, not just
-  the obvious ones:
-  - A dot immediately before or after the `@` (e.g. `user@.com`, `user.@x.com`).
-  - A leading or trailing dot on the local part or domain (e.g. `.user@x.com`, `user@x.com.`).
-  - Two or more consecutive dots anywhere in the string (e.g. `user@x..com`, `user..name@x.com`)
-    — split on `.` and reject if any resulting piece is empty.
-  - Multiple `@` characters, or zero `@` characters.
-  Write a small test list covering all of these exact patterns and run it before finishing;
-  do not trust a fix until you have re-run the full test list and confirmed every case flips
-  to the expected True/False.
-- 
