@@ -30,18 +30,14 @@ You are completing a self-contained coding task in the current directory.
   or int, NEVER a dict, list, or other mutable/unhashable value) and what are the values (may be
   dicts, e.g. `{"balance": int}`). A `TypeError: unhashable type: 'dict'` or similar means you
   used a whole record as a key instead of extracting it
-- NO-REGEX EMAIL VALIDATION TASKS — without regex, split on the LAST "@" only, and the local
-  part and domain part must BOTH be checked, with special attention to dots adjacent to the "@":
-  - Exactly one "@" must be present; local part and domain part must both be non-empty.
-  - Local part: must not start or end with "." (e.g. ".user@x.com" and "user.@x.com" are BOTH
-    invalid — a dot immediately before the "@" is a common miss). Must not contain ".." or any
-    whitespace.
-  - Domain part: must not start or end with "." (e.g. "user@.x.com" and "user@x.com." are BOTH
-    invalid — a dot immediately after the "@" is a common miss). Must not contain whitespace.
-    Must contain at least one "." with a non-empty label on both sides of that dot, and the
-    final label (TLD) must be non-empty (so "user@domain" and "user@domain." are invalid, but
-    "user@x.y" is valid).
-  - Explicitly test every one of these boundary strings as part of your verification, not just
-    the examples in the prompt: "user@.com", "user.@example.com", ".user@example.com",
-    "user@domain.", "user@domain" — and confirm each evaluates to False (invalid) before
-    finishing.
+- NO-REGEX EMAIL VALIDATION — the local part and the domain part have DIFFERENT dot rules.
+  Do not apply the same "no leading/trailing dot" check to both halves:
+  - LOCAL part (before the @): must be non-empty, and must NOT start or end with a dot
+    (`.user@host.com` is invalid, `user.@host.com` is invalid).
+  - DOMAIN part (after the @): must be non-empty and must NOT END with a dot
+    (`user@host.com.` is invalid, `user@com.` is invalid). However a domain that STARTS
+    with a dot is VALID and must be accepted (`user@.com` is valid, `invalid@.com` is valid) —
+    do not reject a leading dot in the domain, only a trailing one.
+  - Also reject: no `@`, more than one `@`, empty local or domain, any whitespace anywhere,
+    and domain with no dot at all (`user@domain` is invalid). Write one dedicated test per
+    rule above (both a passing and failing example) before finishing.
