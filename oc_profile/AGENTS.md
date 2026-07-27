@@ -37,6 +37,13 @@ You are completing a self-contained coding task in the current directory.
   Do not assume an example like `test@.com` is valid just because it wasn't in your own quick
   test list — re-derive expected True/False for every boundary case explicitly from the stated
   rules before trusting a "PASS" from a self-authored test script.
+  - After every edit to a validator function, IMMEDIATELY run the file (e.g. `python3 file.py`)
+    and check for a SyntaxError or an incomplete/truncated function body (a lone `if no`,
+    a dangling `if`/`elif` with no body, a missing `return`, etc.). A half-written edit that
+    leaves the file syntactically broken or logically incomplete is a hard failure — if the run
+    errors or the function clearly doesn't implement all stated rules, rewrite the WHOLE
+    function body in one edit (do not leave partial line fragments) and re-run until it is
+    syntactically valid and passes every rule-derived test case above.
 - LOG / WAL / MULTI-RECORD FILE PROCESSING — when a task involves replaying or parsing a
   sequence of records (e.g. write-ahead logs, transaction logs, journals) across one or more
   files:
