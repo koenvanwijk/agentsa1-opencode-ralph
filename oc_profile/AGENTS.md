@@ -29,15 +29,21 @@ You are completing a self-contained coding task in the current directory.
   the state schema: what are the keys (must be simple hashable values like a string account id
   or int, NEVER a dict, list, or other mutable/unhashable value) and what are the values (may be
   dicts, e.g. `{"balance": int}`). A `TypeError: unhashable type: 'dict'` or similar means you
-  used a whole record as a key instead of extracting it
-- NO-REGEX EMAIL VALIDATION — the local part and the domain part have DIFFERENT dot rules.
-  Do not apply the same "no leading/trailing dot" check to both halves:
-  - LOCAL part (before the @): must be non-empty, and must NOT start or end with a dot
-    (`.user@host.com` is invalid, `user.@host.com` is invalid).
-  - DOMAIN part (after the @): must be non-empty and must NOT END with a dot
-    (`user@host.com.` is invalid, `user@com.` is invalid). However a domain that STARTS
-    with a dot is VALID and must be accepted (`user@.com` is valid, `invalid@.com` is valid) —
-    do not reject a leading dot in the domain, only a trailing one.
-  - Also reject: no `@`, more than one `@`, empty local or domain, any whitespace anywhere,
-    and domain with no dot at all (`user@domain` is invalid). Write one dedicated test per
-    rule above (both a passing and failing example) before finishing.
+  used a whole record as a key instead of extracting it.
+- NO-REGEX EMAIL VALIDATION TASKS — split the address on the LAST `@` into local and domain
+  parts, and apply DIFFERENT dot rules to each side; do not apply one blanket "no leading/
+  trailing dot" rule to the whole address, that gets these test cases wrong:
+  - LOCAL part (before `@`): must be non-empty, and must NOT start or end with a `.`
+    (e.g. `.user@example.com` and `user.@example.com` are INVALID).
+  - DOMAIN part (after the last `@`): must be non-empty. A domain that STARTS with a `.`
+    is VALID (e.g. `user@.com` is VALID — do not reject it). However the address as a whole
+    must NOT end with a `.` — a domain ending in `.` (e.g. `user@domain.` or
+    `user@example.com.`) is INVALID. Also reject consecutive dots (`..`) anywhere in the
+    domain.
+  - Reject strings with zero or more-than-one `@` (must be exactly one, or exactly one
+    "last" `@` if the spec allows literal `@` only in local part — follow the task prompt's
+    exact wording on this).
+  - Write one explicit assertion for EACH bullet above (local leading dot, local trailing
+    dot, domain leading dot, domain trailing dot / address ending in dot, consecutive dots)
+    before declaring the implementation correct — do not rely only on the example list given
+    in the prompt.
