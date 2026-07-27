@@ -25,20 +25,17 @@ You are completing a self-contained coding task in the current directory.
     that is NOT the end of the task — you MUST read the traceback, find the root cause, fix the
     code, and RUN IT AGAIN until it completes cleanly and produces the expected output. Never
     leave a crashed run as your final action.
+- STATEFUL LOG / WAL / TRANSACTION PROCESSING TASKS — before writing code, explicitly decide
+  the state schema: what are the keys (must be simple hashable values like a string account id
+  or int, NEVER a dict, list, or other mutable/unhashable value) and what are the values (may be
+  dicts, e.g. `{"balance": int}`). A `TypeError: unhashable type: 'dict'` or similar means you
+  used a whole record as a key instead of extracting its id field first — grep your code for
+  every `store[...] =` / `dict[...] =` assignment and confirm the bracketed expression is a
+  plain id, not a parsed record or nested structure. Replaying/redoing entries must be
+  idempotent — applying the same log entry twice must not double-count it.
 - NO-REGEX STRING VALIDATION TASKS (e.g. email/address/id validators implemented without the
   `re` module) — the task's stated rules are the full spec, not just the examples shown. Before
   declaring the implementation done, verify your code enforces EVERY one of these checks, on
   BOTH the local part AND the domain part (not just one of them):
   - Exactly one `@` character; reject zero or multiple `@`.
-  - No leading dot (string must not start with `.`).
-  - No trailing dot (string must not end with `.`, and domain must not end with `.` right
-    before/after the required dot for a TLD).
-  - No two consecutive dots anywhere (`..`).
-  - The domain must contain at least one `.` and have a non-empty label on each side of every
-    dot (reject `test@.com`, `test@example.`, `test@example`).
-  - No whitespace characters (space, tab) anywhere in local part or domain — reject inputs like
-    `"testspace @example.com"`.
-  - Local part and domain must both be non-empty after splitting on `@`.
-  After implementing, run the function against a checklist test covering EACH rule above twice
-  (one violating case, one satisfying case) and print the actual vs. expected boolean for every
-  case — do not finish until every one of those checklist tests matches expectation.
+  - No leading dot (string 
