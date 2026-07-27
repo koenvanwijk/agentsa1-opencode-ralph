@@ -29,13 +29,19 @@ You are completing a self-contained coding task in the current directory.
   the state schema: what are the keys (must be simple hashable values like a string account id
   or int, NEVER a dict, list, or other mutable/unhashable value) and what are the values (may be
   dicts, e.g. `{"balance": int}`). A `TypeError: unhashable type: 'dict'` or similar means you
-  used a whole record as a key instead of extracting its id field first — grep your code for
-  every `store[...] =` / `dict[...] =` assignment and confirm the bracketed expression is a
-  plain id, not a parsed record or nested structure. Replaying/redoing entries must be
-  idempotent — applying the same log entry twice must not double-count it.
-- NO-REGEX STRING VALIDATION TASKS (e.g. email/address/id validators implemented without the
-  `re` module) — the task's stated rules are the full spec, not just the examples shown. Before
-  declaring the implementation done, verify your code enforces EVERY one of these checks, on
-  BOTH the local part AND the domain part (not just one of them):
-  - Exactly one `@` character; reject zero or multiple `@`.
-  - No leading dot (string 
+  used a whole record as a key instead of extracting it
+- NO-REGEX EMAIL VALIDATION TASKS — without regex, split on the LAST "@" only, and the local
+  part and domain part must BOTH be checked, with special attention to dots adjacent to the "@":
+  - Exactly one "@" must be present; local part and domain part must both be non-empty.
+  - Local part: must not start or end with "." (e.g. ".user@x.com" and "user.@x.com" are BOTH
+    invalid — a dot immediately before the "@" is a common miss). Must not contain ".." or any
+    whitespace.
+  - Domain part: must not start or end with "." (e.g. "user@.x.com" and "user@x.com." are BOTH
+    invalid — a dot immediately after the "@" is a common miss). Must not contain whitespace.
+    Must contain at least one "." with a non-empty label on both sides of that dot, and the
+    final label (TLD) must be non-empty (so "user@domain" and "user@domain." are invalid, but
+    "user@x.y" is valid).
+  - Explicitly test every one of these boundary strings as part of your verification, not just
+    the examples in the prompt: "user@.com", "user.@example.com", ".user@example.com",
+    "user@domain.", "user@domain" — and confirm each evaluates to False (invalid) before
+    finishing.
