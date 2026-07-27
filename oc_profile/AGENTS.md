@@ -26,34 +26,19 @@ You are completing a self-contained coding task in the current directory.
     code, and RUN IT AGAIN until it completes cleanly and produces the expected output. Never
     leave a crashed run as your final action.
 - NO-REGEX STRING VALIDATION TASKS (e.g. email/address/id validators implemented without the
-  `re` module) — the task's stated rules are the full spec, not just the examples shown. In
-  particular, for domain/local-part validation, explicitly check ALL of the following unless
-  the task says otherwise:
-  - No leading dot, no trailing dot, in EITHER the local part or the domain.
-  - No two consecutive dots anywhere (`..`) in EITHER the local part or the domain.
-  - No empty label: a domain of the form `a@.com`, `a@b..com`, or a domain ending right after
-    `@` is invalid — every dot-separated domain label must be non-empty.
-  - Exactly one `@`, with non-empty content on both sides.
-  Do not assume an example like `test@.com` is valid just because it wasn't in your own quick
-  test list — re-derive expected True/False for every boundary case explicitly from the stated
-  rules before trusting a "PASS" from a self-authored test script.
-  - After every edit to a validator function, IMMEDIATELY run the file (e.g. `python3 file.py`)
-    and check for a SyntaxError or an incomplete/truncated function body (a lone `if no`,
-    a dangling `if`/`elif` with no body, a missing `return`, etc.). A half-written edit that
-    leaves the file syntactically broken or logically incomplete is a hard failure — if the run
-    errors or the function clearly doesn't implement all stated rules, rewrite the WHOLE
-    function body in one edit (do not leave partial line fragments) and re-run until it is
-    syntactically valid and passes every rule-derived test case above.
-- LOG / WAL / MULTI-RECORD FILE PROCESSING — when a task involves replaying or parsing a
-  sequence of records (e.g. write-ahead logs, transaction logs, journals) across one or more
-  files:
-  - Read and process ALL files and ALL records in each file, in the correct order (check
-    filenames/sequence numbers/timestamps for the intended order — do not assume alphabetical
-    sort is always correct without checking).
-  - Do NOT assume a record's fields, referenced keys/accounts/ids always already exist. Before
-    doing a lookup, mutation, or arithmetic on a key (e.g. `balances[key]`), check whether it
-    exists yet and handle the "first time seen" / missing case explicitly (e.g. via `.get()`,
-    `.setdefault()`, or an explicit `if key not in dict` branch) instead of assuming prior
-    records guarantee its presence. A record can reference an entity that was created,
-    deleted, or not yet initialized earlier in the log — handle create/update/delete ordering
-    explicitly rather than assuming keys are always there.
+  `re` module) — the task's stated rules are the full spec, not just the examples shown. Before
+  declaring the implementation done, verify your code enforces EVERY one of these checks, on
+  BOTH the local part AND the domain part (not just one of them):
+  - Exactly one `@` character; reject zero or multiple `@`.
+  - No leading dot (string must not start with `.`).
+  - No trailing dot (string must not end with `.`, and domain must not end with `.` right
+    before/after the required dot for a TLD).
+  - No two consecutive dots anywhere (`..`).
+  - The domain must contain at least one `.` and have a non-empty label on each side of every
+    dot (reject `test@.com`, `test@example.`, `test@example`).
+  - No whitespace characters (space, tab) anywhere in local part or domain — reject inputs like
+    `"testspace @example.com"`.
+  - Local part and domain must both be non-empty after splitting on `@`.
+  After implementing, run the function against a checklist test covering EACH rule above twice
+  (one violating case, one satisfying case) and print the actual vs. expected boolean for every
+  case — do not finish until every one of those checklist tests matches expectation.
