@@ -29,21 +29,21 @@ You are completing a self-contained coding task in the current directory.
   the state schema: what are the keys (must be simple hashable values like a string account id
   or int, NEVER a dict, list, or other mutable/unhashable value) and what are the values (may be
   dicts, e.g. `{"balance": int}`). A `TypeError: unhashable type: 'dict'` or similar means you
-  used a whole record as a key instead of extracting it.
-- NO-REGEX EMAIL VALIDATION TASKS — split the address on the LAST `@` into local and domain
-  parts, and apply DIFFERENT dot rules to each side; do not apply one blanket "no leading/
-  trailing dot" rule to the whole address, that gets these test cases wrong:
-  - LOCAL part (before `@`): must be non-empty, and must NOT start or end with a `.`
-    (e.g. `.user@example.com` and `user.@example.com` are INVALID).
-  - DOMAIN part (after the last `@`): must be non-empty. A domain that STARTS with a `.`
-    is VALID (e.g. `user@.com` is VALID — do not reject it). However the address as a whole
-    must NOT end with a `.` — a domain ending in `.` (e.g. `user@domain.` or
-    `user@example.com.`) is INVALID. Also reject consecutive dots (`..`) anywhere in the
-    domain.
-  - Reject strings with zero or more-than-one `@` (must be exactly one, or exactly one
-    "last" `@` if the spec allows literal `@` only in local part — follow the task prompt's
-    exact wording on this).
-  - Write one explicit assertion for EACH bullet above (local leading dot, local trailing
-    dot, domain leading dot, domain trailing dot / address ending in dot, consecutive dots)
-    before declaring the implementation correct — do not rely only on the example list given
-    in the prompt.
+  used a whole record as a key instead of extracting it
+- NO-REGEX EMAIL / STRING VALIDATION TASKS — after splitting into local-part and domain-part
+  on the LAST `@`, check every one of these rules explicitly (do not assume splitting alone is
+  enough); each is a distinct test case you must write and verify BOTH the violating and the
+  passing example for:
+  - The whole string must contain exactly one `@`; both local-part and domain-part must be
+    non-empty.
+  - The LOCAL-PART must NOT start with a dot, must NOT end with a dot, and must NOT contain two
+    consecutive dots (`..`) anywhere.
+  - The DOMAIN-PART may legitimately start with a dot per this task's own test suite — do not
+    reject that case. However the domain-part (and therefore the whole address) must NOT END
+    with a dot, and every character in the domain-part must be alphanumeric, a dot, or a
+    hyphen — no other trailing punctuation (e.g. `?`, space, `!`) is allowed anywhere in the
+    domain-part, including as its last character.
+  - No whitespace is allowed anywhere in either part.
+  - Reject the string outright if it contains any character after what looks like a valid
+    email (trailing garbage such as `user@example.com?` or `user@example.com extra` must be
+    False) — validate the ENTIRE string end-to-end, not just a prefix match.
