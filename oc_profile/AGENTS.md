@@ -30,6 +30,16 @@ You are completing a self-contained coding task in the current directory.
     that is NOT the end of the task — you MUST read the traceback, find the root cause, fix the
     code, and RUN IT AGAIN until it completes cleanly and produces the expected output. Never
     leave a crashed run as your final action.
+  - BEFORE writing parsing code for any input file (snapshot/log/WAL/CSV/etc.), actually open
+    and print a few real lines of THAT SPECIFIC file and count the fields yourself — do not
+    assume field counts/format from a similar-looking format mentioned elsewhere in the prompt.
+    A common silent bug is hardcoding the wrong `len(parts)` check for one file (e.g. requiring
+    3 fields on a file whose lines are actually `KEY VALUE`, 2 fields), which makes every line
+    fail validation and get silently skipped/miscounted without ever raising an exception. After
+    parsing, sanity-check the result is plausible (e.g. the loaded structure has as many entries
+    as the file has non-blank lines) before moving on, and re-run and diff outputs after ANY fix
+    to parsing logic, counters, or state-transition rules — a fix to one part of a multi-file
+    processing script can silently leave stale output from before the fix.
 - NEVER run ad-hoc test code as an inline `python3 -c "..."` one-liner, especially with long
   lists of test tuples or multiple statements/semicolons. These are error-prone to quote
   correctly and commonly get truncated or mis-escaped by the shell, producing a SyntaxError
