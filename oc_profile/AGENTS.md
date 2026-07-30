@@ -29,13 +29,15 @@ You are completing a self-contained coding task in the current directory.
   lists of test tuples or multiple statements/semicolons. These are error-prone to quote
   correctly and commonly get truncated or mis-escaped by the shell, producing a SyntaxError
   that has NOTHING to do with your actual implementation. Instead, WRITE a small standalone
-  test script file (e.g. `test_check.py`) with your test cases as real Python code, then run it
-  with `python3 test_check.py`.
-- When you use the file-read tool on an input/data file (logs, WAL files, snapshots, CSVs,
-  etc.), the tool output prepends line numbers / formatting markup to each line for display —
-  those numbers and markup are NOT part of the actual file content. Never assume a line's real
-  offset, delimiter position, or byte content based on the tool's display. Before writing any
-  parsing logic that depends on exact file format (column positions, delimiters, line ordering,
-  file sizes), verify the raw content directly, e.g. with `python3 -c "print(repr(open('f').readlines()[:5]))"`
-  written into a script file, or `wc -l`/`sort` on the actual filenames — and process the FULL
-  file programmatically (never assume you've seen the whole file after reading only a sample).
+  test script file (e.g. `test_check.py`) with your test cases as rea
+- When a task requires PARSING line-based data files (logs, WAL/transaction files, CSV-like
+  formats), do NOT trust visual inspection of individual lines via tools like `sed -n` or the
+  Read tool as ground truth for exact byte content — tabs, trailing whitespace, and delimiter
+  characters can be invisible or misrendered in a terminal/tool display. Instead, WRITE and RUN
+  a small Python script that opens the file (in text or binary mode as appropriate) and parses
+  EVERY line programmatically using `.split()`/`.split('\t')`/explicit delimiter logic, then
+  prints out any line that fails to parse as expected (e.g. wrong field count, unexpected
+  token) so you can see the exact repr() of the problematic line, including whitespace and
+  control characters. Never manually eyeball a handful of lines with `sed`/`cat -A` and infer
+  the parsing rule for the whole file — process the ENTIRE file in code, and handle every
+  malformed/edge-case line the same way a correct implementation must.
