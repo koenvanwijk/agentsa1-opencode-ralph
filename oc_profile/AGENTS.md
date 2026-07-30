@@ -19,6 +19,11 @@ You are completing a self-contained coding task in the current directory.
     validation rules (e.g. "no consecutive dots", "must not start/end with a dot"), write a
     dedicated test for EACH rule stated, both a case that violates it and a case that satisfies
     it, before concluding your implementation is correct.
+  - For EMAIL/domain validation specifically: the domain part must not contain an EMPTY LABEL
+    between dots or right after the "@". Concretely, test `user@.com` (label right after @ is
+    empty), `user@domain..com` (empty label between two dots), and `user@domain.com.` (empty
+    label at the end) — all three MUST be rejected. A common bug is checking only for a "."
+    somewhere in the domain without checking each dot-separated label is non-empty.
   - If you write a sentence like "the next step is to verify/fix ...", you MUST do it before
     stopping. Do not end your turn describing verification or fixes you have not actually run.
   - If a script you run RAISES AN EXCEPTION or crashes (Traceback, KeyError, IndexError, etc.),
@@ -30,14 +35,3 @@ You are completing a self-contained coding task in the current directory.
   correctly and commonly get truncated or mis-escaped by the shell, producing a SyntaxError
   that has NOTHING to do with your actual implementation. Instead, WRITE a small standalone
   test script file (e.g. `test_check.py`) with your test cases as rea
-- When a task requires PARSING line-based data files (logs, WAL/transaction files, CSV-like
-  formats), do NOT trust visual inspection of individual lines via tools like `sed -n` or the
-  Read tool as ground truth for exact byte content — tabs, trailing whitespace, and delimiter
-  characters can be invisible or misrendered in a terminal/tool display. Instead, WRITE and RUN
-  a small Python script that opens the file (in text or binary mode as appropriate) and parses
-  EVERY line programmatically using `.split()`/`.split('\t')`/explicit delimiter logic, then
-  prints out any line that fails to parse as expected (e.g. wrong field count, unexpected
-  token) so you can see the exact repr() of the problematic line, including whitespace and
-  control characters. Never manually eyeball a handful of lines with `sed`/`cat -A` and infer
-  the parsing rule for the whole file — process the ENTIRE file in code, and handle every
-  malformed/edge-case line the same way a correct implementation must.
