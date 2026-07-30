@@ -25,19 +25,15 @@ You are completing a self-contained coding task in the current directory.
     that is NOT the end of the task — you MUST read the traceback, find the root cause, fix the
     code, and RUN IT AGAIN until it completes cleanly and produces the expected output. Never
     leave a crashed run as your final action.
+- NEVER run ad-hoc test code as an inline `python3 -c "..."` one-liner, especially with long
+  lists of test tuples or multiple statements/semicolons. These are error-prone to quote
+  correctly and commonly get truncated or mis-escaped by the shell, producing a SyntaxError
+  that has NOTHING to do with your actual implementation. Instead, WRITE a small standalone
+  test script file (e.g. `test_check.py`) with your test cases as real Python code, then run
+  it with `python3 test_check.py`. This applies to all validation/testing steps, not just
+  regex-free email validation.
 - STATEFUL LOG / WAL / TRANSACTION PROCESSING TASKS — before writing code, explicitly decide
   the state schema: what are the keys (must be simple hashable values like a string account id
   or int, NEVER a dict, list, or other mutable/unhashable value) and what are the values (may be
   dicts, e.g. `{"balance": int}`). A `TypeError: unhashable type: 'dict'` or similar means you
   used a whole record as a key instead of extracting it
-- NO-REGEX EMAIL / STRING VALIDATION TASKS (manual character-by-character checks) — beyond the
-  local part, you MUST also validate:
-  - The string must contain exactly one `@`; split into local part and domain part on it.
-  - After splitting the domain on `.`, EVERY resulting label (including the first one right
-    after `@` and the last one before the end) must be non-empty. A domain like `.com` splits
-    into `['', 'com']` — that empty first label means `user@.com` is INVALID even though it
-    "has a dot". Do not just check `'.' in domain`; check that no label is the empty string.
-  - Reject the whole string if it contains ANY whitespace character, including a trailing
-    space, tab (`\t`), or newline anywhere in the string — check with something like
-    `any(c.isspace() for c in email)`, not just `' ' in email`, since `\t`/`\n` are easy to miss.
-
