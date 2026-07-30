@@ -29,19 +29,20 @@ You are completing a self-contained coding task in the current directory.
   - If a script you run RAISES AN EXCEPTION or crashes (Traceback, KeyError, IndexError, etc.),
     that is NOT the end of the task — you MUST read the traceback, find the root cause, fix the
     code, and RUN IT AGAIN until it completes cleanly and produces the expected output. Never
-    leave a crashed run as your final action.
-  - BEFORE writing parsing code for any input file (snapshot/log/WAL/CSV/etc.), actually open
-    and print a few real lines of THAT SPECIFIC file and count the fields yourself — do not
-    assume field counts/format from a similar-looking format mentioned elsewhere in the prompt.
-    A common silent bug is hardcoding the wrong `len(parts)` check for one file (e.g. requiring
-    3 fields on a file whose lines are actually `KEY VALUE`, 2 fields), which makes every line
-    fail validation and get silently skipped/miscounted without ever raising an exception. After
-    parsing, sanity-check the result is plausible (e.g. the loaded structure has as many entries
-    as the file has non-blank lines) before moving on, and re-run and diff outputs after ANY fix
-    to parsing logic, counters, or state-transition rules — a fix to one part of a multi-file
-    processing script can silently leave stale output from before the fix.
-- NEVER run ad-hoc test code as an inline `python3 -c "..."` one-liner, especially with long
-  lists of test tuples or multiple statements/semicolons. These are error-prone to quote
-  correctly and commonly get truncated or mis-escaped by the shell, producing a SyntaxError
-  that has NOTHING to do with your actual implementation. Instead, WRITE a small standalone
-  test script file (e.g. `test_check.py`) with your test cases as rea
+    leave a crashed run as your final state.
+  - NEVER submit a function body that is just `pass`, `...`, `raise NotImplementedError`, a
+    `TODO` comment, or any other placeholder/stub. A function signature followed by only a
+    stub is an incomplete implementation, not a draft — it WILL fail verification. Before
+    finishing, grep your own output files for `pass`, `TODO`, `NotImplementedError`, and `...`
+    on otherwise-empty function bodies and replace every one with real, working logic.
+  - When the task involves parsing commands, keywords, or record types from an input file
+    (e.g. ledger transaction types, log opcodes, protocol commands), assume the input MAY use
+    mixed case (e.g. `deposit` vs `DEPOSIT`) unless the prompt explicitly states the format is
+    fixed-case. Normalize case (e.g. `.upper()`/`.lower()`) before comparing/dispatching on
+    these tokens, and add a test line with different casing to confirm your parser still
+    accepts it. Do not assume every input line uses the same case shown in the examples.
+  - Writing your OWN quick test cases and seeing them pass is NOT sufficient proof of
+    correctness for multi-file or stateful tasks (ledgers, transaction logs, WAL replay) —
+    trace through the FULL input file by hand for at least one non-trivial case (e.g. a
+    transfer that would overdraw an account, a WAL record that conflicts with the snapshot)
+    and confirm your code's output matches your manual trace exactly.

@@ -67,3 +67,4 @@
 ## 2026-07-30T15:58:59+02:00 iter 8 [copilot] KEEP score=18 (bar->18.00) — PROPOSAL: Add AGENTS.md rule requiring an explicit test case for "user@.com"-style domains (empty label right after @ or between dots) since email validators consistently fail this edge case in task 10_no_regex_email.
 ## 2026-07-30T17:29:54+02:00 iter 9 [local] KEEP score=18 (bar->18.00) — PROPOSAL: (local proposer no-op — unparseable)
 ## 2026-07-30T19:51:09+02:00 re-baseline after escalation: 16/19 tasks
+## 2026-07-30T23:02:57+02:00 iter 10 [copilot] KEEP score=16 (bar->16.00) — PROPOSAL: Add AGENTS.md rule to never leave stub/placeholder implementations (bare `pass`, TODO, minimal skeleton) unfinished and to treat command/keyword matching as case-insensitive unless the prompt says otherwise, since 17/18/19 failures show incomplete logic and unhandled input variants.
