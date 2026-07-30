@@ -58,3 +58,4 @@
 ## 2026-07-27T22:21:13+02:00 iter 40 [copilot] ROLLBACK score=16<17 (bar decays ->16.70) — PROPOSAL: Add explicit no-regex email validation rule set covering local-part trailing-dot rejection (user.@example.com invalid) and whitespace rejection, targeting 10_no_regex_email.
 ## 2026-07-30T02:22:08+02:00 baseline score=16
 ## 2026-07-30T03:53:07+02:00 iter 1 [copilot] KEEP score=16 (bar->16.00) — PROPOSAL: Add explicit no-regex email validation checklist to AGENTS.md covering local-part leading/trailing/consecutive dots and disallowed trailing characters after domain — targets 10_no_regex_email.
+## 2026-07-30T05:53:24+02:00 iter 2 [copilot] KEEP score=16 (bar->16.00) — PROPOSAL: Add explicit no-regex email validation rule to AGENTS.md covering the "trailing dot before @" local-part case (e.g. 'user.@example.com' must be rejected) — targets 10_no_regex_email.

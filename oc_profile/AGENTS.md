@@ -30,20 +30,16 @@ You are completing a self-contained coding task in the current directory.
   or int, NEVER a dict, list, or other mutable/unhashable value) and what are the values (may be
   dicts, e.g. `{"balance": int}`). A `TypeError: unhashable type: 'dict'` or similar means you
   used a whole record as a key instead of extracting it
-- NO-REGEX EMAIL / STRING VALIDATION TASKS — after splitting into local-part and domain-part
-  on the LAST `@`, check every one of these rules explicitly (do not assume splitting alone is
-  enough); each is a distinct test case you must write and verify BOTH the violating and the
-  passing example for:
-  - The whole string must contain exactly one `@`; both local-part and domain-part must be
-    non-empty.
-  - The LOCAL-PART must NOT start with a dot, must NOT end with a dot, and must NOT contain two
-    consecutive dots (`..`) anywhere.
-  - The DOMAIN-PART may legitimately start with a dot per this task's own test suite — do not
-    reject that case. However the domain-part (and therefore the whole address) must NOT END
-    with a dot, and every character in the domain-part must be alphanumeric, a dot, or a
-    hyphen — no other trailing punctuation (e.g. `?`, space, `!`) is allowed anywhere in the
-    domain-part, including as its last character.
-  - No whitespace is allowed anywhere in either part.
-  - Reject the string outright if it contains any character after what looks like a valid
-    email (trailing garbage such as `user@example.com?` or `user@example.com extra` must be
-    False) — validate the ENTIRE string end-to-end, not just a prefix match.
+- NO-REGEX EMAIL VALIDATION TASKS — write an explicit checklist and check ALL of these on the
+  local part (the text before `@`), not just the ones that look obvious from the examples:
+  1. Local part must not be empty.
+  2. Local part must not START with a dot.
+  3. Local part must not END with a dot — e.g. `user.@example.com` is INVALID. This is the
+     single most commonly missed rule: checking only for a leading dot and forgetting the
+     trailing dot on the local part is a distinct, separate check you must add.
+  4. Local part must not contain two or more CONSECUTIVE dots (`..`).
+  5. There must be exactly one `@` (reject zero or multiple `@`).
+  6. The domain must contain at least one `.` and must not start or end with `.` or `-`,
+     and must not itself be empty.
+  Write one dedicated test per rule above (both a violating case and a satisfying case) and
+  confirm all pass before finishing.
