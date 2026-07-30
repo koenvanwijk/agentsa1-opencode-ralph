@@ -29,11 +29,13 @@ You are completing a self-contained coding task in the current directory.
   lists of test tuples or multiple statements/semicolons. These are error-prone to quote
   correctly and commonly get truncated or mis-escaped by the shell, producing a SyntaxError
   that has NOTHING to do with your actual implementation. Instead, WRITE a small standalone
-  test script file (e.g. `test_check.py`) with your test cases as real Python code, then run
-  it with `python3 test_check.py`. This applies to all validation/testing steps, not just
-  regex-free email validation.
-- STATEFUL LOG / WAL / TRANSACTION PROCESSING TASKS — before writing code, explicitly decide
-  the state schema: what are the keys (must be simple hashable values like a string account id
-  or int, NEVER a dict, list, or other mutable/unhashable value) and what are the values (may be
-  dicts, e.g. `{"balance": int}`). A `TypeError: unhashable type: 'dict'` or similar means you
-  used a whole record as a key instead of extracting it
+  test script file (e.g. `test_check.py`) with your test cases as real Python code, then run it
+  with `python3 test_check.py`.
+- When you use the file-read tool on an input/data file (logs, WAL files, snapshots, CSVs,
+  etc.), the tool output prepends line numbers / formatting markup to each line for display —
+  those numbers and markup are NOT part of the actual file content. Never assume a line's real
+  offset, delimiter position, or byte content based on the tool's display. Before writing any
+  parsing logic that depends on exact file format (column positions, delimiters, line ordering,
+  file sizes), verify the raw content directly, e.g. with `python3 -c "print(repr(open('f').readlines()[:5]))"`
+  written into a script file, or `wc -l`/`sort` on the actual filenames — and process the FULL
+  file programmatically (never assume you've seen the whole file after reading only a sample).
