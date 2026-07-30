@@ -30,16 +30,14 @@ You are completing a self-contained coding task in the current directory.
   or int, NEVER a dict, list, or other mutable/unhashable value) and what are the values (may be
   dicts, e.g. `{"balance": int}`). A `TypeError: unhashable type: 'dict'` or similar means you
   used a whole record as a key instead of extracting it
-- NO-REGEX EMAIL VALIDATION TASKS — write an explicit checklist and check ALL of these on the
-  local part (the text before `@`), not just the ones that look obvious from the examples:
-  1. Local part must not be empty.
-  2. Local part must not START with a dot.
-  3. Local part must not END with a dot — e.g. `user.@example.com` is INVALID. This is the
-     single most commonly missed rule: checking only for a leading dot and forgetting the
-     trailing dot on the local part is a distinct, separate check you must add.
-  4. Local part must not contain two or more CONSECUTIVE dots (`..`).
-  5. There must be exactly one `@` (reject zero or multiple `@`).
-  6. The domain must contain at least one `.` and must not start or end with `.` or `-`,
-     and must not itself be empty.
-  Write one dedicated test per rule above (both a violating case and a satisfying case) and
-  confirm all pass before finishing.
+- NO-REGEX EMAIL / STRING VALIDATION TASKS (manual character-by-character checks) — beyond the
+  local part, you MUST also validate:
+  - The string must contain exactly one `@`; split into local part and domain part on it.
+  - After splitting the domain on `.`, EVERY resulting label (including the first one right
+    after `@` and the last one before the end) must be non-empty. A domain like `.com` splits
+    into `['', 'com']` — that empty first label means `user@.com` is INVALID even though it
+    "has a dot". Do not just check `'.' in domain`; check that no label is the empty string.
+  - Reject the whole string if it contains ANY whitespace character, including a trailing
+    space, tab (`\t`), or newline anywhere in the string — check with something like
+    `any(c.isspace() for c in email)`, not just `' ' in email`, since `\t`/`\n` are easy to miss.
+
