@@ -29,20 +29,12 @@ You are completing a self-contained coding task in the current directory.
   - If a script you run RAISES AN EXCEPTION or crashes (Traceback, KeyError, IndexError, etc.),
     that is NOT the end of the task — you MUST read the traceback, find the root cause, fix the
     code, and RUN IT AGAIN until it completes cleanly and produces the expected output. Never
-    leave a crashed run as your final state.
-  - NEVER submit a function body that is just `pass`, `...`, `raise NotImplementedError`, a
-    `TODO` comment, or any other placeholder/stub. A function signature followed by only a
-    stub is an incomplete implementation, not a draft — it WILL fail verification. Before
-    finishing, grep your own output files for `pass`, `TODO`, `NotImplementedError`, and `...`
-    on otherwise-empty function bodies and replace every one with real, working logic.
-  - When the task involves parsing commands, keywords, or record types from an input file
-    (e.g. ledger transaction types, log opcodes, protocol commands), assume the input MAY use
-    mixed case (e.g. `deposit` vs `DEPOSIT`) unless the prompt explicitly states the format is
-    fixed-case. Normalize case (e.g. `.upper()`/`.lower()`) before comparing/dispatching on
-    these tokens, and add a test line with different casing to confirm your parser still
-    accepts it. Do not assume every input line uses the same case shown in the examples.
-  - Writing your OWN quick test cases and seeing them pass is NOT sufficient proof of
-    correctness for multi-file or stateful tasks (ledgers, transaction logs, WAL replay) —
-    trace through the FULL input file by hand for at least one non-trivial case (e.g. a
-    transfer that would overdraw an account, a WAL record that conflicts with the snapshot)
-    and confirm your code's output matches your manual trace exactly.
+    leave a crashed run as your final action.
+  - BEFORE declaring the task done, run a final placeholder scan: search every file you wrote
+    or edited for the literal tokens `pass` used as a whole function/method body, `TODO`,
+    `FIXME`, `NotImplementedError`, `...` (Ellipsis) as a body, or any comment saying
+    "implement this" / "not implemented yet". Every function/method the task requires MUST have
+    real, working logic — a bare `pass` or stub body left in place is an automatic failure even
+    if earlier parts of the file look complete. If you find any such stub, implement it fully,
+    RUN the code again, and re-check its output before finishing. Do not stop mid-implementation
+    and describe what you were about to do — finish writing the actual code first.
