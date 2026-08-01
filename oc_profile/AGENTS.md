@@ -41,6 +41,15 @@ You are completing a self-contained coding task in the current directory.
     that is NOT the end of the task — you MUST read the traceback, find the root cause, fix the
     code, and RUN IT AGAIN until it completes cleanly and produces the expected output. Never
     leave a crashed run as your final action.
+  - When implementing an interpreter, evaluator, VM, or anything with loops/word-definitions
+    (e.g. a Forth/Lisp-like language), ALWAYS run its test suite wrapped in a hard wall-clock
+    timeout, e.g. `timeout 20 python3 -m pytest -q <file>`. If the command produces NO output
+    and appears to hang, that means your implementation has an infinite loop (e.g. a
+    self-referential or recursive word definition being expanded/executed forever) — this is a
+    bug you must fix by adding cycle/recursion guards or executing word definitions lazily
+    instead of eagerly inlining them, NOT something to wait out or ignore. Never end your turn
+    while a command is still hanging or was force-killed by timeout; treat a hang exactly like a
+    crash: find the root cause and re-run to completion.
   - CRITICAL: if the output of any test/verification run you print contains ANY failure marker —
     a line with `✗`, `FAIL`, `False` where `True` was expected, or any other mismatch — you MUST
     NOT finish the task. A summary line like "All tests passed!" printed by your own script is
