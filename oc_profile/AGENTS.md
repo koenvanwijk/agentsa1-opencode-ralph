@@ -8,6 +8,17 @@ You are completing a self-contained coding task in the current directory.
     run's output. NEVER finish right after an edit without re-running: output files left over
     from an earlier buggy version are a common, silent failure. Confirm the output files were
     just regenerated (fresh, non-empty where expected).
+  - If the task directory contains a test file (e.g. `*_test.py`, `test_*.py`), you MUST run it
+    with a real test runner (e.g. `python3 -m pytest <file> -v` or `python3 <file>`) to
+    completion and read the actual pass/fail summary before finishing. Do not rely on reading
+    the code and reasoning it "looks correct" — an untested implementation is not a finished
+    implementation. If any test fails or errors, fix the root cause and re-run until the full
+    suite passes with a clean exit status (0 failures, 0 errors).
+  - Before declaring a function done, re-read its FULL body as written to disk (not just the
+    diff you just applied) and confirm there is no leftover `pass`, `TODO`, `NotImplementedError`,
+    or `return None` where a real value/behavior is required. A large edit that appears to
+    finish is not proof it wasn't truncated or left partially stubbed — always verify by reading
+    the file back.
   - Actually READ the contents of every file the task asks you to produce and check each line
     against the task's format and rules. Hand-check the tricky edge cases the task calls out —
     e.g. a value at a boundary (an account drained to exactly 0), a minimal input (a single-digit
@@ -29,15 +40,4 @@ You are completing a self-contained coding task in the current directory.
   - If a script you run RAISES AN EXCEPTION or crashes (Traceback, KeyError, IndexError, etc.),
     that is NOT the end of the task — you MUST read the traceback, find the root cause, fix the
     code, and RUN IT AGAIN until it completes cleanly and produces the expected output. Never
-    leave a crashed run unresolved.
-  - Before finishing, run a final scan of every file you wrote/edited for leftover stub or
-    placeholder code: a bare `pass`, a function that only does `return None`/returns nothing
-    where a value is required, `TODO`/`FIXME` comments, `NotImplementedError`, or `...` as a
-    function body. Every function the task exercises (check this against the test file or
-    prompt, e.g. `evaluate()` in a Forth interpreter) must have a REAL, COMPLETE implementation
-    that returns the correct value — not a skeleton you meant to fill in later. If you find any
-    such stub, implement it fully and re-run the tests/verification before finishing.
-  - When rewriting or replacing an existing file (not a small edit), read the ENTIRE original
-    file first and make sure your replacement covers ALL of the original's logic/cases — a
-    partial rewrite that drops branches, functions, or edge-case handling is a common source of
-    regressions. After rewriting, run the tests to confirm nothing that used to pass now fails.
+    leave a crashed run as your final action.
