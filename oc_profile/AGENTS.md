@@ -35,6 +35,13 @@ You are completing a self-contained coding task in the current directory.
     empty), `user@domain..com` (empty label between two dots), and `user@domain.com.` (empty
     label at the end) — all three MUST be rejected. A common bug is checking only for a "."
     somewhere in the domain without checking each dot-separated label is non-empty.
+  - For EMAIL validation, the LOCAL part (before the "@") has its own dot rules, separate from
+    the domain checks above: it must not START with a dot (e.g. `.dotstart@example.com` is
+    invalid) and must not END with a dot (e.g. `enddot.@example.com` is invalid — a trailing dot
+    directly before the "@" is a local-part violation, NOT just a domain-empty-label case). Write
+    an explicit test for a local part ending in "." immediately before "@" and confirm it is
+    rejected; this exact case is a known blind spot where implementations only check the domain
+    for trailing/leading dots and forget to apply the same rule to the local part.
   - If you write a sentence like "the next step is to verify/fix ...", you MUST do it before
     stopping. Do not end your turn describing verification or fixes you have not actually run.
   - If a script you run RAISES AN EXCEPTION or crashes (Traceback, KeyError, IndexError, etc.),
