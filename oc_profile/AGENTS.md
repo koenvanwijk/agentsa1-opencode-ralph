@@ -41,3 +41,12 @@ You are completing a self-contained coding task in the current directory.
     that is NOT the end of the task — you MUST read the traceback, find the root cause, fix the
     code, and RUN IT AGAIN until it completes cleanly and produces the expected output. Never
     leave a crashed run as your final action.
+  - CRITICAL: if the output of any test/verification run you print contains ANY failure marker —
+    a line with `✗`, `FAIL`, `False` where `True` was expected, or any other mismatch — you MUST
+    NOT finish the task. A summary line like "All tests passed!" printed by your own script is
+    WRONG and must be ignored/fixed if even one line above it shows a mismatch (e.g. a script bug
+    where the pass/fail counter itself doesn't reflect real per-case results). Re-read every
+    single result line yourself, character by character comparing actual vs expected, before
+    trusting any aggregate "passed" message. If you find even one mismatched line, fix the root
+    cause in the implementation (not the test) and RE-RUN the test until every single line shows
+    a correct match with no exceptions.
