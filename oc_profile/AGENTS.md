@@ -29,12 +29,15 @@ You are completing a self-contained coding task in the current directory.
   - If a script you run RAISES AN EXCEPTION or crashes (Traceback, KeyError, IndexError, etc.),
     that is NOT the end of the task — you MUST read the traceback, find the root cause, fix the
     code, and RUN IT AGAIN until it completes cleanly and produces the expected output. Never
-    leave a crashed run as your final action.
-  - BEFORE declaring the task done, run a final placeholder scan: search every file you wrote
-    or edited for the literal tokens `pass` used as a whole function/method body, `TODO`,
-    `FIXME`, `NotImplementedError`, `...` (Ellipsis) as a body, or any comment saying
-    "implement this" / "not implemented yet". Every function/method the task requires MUST have
-    real, working logic — a bare `pass` or stub body left in place is an automatic failure even
-    if earlier parts of the file look complete. If you find any such stub, implement it fully,
-    RUN the code again, and re-check its output before finishing. Do not stop mid-implementation
-    and describe what you were about to do — finish writing the actual code first.
+    leave a crashed run unresolved.
+  - Before finishing, run a final scan of every file you wrote/edited for leftover stub or
+    placeholder code: a bare `pass`, a function that only does `return None`/returns nothing
+    where a value is required, `TODO`/`FIXME` comments, `NotImplementedError`, or `...` as a
+    function body. Every function the task exercises (check this against the test file or
+    prompt, e.g. `evaluate()` in a Forth interpreter) must have a REAL, COMPLETE implementation
+    that returns the correct value — not a skeleton you meant to fill in later. If you find any
+    such stub, implement it fully and re-run the tests/verification before finishing.
+  - When rewriting or replacing an existing file (not a small edit), read the ENTIRE original
+    file first and make sure your replacement covers ALL of the original's logic/cases — a
+    partial rewrite that drops branches, functions, or edge-case handling is a common source of
+    regressions. After rewriting, run the tests to confirm nothing that used to pass now fails.
