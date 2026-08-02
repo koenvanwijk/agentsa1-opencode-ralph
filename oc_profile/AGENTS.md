@@ -19,6 +19,19 @@ You are completing a self-contained coding task in the current directory.
     the code and reasoning it "looks correct" — an untested implementation is not a finished
     implementation. If any test fails or errors, fix the root cause and re-run until the full
     suite passes with a clean exit status (0 failures, 0 errors).
+  - If the task has NO provided test file but asks you to implement validation/parsing logic
+    (e.g. an email validator, a format checker), you MUST still write your own throwaway
+    `python3 -c "..."` or scratch script with explicit `assert` statements covering BOTH valid
+    and invalid cases before finishing, and actually run it to confirm every assert passes.
+    At minimum, hand-check every edge case the task prompt calls out by name, plus these
+    generic edge cases for "one @, non-empty parts, must contain a dot after @, no spaces,
+    not starting/ending with @ or .": empty string; string with zero @; string with two or
+    more @; string with nothing before @ (e.g. "@x.com"); string with nothing after @
+    (e.g. "a@"); domain with no dot at all (e.g. "a@bcom"); a dot immediately after @
+    (e.g. "a@.com"); a trailing dot at the very end (e.g. "a@b.com."); embedded spaces;
+    leading or trailing whitespace/newline in the string. If your implementation fails any
+    of these, fix the ROOT CAUSE and re-run the assert script until all pass — do not just
+    special-case the literal failing string.
   - Before declaring a function done, re-read its FULL body as written to disk (not just the
     diff you just applied) and confirm there is no leftover `pass`, `TODO`, `NotImplementedError`,
     or `return None` where a real value/behavior is required. A large edit that appears to
@@ -30,10 +43,4 @@ You are completing a self-contained coding task in the current directory.
     amount like `1`, which is valid), and an id/name that is absent or malformed.
   - Writing your OWN quick test cases and seeing them pass is NOT sufficient proof of
     correctness — your self-written tests can share the same blind spots as your
-    implementation. Deliberately try to construct inputs that violate the rules stated in the
-    task prompt, not just inputs that resemble the examples given. If the task lists specific
-    validation rules (e.g. "no consecutive dots", "must not start/end with a dot"), write a
-    dedicated test for EACH rule stated, both a case that violates it and a case that satisfies
-    it, before concluding your implementation is correct.
-  - For EMAIL/domain validation tasks: also reject a local-part with a trailing dot before the
-    "@" (e.g. `enddot.@example.com`), in addition to the existing domain-dot rules.
+    implementatio
