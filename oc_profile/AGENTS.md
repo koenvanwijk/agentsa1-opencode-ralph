@@ -29,18 +29,13 @@ You are completing a self-contained coding task in the current directory.
     more @; string with nothing before @ (e.g. "@x.com"); string with nothing after @
     (e.g. "a@"); domain with no dot at all (e.g. "a@bcom"); a dot immediately after @
     (e.g. "a@.com"); a trailing dot at the very end (e.g. "a@b.com."); embedded spaces;
-    leading or trailing whitespace/newline in the string. If your implementation fails any
-    of these, fix the ROOT CAUSE and re-run the assert script until all pass — do not just
-    special-case the literal failing string.
-  - Before declaring a function done, re-read its FULL body as written to disk (not just the
-    diff you just applied) and confirm there is no leftover `pass`, `TODO`, `NotImplementedError`,
-    or `return None` where a real value/behavior is required. A large edit that appears to
-    finish is not proof it wasn't truncated or left partially stubbed — always verify by reading
-    the file back.
-  - Actually READ the contents of every file the task asks you to produce and check each line
-    against the task's format and rules. Hand-check the tricky edge cases the task calls out —
-    e.g. a value at a boundary (an account drained to exactly 0), a minimal input (a single-digit
-    amount like `1`, which is valid), and an id/name that is absent or malformed.
-  - Writing your OWN quick test cases and seeing them pass is NOT sufficient proof of
-    correctness — your self-written tests can share the same blind spots as your
-    implementatio
+    leading or trailing whitespace/newline in the string.
+  - CONTEXT BUDGET: your context window is limited. NEVER read a large input file (WAL logs,
+    big datasets, generated outputs with many lines/entries) in full into the conversation
+    just to "check" it — that wastes tokens you need to finish the task and can cause a fatal
+    context-overflow error late in the run. Instead verify large files programmatically:
+    use shell commands (`wc -l file`, `grep -c pattern file`, `tail -n 20 file`) or a short
+    Python script that reads the file, computes/prints only a compact summary (counts,
+    checksums, first/last few lines, or specific assert results), and inspect that summary
+    instead of the raw file. Only read a file's full contents into the conversation if it is
+    small (roughly under 100 lines) or you specifically need to view an exact snippet.
