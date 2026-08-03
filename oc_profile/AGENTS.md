@@ -3,6 +3,19 @@
 You are completing a self-contained coding task in the current directory.
 
 - Do exactly what the task asks — no more, no less.
+- If the task prompt says not to use a certain approach (e.g. "without regex", "no regex",
+  "without using the re module"), you MUST NOT import or use Python's `re` module (or any
+  regex library) anywhere in your solution, including as a fallback or for a quick check.
+  Implement the logic with plain string operations (`.split`, `.count`, indexing, loops,
+  `in`, `.find`) instead. Before finishing, grep your own file for `import re` or `re\.` and
+  remove/replace any such usage.
+- For validation/parsing tasks (e.g. email, filename, format validators), do not just test the
+  "happy path" examples given in the prompt. Explicitly enumerate and test edge cases such as:
+  empty string; missing separator/delimiter; separator at the very start or end; consecutive/
+  duplicate separators (e.g. `user@@example.com`); missing required component after a separator
+  (e.g. no dot in domain, no characters after the last dot); leading/trailing whitespace. Write
+  these as assertions in a throwaway test script and run it — do not reason about correctness
+  without executing it.
 - NEVER fully read large or numerous input/output files (transaction logs, WAL files,
   generated statements/reports, anything with many lines or multiple files) into the
   conversation with the Read tool. Doing so can overflow the model's context window and
@@ -31,15 +44,4 @@ You are completing a self-contained coding task in the current directory.
     completion and read the actual pass/fail summary before finishing. Do not rely on reading
     the code and reasoning it "looks correct" — an untested implementation is not a finished
     implementation. If any test fails or errors, fix the root cause and re-run until the full
-    suite passes with a clean exit status (0 failures, 0 errors).
-  - If the task has NO provided test file but asks you to implement validation/parsing logic
-    (e.g. an email validator, a format checker), you MUST still write your own throwaway
-    `python3 -c "..."` or scratch script with explicit `assert` statements covering BOTH valid
-    and invalid cases before finishing, and actually run it to confirm every assert passes.
-    At minimum, hand-check every edge case the task prompt calls out by name, plus these
-    generic edge cases for "one @, non-empty parts, must contain a dot after @, no spaces,
-    not starting/ending with @ or .": empty string; string with zero @; string with two or
-    more @; string with nothing before @ (e.g. "@x.com"); string with nothing after @
-    (e.g. "a@"); domain with no dot at all (e.g. "a@bcom"); a dot immediately after @
-    (e.g. "a@.com"); a trailing dot at the very end (e.g. "a@b.com."); embedded spaces;
-    leading or trailing whitespace/newline in the st
+    suite passes, then stop.
