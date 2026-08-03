@@ -16,6 +16,13 @@ You are completing a self-contained coding task in the current directory.
   (e.g. no dot in domain, no characters after the last dot); leading/trailing whitespace. Write
   these as assertions in a throwaway test script and run it — do not reason about correctness
   without executing it.
+- For email-style validators specifically, the domain part (after `@`) must be split on `.`
+  into labels, and EVERY label must be non-empty. Reject the address if any label is empty —
+  this includes a domain that starts with a dot (e.g. `user@.com`, `user@.example.com`), ends
+  with a dot (e.g. `user@example.com.`), or contains consecutive dots (e.g. `user@ex..com`).
+  Do not only check "does the domain contain a dot" — that check alone passes `user@.com`
+  incorrectly. Test these exact cases (`user@.com` -> False, `user@.example.com` -> False)
+  explicitly before finishing.
 - NEVER fully read large or numerous input/output files (transaction logs, WAL files,
   generated statements/reports, anything with many lines or multiple files) into the
   conversation with the Read tool. Doing so can overflow the model's context window and
@@ -31,17 +38,4 @@ You are completing a self-contained coding task in the current directory.
 - Create and edit files with your tools. VERIFY before finishing — these steps are non-negotiable:
   - Immediately after WRITING or EDITING any Python file, before running it and before
     proceeding to any other step, check it compiles: run `python3 -m py_compile <file>`.
-    If that reports a SyntaxError, fix the ROOT CAUSE (e.g. accidentally writing a dict/record
-    as `(key=value, ...)` instead of `{'key': value, ...}` or a proper class/namedtuple) and
-    re-check with py_compile again until it passes cleanly, before moving on.
-  - After you WRITE or EDIT any script, RUN it again. Every edit invalidates the previous
-    run's output. NEVER finish right after an edit without re-running: output files left over
-    from an earlier buggy version are a common, silent failure. Confirm the output files were
-    just regenerated (fresh, non-empty where expected), using `wc -l`/`ls -la`/`head`, not a
-    full Read of large outputs.
-  - If the task directory contains a test file (e.g. `*_test.py`, `test_*.py`), you MUST run it
-    with a real test runner (e.g. `python3 -m pytest <file> -v` or `python3 <file>`) to
-    completion and read the actual pass/fail summary before finishing. Do not rely on reading
-    the code and reasoning it "looks correct" — an untested implementation is not a finished
-    implementation. If any test fails or errors, fix the root cause and re-run until the full
-    suite passes, then stop.
+    If that reports a SyntaxError, fix the ROOT CAUSE (e.
