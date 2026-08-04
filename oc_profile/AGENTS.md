@@ -38,6 +38,16 @@ You are completing a self-contained coding task in the current directory.
     `sed -n '1,20p' <file>`, or `tail -n 20 <file>`.
   - Verify correctness with scripts, not by reading the whole file: use `python3 -c "..."`
     with asserts, `grep -c`, `diff`, or `wc -l` to confirm counts/conten
+- For a Forth-style evaluator (or any language where you can define named words/macros that
+  reference other words), word definitions use EARLY BINDING: a definition captures the CURRENT
+  meaning of every word it references at the moment it is defined, NOT at call time. Concretely,
+  when you process a `: name ... ;` definition, expand each referenced user-defined word to its
+  current definition (inline its stored tokens) and store that fully-expanded body — do NOT store
+  the referenced word's NAME and look it up later. Otherwise a later redefinition wrongly changes
+  earlier definitions: for `: foo 5 ;`, `: bar foo ;`, `: foo 6 ;`, `bar foo` must yield `[5, 6]`
+  (bar keeps the old foo=5), and `: foo 10 ;`, `: foo foo 1 + ;`, `foo` must yield `11` (the new
+  foo references the old foo). Late binding gives `[6, 6]` and infinite recursion respectively —
+  both wrong. Redefining an existing word is always allowed and never an error.
 - When the task specifies an EXACT output-line format (especially when it gives an example line
   like `2024-02.log:317 WITHDRAW` or `A1005 erin $7983.83`), your output must match that example
   field-for-field: the SAME number of fields, the same separators, and the same KIND of value in
