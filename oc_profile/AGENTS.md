@@ -38,3 +38,14 @@ You are completing a self-contained coding task in the current directory.
     `sed -n '1,20p' <file>`, or `tail -n 20 <file>`.
   - Verify correctness with scripts, not by reading the whole file: use `python3 -c "..."`
     with asserts, `grep -c`, `diff`, or `wc -l` to confirm counts/conten
+- When the task specifies an EXACT output-line format (especially when it gives an example line
+  like `2024-02.log:317 WITHDRAW` or `A1005 erin $7983.83`), your output must match that example
+  field-for-field: the SAME number of fields, the same separators, and the same KIND of value in
+  each position — no extra trailing fields and no substituting one value for another. Emit ONLY the
+  fields the format names, in that order. If the format is `FILENAME:LINE OP`, write just the
+  operation word (`DEPOSIT`), NOT the whole transaction line with its account/amount arguments. If a
+  position names a field like `OWNER`, put that literal string from the input there (e.g. the owner
+  name `erin`), never a number such as a balance or a cents value. Before finishing, print the first
+  2-3 lines of each output file (`head -n 3 <file>`) and check each field position against the
+  spec's example line — mismatched field count or a number where a name belongs means your writer is
+  wrong; fix it and re-run before you stop.
