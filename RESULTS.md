@@ -97,3 +97,4 @@
 ## 2026-08-03T11:59:57+02:00 iter 37 [copilot] KEEP score=18 (bar->18.00) — PROPOSAL: Add explicit no-regex email validation edge cases (domain starting with a dot / empty label before dot, e.g. 'user@.com', 'user@.example.com' must be False) to AGENTS.md's edge-case checklist.
 ## 2026-08-03T15:45:07+02:00 iter 38 [copilot] ROLLBACK score=16<18 (bar decays ->17.40) — PROPOSAL: Add AGENTS.md rule requiring output files to exactly match required format (trailing newline / join semantics) verified by diff-checking against verify.sh expectations, targeting 18_txn_wal
 ## 2026-08-04T10:32:19+02:00 baseline score=0
+## 2026-08-04T10:36:56+02:00 baseline score=0
