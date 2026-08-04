@@ -98,3 +98,4 @@
 ## 2026-08-03T15:45:07+02:00 iter 38 [copilot] ROLLBACK score=16<18 (bar decays ->17.40) — PROPOSAL: Add AGENTS.md rule requiring output files to exactly match required format (trailing newline / join semantics) verified by diff-checking against verify.sh expectations, targeting 18_txn_wal
 ## 2026-08-04T10:32:19+02:00 baseline score=0
 ## 2026-08-04T10:36:56+02:00 baseline score=0
+## 2026-08-04T13:45:53+02:00 iter 1 [claude] KEEP score=18 (bar->18.00) — PROPOSAL: Restore an `Agents-A1` model alias in oc_profile/opencode.json (pointing at the current deepseek-v4-flash spark backend) so run_all.sh's hardcoded `-m agentsa1/Agents-A1` resolves again — fixes the "Unexpected server error" that was failing ALL 19 tasks (score 0/19) after the backend model swap.

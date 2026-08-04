@@ -14,6 +14,10 @@
         "deepseek-v4-flash": {
           "name": "DeepSeek V4 Flash",
           "limit": { "context": 32768, "output": 8192 }
+        },
+        "Agents-A1": {
+          "name": "Agents-A1 (alias -> current spark backend)",
+          "limit": { "context": 32768, "output": 8192 }
         }
       }
     }
