@@ -48,6 +48,19 @@ You are completing a self-contained coding task in the current directory.
   (bar keeps the old foo=5), and `: foo 10 ;`, `: foo foo 1 + ;`, `foo` must yield `11` (the new
   foo references the old foo). Late binding gives `[6, 6]` and infinite recursion respectively —
   both wrong. Redefining an existing word is always allowed and never an error.
+- For log-replay / parse-and-count tasks that classify every input line as VALID vs
+  MALFORMED/REJECTED/SKIPPED and then report aggregate COUNTS (e.g. `malformed N`), you MUST
+  actually RUN your script and sanity-check the counts before finishing — never stop with the
+  script written but unrun, and never trust an unverified count. Real input is mostly
+  well-formed, so the malformed/invalid/skipped count must be a SMALL fraction of the total
+  line count. If that count equals (or nearly equals) the total number of lines, your validity
+  check is inverted or buggy — STOP and debug it. The classic cause is stripping the newline
+  inconsistently: `line.rstrip('\n') != line.lstrip()` is True for EVERY ordinary line because
+  `.lstrip()` keeps the trailing `\n`, so the whole file gets flagged malformed. Strip the
+  newline exactly ONCE at the top (`line = line.rstrip('\n')`) and run every field/whitespace/
+  case check on that single normalized string. Before you stop: print the counts and the first
+  few lines of each output file, confirm the numbers are plausible (malformed « total), and
+  confirm ALL required output files exist and are non-empty.
 - When the task specifies an EXACT output-line format (especially when it gives an example line
   like `2024-02.log:317 WITHDRAW` or `A1005 erin $7983.83`), your output must match that example
   field-for-field: the SAME number of fields, the same separators, and the same KIND of value in
