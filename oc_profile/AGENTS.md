@@ -31,13 +31,22 @@ You are completing a self-contained coding task in the current directory.
   explicitly before finishing.
 - NEVER fully read large or numerous input/output files (transaction logs, WAL files,
   generated statements/reports, anything with many lines or multiple files) into the
-  conversation with the Read tool. Doing so can overflow the model's context window and
-  crash the run. Instead, inspect and verify such files programmatically:
+  conversation — NOT with the Read tool, and NOT with a bash command that prints the whole
+  file to the terminal (`cat <file>`, `grep -n "" <file>`, `grep -n <pat> <bigfile>`,
+  `sed -n '1,$p'`, `head -n <huge>`, `cat -n`, or `awk '{print}'`). The context window is
+  only ~32k tokens; dumping even one multi-thousand-line file to stdout overflows it and
+  crashes the run BEFORE any output file is written (you get nothing). This is the #1 cause
+  of a total failure on log/WAL tasks. Instead, inspect and verify such files
+  programmatically:
   - Check size/shape first: `wc -l <file>` or `ls -la <dir>`.
   - Peek at only a few lines when you need to see the format: `head -n 20 <file>`,
     `sed -n '1,20p' <file>`, or `tail -n 20 <file>`.
+  - If you need per-line NUMBERS (e.g. for output like `FILENAME:LINE OP`), do NOT
+    `grep -n`/`cat -n` the file to get them — compute them INSIDE your script with
+    `enumerate(f, start=1)` while you read each file line by line. Line numbers are 1-based
+    and reset per file. Never print the numbered lines to the terminal.
   - Verify correctness with scripts, not by reading the whole file: use `python3 -c "..."`
-    with asserts, `grep -c`, `diff`, or `wc -l` to confirm counts/conten
+    with asserts, `grep -c` (a COUNT, not `-n`), `diff`, or `wc -l` to confirm counts/content.
 - For a Forth-style evaluator (or any language where you can define named words/macros that
   reference other words), word definitions use EARLY BINDING: a definition captures the CURRENT
   meaning of every word it references at the moment it is defined, NOT at call time. Concretely,
