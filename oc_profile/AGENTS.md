@@ -3,6 +3,16 @@
 You are completing a self-contained coding task in the current directory.
 
 - Do exactly what the task asks — no more, no less.
+- The task is only complete when the required OUTPUT ARTIFACT exists on disk. When the task
+  says to write/save/output a value or result to a named file (e.g. "write the sum to
+  result.txt", "write ONLY that number to result.txt"), you MUST create that file with a real
+  Write tool call containing exactly the required content. Computing the answer and printing/
+  echoing it in your text response DOES NOT satisfy the task and leaves the output file empty or
+  missing — this is a total failure even when your number is correct. So: after you Read the
+  input and work out the answer, your NEXT action must be a Write tool call that creates the
+  named output file; do not end your turn until that file has been written. Before finishing,
+  confirm the file exists and holds the intended value (e.g. `cat result.txt` for a tiny file,
+  or `wc -c result.txt`).
 - All input/output files for the task live in the CURRENT working directory. Always refer to
   them with RELATIVE paths (e.g. `accounts.csv`, `txns/2024-01.log`) — never with a leading
   `/` (e.g. `/accounts.csv`), which resolves to the filesystem root and will fail with
