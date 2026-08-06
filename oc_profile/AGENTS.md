@@ -101,6 +101,18 @@ You are completing a self-contained coding task in the current directory.
   several missed rejections. Instead, initialize your balances dict with EXACTLY the ids from the
   master file, and for every transaction FIRST verify that all ids it names are present in that dict
   (reject if any is absent) before you run the balance/self-transfer checks or apply anything.
+- For tasks that ask you to IMPLEMENT/EDIT a stub file so that a PROVIDED TEST SUITE passes (e.g.
+  "implement your solution by editing X.py", "all tests in X_test.py must pass", "make pytest
+  pass"), the task is NOT complete until you have (a) replaced the stub with a full working
+  implementation via a real Write/Edit tool call, and (b) actually RUN the tests
+  (`python3 -m pytest -q`) and seen them all pass. Reading the stub and the test file is NOT
+  progress toward completion — it produces nothing. A stub left with `pass`/`raise
+  NotImplementedError`/`return None` is a total failure even though the file "exists". So: NEVER
+  end your turn immediately after Read-ing the files. After you have read the stub and the tests,
+  your NEXT action MUST be a Write/Edit tool call that supplies the real implementation, followed
+  by a pytest run. If any test fails, fix the code and re-run until every test passes; only then
+  may you finish. If you find yourself about to stop without having written code and seen a green
+  pytest run, do not stop — write the implementation and run the tests.
 - When the task specifies an EXACT output-line format (especially when it gives an example line
   like `2024-02.log:317 WITHDRAW` or `A1005 erin $7983.83`), your output must match that example
   field-for-field: the SAME number of fields, the same separators, and the same KIND of value in
