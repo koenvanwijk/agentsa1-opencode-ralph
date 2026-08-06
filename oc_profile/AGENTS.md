@@ -90,6 +90,17 @@ You are completing a self-contained coding task in the current directory.
   case check on that single normalized string. Before you stop: print the counts and the first
   few lines of each output file, confirm the numbers are plausible (malformed « total), and
   confirm ALL required output files exist and are non-empty.
+- For ledger/replay tasks that give a FIXED master list of accounts (e.g. `accounts.csv`), that
+  file is the ONLY source of valid account ids. A transaction naming an id NOT in the master list
+  must be REJECTED — and this applies to EVERY operation, INCLUDING DEPOSIT: a `DEPOSIT` to an
+  unknown account (e.g. `DEPOSIT A9999 5000` when accounts are A1001..A1014) is rejected, not
+  applied, and MUST appear in `rejected.txt`. Do NOT store balances in a `defaultdict` or otherwise
+  auto-create an account on first reference: auto-vivifying an unknown id both (a) fails to reject
+  that line and (b) gives the phantom account a balance, so later `WITHDRAW`/`TRANSFER` lines that
+  name it are then wrongly APPLIED instead of rejected — one missing existence check cascades into
+  several missed rejections. Instead, initialize your balances dict with EXACTLY the ids from the
+  master file, and for every transaction FIRST verify that all ids it names are present in that dict
+  (reject if any is absent) before you run the balance/self-transfer checks or apply anything.
 - When the task specifies an EXACT output-line format (especially when it gives an example line
   like `2024-02.log:317 WITHDRAW` or `A1005 erin $7983.83`), your output must match that example
   field-for-field: the SAME number of fields, the same separators, and the same KIND of value in
