@@ -77,6 +77,22 @@ You are completing a self-contained coding task in the current directory.
   (bar keeps the old foo=5), and `: foo 10 ;`, `: foo foo 1 + ;`, `foo` must yield `11` (the new
   foo references the old foo). Late binding gives `[6, 6]` and infinite recursion respectively —
   both wrong. Redefining an existing word is always allowed and never an error.
+- For a reactive / spreadsheet-style cell system (input cells with settable values, compute
+  cells whose value is derived from other cells, plus change-notification callbacks), a value
+  change must propagate to a NEW STABLE STATE before ANY callback fires. Do not freeze on the
+  complexity — implement it directly with this exact recipe: each compute cell registers itself
+  as an observer of every input cell it depends on, and its value is PURELY a function of its
+  inputs' CURRENT values. When an input cell's value is set: (1) record the OLD value of every
+  transitively-affected compute cell; (2) recompute those cells in DEPENDENCY ORDER (a cell is
+  only recomputed after all cells it depends on have been recomputed) — repeat until no value
+  changes, i.e. the system is stable; (3) THEN, once stable, fire each compute cell's callbacks
+  exactly ONCE, and ONLY for the cells whose FINAL value differs from the old value recorded in
+  step 1. NEVER fire callbacks during intermediate propagation, and NEVER fire when a cell's
+  final value equals its old value even if intermediate values fluctuated. Concretely, if
+  `plus_one` and `minus_one` both change but `always_two = plus_one - minus_one` stays 2, then
+  `always_two`'s callback must NOT fire ([] expected, not [3, 2]) — this is the #1 bug in these
+  tasks. After writing react.py (or the named stub), RUN `python3 -m pytest -q` and iterate
+  until all tests pass; do not stop after only reading the stub and the test file.
 - For log-replay / parse-and-count tasks that classify every input line as VALID vs
   MALFORMED/REJECTED/SKIPPED and then report aggregate COUNTS (e.g. `malformed N`), you MUST
   actually RUN your script and sanity-check the counts before finishing — never stop with the
