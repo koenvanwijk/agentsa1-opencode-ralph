@@ -57,6 +57,16 @@ You are completing a self-contained coding task in the current directory.
     and reset per file. Never print the numbered lines to the terminal.
   - Verify correctness with scripts, not by reading the whole file: use `python3 -c "..."`
     with asserts, `grep -c` (a COUNT, not `-n`), `diff`, or `wc -l` to confirm counts/content.
+  - Do NOT try to HUNT for the tricky/malformed/rejected/edge-case lines by grepping the log
+    files (`grep -n -E '<pattern>' txns/*.log`). Such a pattern almost always matches a huge
+    fraction of the lines, and an UNBOUNDED grep (one without `| head`, or where you misjudged
+    the match count) dumps thousands of matched lines to the terminal and overflows the 32k
+    context — crashing the run before any output file is written. This is exactly how these
+    tasks fail. Your PARSER is the single source of truth: encode EVERY validity/rejection rule
+    from the prompt directly in your script and let it classify each line as it reads them; you
+    never need to see the offending lines yourself. If you must run a diagnostic grep over the
+    logs at all, use `grep -c` (a count) — never `grep -n`/`grep -E` that prints matched lines,
+    and never a grep over `*.log` without a trailing `| head -n 20`.
 - For a Forth-style evaluator (or any language where you can define named words/macros that
   reference other words), word definitions use EARLY BINDING: a definition captures the CURRENT
   meaning of every word it references at the moment it is defined, NOT at call time. Concretely,
