@@ -118,6 +118,37 @@ You are completing a self-contained coding task in the current directory.
   `always_two`'s callback must NOT fire ([] expected, not [3, 2]) — this is the #1 bug in these
   tasks. After writing react.py (or the named stub), RUN `python3 -m pytest -q` and iterate
   until all tests pass; do not stop after only reading the stub and the test file.
+- For an SGF (Smart Game Format) parser task — implement `parse(input_string)` returning an
+  `SgfTree(properties, children)` — the make-or-break part is the TREE/CHILD structure; every
+  trial that wrote a full parser still failed because it mishandled how nodes chain and how
+  variations become children. Recipe (single recursive-descent pass over an index):
+  1. VALIDATION first, with these EXACT messages: empty string, or a string not starting with
+     `(` → `raise ValueError("tree missing")`; a tree with no first node such as `"()"` →
+     `raise ValueError("tree with no nodes")`; a KEY that is not all-uppercase →
+     `raise ValueError("property must be in uppercase")`; a `[...]` value with no preceding key,
+     or properties lacking a delimiter → `raise ValueError("properties without delimiter")`.
+     Then strip the outer `(` `)` and parse the inside as a node sequence.
+  2. A NODE begins with `;`. After it, read the KEY (run of letters, must satisfy `.isupper()`),
+     then read one OR MORE consecutive `[...]` groups — MULTIPLE `[..]` after one key are
+     MULTIPLE VALUES for that key (`AB[aa][ab][ba]` → `{"AB": ["aa","ab","ba"]}`). Repeat per key
+     until you hit `;`, `(`, or the end.
+  3. CHILDREN — THIS is the bug everyone hits:
+       - A chained `;` right after a node means that node has exactly ONE child: recursively parse
+         the rest starting at that `;` into `children` (so `(;A[B];B[C])` → root `A[B]` with one
+         child `B[C]`; a further `;C[D]` is that child's child — a single chain).
+       - One or more `(...)` groups right after a node are that node's MULTIPLE children
+         (variations): each balanced top-level `(...)` group is ONE separate child subtree — parse
+         each independently and append each to `children`. So `(;A[B](;B[C])(;C[D]))` → root
+         `A[B]` with TWO SIBLING children `B[C]` and `C[D]` (NOT nested, NOT flattened into a
+         chain). This is exactly `test_two_child_trees`.
+  4. VALUE text rules inside `[...]`: `\` is the escape char — `\]`→`]`, `\\`→`\`, and any
+     NON-whitespace char after `\` is inserted as-is (so `\t`→`t`, `\n`→`n`; SGF has NO `\t`/`\n`
+     whitespace escapes). A `\` immediately followed by a real newline deletes that newline (line
+     continuation). Every whitespace char EXCEPT newline (tab, etc.) becomes a single space; real
+     newlines stay as `\n`. `[`, `;`, `(`, `)` inside a value need no escaping.
+  After writing sgf_parsing.py, RUN `python3 -m pytest -q` and iterate until every test passes;
+  do not stop after only reading the stub and the test file, and do not leave scratch `print`
+  debugging in the final file.
 - For log-replay / parse-and-count tasks that classify every input line as VALID vs
   MALFORMED/REJECTED/SKIPPED and then report aggregate COUNTS (e.g. `malformed N`), you MUST
   actually RUN your script and sanity-check the counts before finishing — never stop with the
