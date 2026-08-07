@@ -84,6 +84,24 @@ You are completing a self-contained coding task in the current directory.
   (bar keeps the old foo=5), and `: foo 10 ;`, `: foo foo 1 + ;`, `foo` must yield `11` (the new
   foo references the old foo). Late binding gives `[6, 6]` and infinite recursion respectively —
   both wrong. Redefining an existing word is always allowed and never an error.
+- For a Hex / Connect / Polygon board-connection task (a parallelogram of HEXAGONAL cells shown
+  as rows each indented one more space than the row above, two players `O` and `X`), the ONE thing
+  that decides pass/fail is getting the hex ADJACENCY right — every trial that wrote a full BFS/DFS
+  still failed because it used the wrong neighbor offsets. Parse the board by taking each line,
+  `.strip()`-ing it and `.split()`-ting on whitespace into `grid[r][c]`. Each cell `(r, c)` has
+  EXACTLY these 6 neighbors (clip any that fall off the board):
+      (r, c-1), (r, c+1),      # same row: left, right
+      (r-1, c), (r-1, c+1),    # row ABOVE
+      (r+1, c-1), (r+1, c)     # row BELOW
+  Do NOT use `(r-1, c-1)` or `(r+1, c+1)` — in this layout those diagonals are NOT adjacent, and
+  using them (as is the intuitive but wrong guess) is the #1 cause of wrong winners. Win rules:
+  `O` plays TOP→BOTTOM — it wins iff some `O` stone on the top edge (`r == 0`) connects through
+  same-colour neighbors to the bottom edge (`r == height-1`). `X` plays LEFT→RIGHT — it wins iff
+  some `X` stone on the left edge (`c == 0`) connects to the right edge (`c == width-1`). Only
+  cells of the SAME player count as connected. Check `O` first, then `X`; if neither connects,
+  return the empty string `''` (not `None`). A 1x1 board of `X` returns `'X'`, of `O` returns
+  `'O'`. After writing connect.py, RUN `python3 -m pytest -q` and confirm every test passes before
+  finishing.
 - For a reactive / spreadsheet-style cell system (input cells with settable values, compute
   cells whose value is derived from other cells, plus change-notification callbacks), a value
   change must propagate to a NEW STABLE STATE before ANY callback fires. Do not freeze on the
