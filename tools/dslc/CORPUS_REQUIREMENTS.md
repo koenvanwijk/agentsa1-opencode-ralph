@@ -34,10 +34,13 @@ levert precies één `manifest.json` in zijn root, gevalideerd tegen
   "version": "1.0",
   "spec": "spec/grammar.md",
   "mistakes": "spec/common-mistakes.md",
-  "examples_good": "examples/good/",
-  "examples_bad": "examples/bad/"
+  "examples_good": "examples/good/"
 }
 ```
+
+`examples_bad` is **optioneel** — zie §4: de slechte voorbeelden worden normaal
+door de loop afgeleid uit de goede, niet extern aangeleverd. Neem het alleen op
+als je met de hand een edge-case-bad-voorbeeld toevoegt.
 
 Zonder manifest weet de loop niet wélke DSL de bottleneck-taak raakt en kan
 "stale" (corpus-versie veranderd → assets herbouwen) niet gedetecteerd worden.
@@ -51,14 +54,14 @@ Zonder manifest weet de loop niet wélke DSL de bottleneck-taak raakt en kan
     grammar.md            # gezaghebbende syntax/regels
     common-mistakes.md    # fout-catalogus met stabiele rule-ids
   examples/
-    good/*.<ext>          # geldige, in isolatie compileerbare voorbeelden
-    bad/
-      *.<ext>             # ongeldige voorbeelden (één fout per bestand)
-      *.expect            # verwachte diagnose per bad-voorbeeld (sidecar)
+    good/*.<ext>          # geldige voorbeelden — de EXTERNE deliverable (grondwaarheid)
+    bad/                  # OPTIONEEL: alleen met de hand toegevoegde edge cases
+      *.<ext>             #   (normaal leidt de loop de bad-set af, zie §4)
+      *.expect            #   sidecar met de verwachte diagnose
 ```
 
 Zie [`corpus_template/flags/`](./corpus_template/flags/) voor een volledig
-ingevuld voorbeeld.
+ingevuld voorbeeld (inclusief afgeleide-bad-voorbeelden ter illustratie).
 
 ## 3. De spec (voedt cheatsheet + linter)
 
@@ -75,29 +78,56 @@ ingevuld voorbeeld.
 
 ## 4. Voorbeelden — de kern van de golden self-test
 
-Dit deel bepaalt of de kwaliteitspoort werkt.
+Dit deel bepaalt of de kwaliteitspoort werkt. **Belangrijk: de goede voorbeelden
+zijn de grondwaarheid; de slechte worden daaruit afgeleid, niet verzonnen.**
 
-### Geldige voorbeelden (`examples/good/`)
+### Geldige voorbeelden (`examples/good/`) — de externe deliverable
+Dit is het enige voorbeeld-materiaal dat de externe corpus-taak hoeft te leveren.
+Prima om ze uit een bestaand archief te halen.
 - **Self-contained en compileerbaar in isolatie** — geen externe deps, geen
   impliciete context. Anders is de linter-selftest onbetrouwbaar.
-- **Minimaal per feature**: het kleinste voorbeeld dat één construct toont, niet
-  één groot voorbeeld dat alles mengt. Levert schone canonieke snippets voor de
-  cheatsheet.
 - **Coverage**: elk construct uit `spec/grammar.md` heeft ≥ 1 geldig voorbeeld.
   Ongedekte constructen kan de linter niet leren.
+- **Minimaal per feature is de voorkeur** (kleinste voorbeeld dat één construct
+  toont) — het levert schone snippets voor de cheatsheet. Grote, echte
+  archief-bestanden mogen ook: ze dienen als accept-test; de builder distilleert
+  er zelf minimale snippets uit voor de cheatsheet.
 
-### Ongeldige voorbeelden (`examples/bad/`)
-- Bij elk `bad/x.<ext>` hoort een sidecar `x.expect` met de verwachte diagnose —
-  de **reden**, niet alleen "faalt":
+### Ongeldige voorbeelden — AFGELEID, niet aangeleverd
+Slechte voorbeelden komen **niet** uit het archief (dat bevat ze niet) en worden
+**niet** vrij door de LLM verzonnen. De loop genereert ze deterministisch met
+per-rule-id **mutatie-operatoren**: neem een geldig `good/`-bestand en breek het
+op precies één manier (bijv. `DUPLICATE_FEATURE` = dupliceer het eerste blok;
+`BAD_DEFAULT` = vervang `default on` door een ongeldige waarde).
+
+- De mutator kent de geïnjecteerde fout, dus hij emit de `.expect` zelf:
   ```
   expect-error: DUPLICATE_FEATURE at line 7
   ```
-  Meerdere verwachte fouten = meerdere `expect-error:`-regels.
-- **Één fout per voorbeeld** — geïsoleerd, zodat de selftest test of de linter om
-  de júiste reden afkeurt en niet toevallig.
-- **Elke rule-id uit de fout-catalogus (§5) heeft ≥ 1 bad-voorbeeld.** Dit is
-  letterlijk de testset: alle `good` moeten passeren, alle `bad` moeten falen met
-  de verwachte rule-id.
+  → één fout per voorbeeld, en "bevat exact die fout, verder geldig" geldt
+  **per constructie** (acceptatiecriterium #5 wordt automatisch waar).
+- **Elke rule-id uit de fout-catalogus (§5) krijgt zo ≥ 1 bad-voorbeeld.** De
+  testset: alle `good` moeten passeren, elk afgeleid `bad` moet falen met de
+  verwachte rule-id.
+- Alleen fouten die mutatie niet kan synthetiseren mogen als *herzien*
+  `examples/bad/`-voorbeeld met de hand worden toegevoegd — nooit blind
+  LLM-gegenereerd.
+
+### Trust-grens (waarom afgeleid, niet LLM-verzonnen)
+De testset die de linter beoordeelt moet **onafhankelijk** zijn van de LLM die de
+linter maakt. Zou de LLM zowel de linter áls de slechte voorbeelden leveren, dan
+keurt een mogelijk-gehallucineerde linter zichzelf goed met een
+mogelijk-gehallucineerde testset (circulair). Daarom:
+
+| artefact | bron | vertrouwd omdat |
+|---|---|---|
+| goede voorbeelden | extern archief (curated) | grondwaarheid, review |
+| mutatie-operatoren | kleine, herziene tooling in `dslc` | triviaal per stuk te controleren |
+| afgeleide slechte voorbeelden + `.expect` | mutator | correct per constructie |
+| **linter/grammar + cheatsheet** | **LLM (builder)** | **wordt tegen bovenstaande getest** |
+
+De LLM mag hooguit mutatie-operatoren *voorstellen*; elke operator is klein genoeg
+om met de hand te reviewen voordat hij deel van de vertrouwde tooling wordt.
 
 ## 5. Fout-catalogus — `spec/common-mistakes.md`
 
@@ -108,8 +138,9 @@ De veelgemaakte fouten, elk met:
 
 Dezelfde rule-ids worden gebruikt in (a) de linter-diagnoses, (b) het
 "veelgemaakte fouten"-blok van de cheatsheet — precies waar een klein model op
-struikelt — en (c) de `.expect`-bestanden. De drie moeten identieke ids
-gebruiken.
+struikelt — (c) de `.expect`-bestanden, en (d) de mutatie-operatoren (§4): elke
+rule-id ↔ één operator die die fout in een `good/`-bestand injecteert. Alle vier
+moeten identieke ids gebruiken.
 
 ## 6. Governance (org-regels)
 
@@ -122,16 +153,22 @@ gebruiken.
 
 ## Acceptatiecriterium
 
-Een DSL-corpus is "klaar" voor de loop wanneer:
+De **externe** corpus-taak is klaar voor een DSL wanneer:
 
 1. `manifest.json` valideert tegen `manifest.schema.json` en alle paden bestaan;
 2. elk construct uit `spec/grammar.md` ≥ 1 `good/`-voorbeeld heeft;
-3. elke rule-id uit `spec/common-mistakes.md` ≥ 1 `bad/`-voorbeeld mét `.expect`
-   heeft, en elke `.expect` verwijst naar een bestaande rule-id;
+3. `spec/common-mistakes.md` elke fout een stabiele rule-id + een minimaal
+   fout↔goed paar geeft (dit voedt de mutatie-operatoren);
 4. alle `good/`-voorbeelden bevestigd geldig zijn (referentie-parser of review) —
-   zij zijn de grondwaarheid;
-5. alle `bad/`-voorbeelden precies de in hun `.expect` genoemde fout(en) bevatten
-   en verder geldig zouden zijn.
+   zij zijn de grondwaarheid.
 
-Voldoet de corpus hieraan, dan kan de builder er deterministisch een linter +
-cheatsheet uit distilleren en zichzelf ertegen valideren via `dslc selftest`.
+De **loop** levert daarna (buiten de externe deliverable):
+
+5. per rule-id een mutatie-operator die de fout in een `good/`-bestand injecteert
+   en de bijbehorende `.expect` emit — waarmee de afgeleide bad-set per
+   constructie "exact die fout, verder geldig" is;
+6. de gegenereerde linter + cheatsheet, gevalideerd via `dslc selftest`: alle
+   `good` passeren, elk afgeleid `bad` faalt met de verwachte rule-id.
+
+Pas na een groene `dslc selftest` gaat de gebruikelijke keep/rollback-poort de
+assets scoren op de echte DSL-taken.

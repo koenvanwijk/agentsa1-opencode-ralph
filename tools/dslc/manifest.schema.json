@@ -5,7 +5,7 @@
   "description": "Per-DSL manifest that lets the Ralph builder step map an extension to its documentation/example corpus. See CORPUS_REQUIREMENTS.md.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["name", "extensions", "version", "spec", "mistakes", "examples_good", "examples_bad"],
+  "required": ["name", "extensions", "version", "spec", "mistakes", "examples_good"],
   "properties": {
     "name": {
       "type": "string",
@@ -40,7 +40,7 @@
     "examples_bad": {
       "type": "string",
       "pattern": "/$",
-      "description": "Directory (trailing slash) of invalid examples, each with a sibling .expect sidecar."
+      "description": "OPTIONAL. Directory (trailing slash) of hand-authored edge-case invalid examples, each with a sibling .expect sidecar. Normally the bad set is DERIVED by the loop via per-rule-id mutation of the good examples (see CORPUS_REQUIREMENTS.md §4) rather than shipped in the corpus."
     }
   }
 }
