@@ -85,7 +85,41 @@ at the next restart. A separate `git worktree` also works but is not required.
 TRIALS=3 ./ralph.sh 30     # 30 iterations, 3 trials/task (detached for overnight)
 ```
 
+## GPU measurements
+Every `run_all.sh` evaluation records GPU telemetry under
+`runs/metrics/<timestamp>-<label>-p<parallelism>/` (git-ignored):
+- `nvidia-smi.csv` spans the complete evaluation; its JSON summary contains
+  mean/p50/p95/max utilization, memory activity, power, clocks, and temperature.
+- `nsys.nsys-rep` captures the first 300 seconds by default with device-level
+  DRAM, SM, Tensor, issue, and occupancy counters. When supported,
+  `nsys-summary/` contains the automatic GPU-metric utilization summary.
+- `run.env` records the label, model, task/trial counts, parallelism, duration,
+  and exit status. `runs/metrics/latest` points at the newest evaluation.
+
+The monitor is best-effort: missing Nsight, unsupported counters, or insufficient
+profiler permissions never stop Ralph. Nsight uses passwordless `sudo` when it
+is available; otherwise it tries the current user's profiler permissions and
+falls back to the lightweight stream. Set `GPU_METRICS=off` to disable all
+sampling or `GPU_METRICS=smi` to skip only Nsight. Sampling controls are
+`GPU_METRICS_INTERVAL_MS` (default 1000), `GPU_METRICS_NSYS_HZ` (100), and
+`GPU_METRICS_NSYS_SECONDS` (300).
+
+These are device-level counters from the machine running `run_all.sh`. Run the
+loop on spark-480b, alongside ds4-server, so they describe the serving GPU rather
+than a remote OpenCode client. A controlled P=1/P=3 comparison can be collected
+with:
+
+```bash
+PARALLEL_JOBS=1 RALPH_RUN_LABEL=p1 bash scripts/run_all.sh
+PARALLEL_JOBS=3 RALPH_RUN_LABEL=p3 bash scripts/run_all.sh
+```
+
+Use aggregate task throughput together with the Nsight DRAM and Tensor/SM
+counters. The `nvidia-smi` memory percentage is activity time, not achieved
+memory bandwidth, so it cannot by itself prove that decode is memory-bound.
+
 ## Setup
 - Agents-A1 served OpenAI-compatible at `http://192.168.86.32:8000/v1` (DGX Spark spark-480b).
 - `opencode` CLI installed (`~/.local/bin/opencode`).
 - `claude` CLI authenticated — used as the autonomous proposer.
+
