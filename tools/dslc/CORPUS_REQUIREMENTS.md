@@ -21,6 +21,35 @@ mensenhand oppakken.
 
 ---
 
+## 0. Plugin-model — kern generiek, DSL's extern
+
+DSL's zijn vaak domein- en bedrijfsspecifiek. Daarom blijft de **loop-kern
+generiek en bedrijfsneutraal** en zijn DSL's **plugins die van buiten geladen
+worden**. Zo blijft de loop losgekoppeld van bedrijfsprocessen en komt
+bedrijfscontent (mogelijk IP-gebonden of R1/R2) nooit in de loop-repo.
+
+**Verdeling:**
+
+| Loop-kern (deze repo, generiek, publiek) | DSL-plugin (extern, per bedrijf/domein) |
+|---|---|
+| `dslc` engine + mutatie-runner + `selftest` | `manifest.json` |
+| dit contract + `manifest.schema.json` | `spec/` (grammar.md, common-mistakes.md) |
+| gap-detector + proposer-builder-tak | `examples/good/` (uit archief) |
+| generieke mutatie-primitieven | `mutations/` (per-rule-id operatoren) |
+| alléén `flags` als referentie/smoke-test | `.cache/` ← loop genereert grammar.py + cheatsheet |
+
+**Discovery:** elke bedrijfscorpus is een **eigen git-repo, als submodule** naast
+de loop opgenomen. De loop-repo bevat dan alleen een gitlink + URL + SHA — nooit
+de bedrijfscontent zelf (sterkste scheiding + versiebeheer per bedrijf). De
+`dslc` engine scant de submodule-roots op `manifest.json`-bestanden.
+
+**Trust-grens blijft** mens-herziene code (spec + voorbeelden + mutatie-
+operatoren, allemaal van de plugin-eigenaar) versus LLM-output (alleen
+`grammar.py` + cheatsheet). De mutatie-operatoren horen dus in de plugin, niet in
+de kern — de kern levert alleen generieke primitieven om ze op te bouwen.
+
+---
+
 ## 1. Discoverability — `manifest.json` per DSL
 
 De gap-detector moet `extensie → corpus` kunnen mappen zonder giswerk. Elke DSL
@@ -47,6 +76,9 @@ Zonder manifest weet de loop niet wélke DSL de bottleneck-taak raakt en kan
 
 ## 2. Vaste layout
 
+De layout hieronder is de **plugin-bundle** (§0): hij leeft in de externe
+bedrijfs-repo, niet in de loop-kern.
+
 ```
 <dsl>/
   manifest.json
@@ -58,6 +90,8 @@ Zonder manifest weet de loop niet wélke DSL de bottleneck-taak raakt en kan
     bad/                  # OPTIONEEL: alleen met de hand toegevoegde edge cases
       *.<ext>             #   (normaal leidt de loop de bad-set af, zie §4)
       *.expect            #   sidecar met de verwachte diagnose
+  mutations/              # per-rule-id operatoren — door de plugin-EIGENAAR, zie §4
+  .cache/                 # loop GENEREERT hier grammar.py + cheatsheet.md (niet committen)
 ```
 
 Zie [`corpus_template/flags/`](./corpus_template/flags/) voor een volledig
