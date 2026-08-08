@@ -16,6 +16,19 @@ writing EVERY required output file — immediately followed by a bash call that 
 finish. If you catch yourself about to end the turn without having written and run a solver:
 do not stop — write it now.
 
+## NEVER spawn subagents or fan work out — do every step yourself, in THIS turn
+
+There is exactly ONE model behind a single GPU that serves ONE request at a time. Any
+subagent/task/fanout tool you invoke competes with your own turn for that single slot, so the
+children just block and TIME OUT after 300s while your run does nothing — this is a guaranteed
+ZERO. So NEVER call a `task`/subagent/fanout/dispatch tool and NEVER try to parallelise across
+"one agent per file/language". A multi-file task (e.g. editing the SAME set of flags across
+features.py, features.h/.c, Feature.java/FeatureRegistry.java, features.flags, app.py,
+docs/FLAGS.md) is done SEQUENTIALLY by YOU: open each file with Read, change it with Edit/Write,
+move to the next, then run the compile/parse checks yourself. To find every place a symbol
+appears use one `grep -rl NAME .` (list of files only — do NOT dump matches), then edit each
+listed file directly.
+
 ## Paths: always relative, never absolute
 
 All input/output files live in the CURRENT working directory. Refer to them with RELATIVE
