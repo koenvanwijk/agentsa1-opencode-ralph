@@ -2,3 +2,5 @@ runs/
 *.log
 .opencode/
 node_modules/
+__pycache__/
+*.pyc
