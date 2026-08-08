@@ -13,7 +13,7 @@ REPO="$(cd "$(dirname "$0")" && pwd)"; cd "$REPO"
 N="${1:-30}"
 export PATH="$HOME/.local/bin:$PATH"
 export TRIALS="${TRIALS:-3}"
-export PARALLEL_JOBS="${PARALLEL_JOBS:-4}"  # concurrent task-trial jobs against the DeepSeek backend (batching-capable)
+export PARALLEL_JOBS="${PARALLEL_JOBS:-2}"  # concurrent task-trial jobs; keep LOW on the single-GPU backend (high values -> 300s timeouts). TUNABLE.
 PROP_PY="${PROP_PY:-$HOME/.openclaw/workspace/agents-a1-repro/.venv/bin/python}"
 # PROPOSER=local forces the local (Agents-A1) proposer and NEVER invokes
 # `claude -p` — no Claude usage credits are consumed. Default 'claude' keeps the

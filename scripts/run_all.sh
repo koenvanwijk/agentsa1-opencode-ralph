@@ -2,14 +2,15 @@
 # Run every task through OpenCode TRIALS times (default 3) in isolated workdirs.
 # Each workdir gets the tunable oc_profile/ (opencode.json + AGENTS.md) so the
 # harness config and injected rules are exactly what the proposer is tuning.
-# Task x trial jobs run PARALLEL_JOBS at a time (default 4) since the DeepSeek
-# backend supports continuous batching and multiple in-flight requests scale
-# throughput well beyond one-at-a-time.
+# Task x trial jobs run PARALLEL_JOBS at a time. TUNABLE via the env var. On the
+# current single-GPU spark backend, requests effectively serialize, so a high
+# value just over-subscribes the GPU and causes 300s timeouts — keep it low
+# (default 2). Raise it only if the backend actually batches N in flight.
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 export PATH="$HOME/.local/bin:$PATH"
 TRIALS="${TRIALS:-3}"
 MODEL="${OC_MODEL:-agentsa1/Agents-A1}"
-PARALLEL_JOBS="${PARALLEL_JOBS:-4}"
+PARALLEL_JOBS="${PARALLEL_JOBS:-2}"
 
 run_one(){
   local t="$1" k="$2"
