@@ -71,7 +71,13 @@ propose_copilot(){  # $1=iter ; Claude Sonnet 5 via Copilot. Returns 0 iff a val
   proposal_valid "$logf"
 }
 
-commit(){ git add -A && git commit -q -m "$1" && git push -q 2>/dev/null || true; }
+# Stage ONLY the paths the loop owns (its write domain: the oc_profile/ profile
+# incl. AGENTS.md, the RESULTS.md ledger, and the task/bench sets). This stops a
+# `git add -A` from sweeping unrelated in-progress work in a shared checkout into
+# a proposer-labelled commit. Dev work lives in a separate `git worktree`; this
+# is the safety net for anything that still lands in the loop's own tree.
+LOOP_PATHS=(oc_profile RESULTS.md tasks bench_pool)
+commit(){ git add -A -- "${LOOP_PATHS[@]}" && git commit -q -m "$1" && git push -q 2>/dev/null || true; }
 
 log "=== ralph start (opencode/Agents-A1): up to $N iterations, TRIALS=$TRIALS ==="
 wait_for_model

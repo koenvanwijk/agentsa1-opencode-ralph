@@ -27,5 +27,7 @@ num=$(printf "%02d" $(( $(ls -d tasks/*/ 2>/dev/null | wc -l) + 1 )))
 dest="tasks/${num}_${next}"
 mv "$src" "$dest"
 log "imported benchmark task $dest (aider polyglot)"
-git add -A && git commit -q -m "escalate: import benchmark task ${num}_${next} (aider polyglot)" && git push -q 2>/dev/null || true
+# stage only the loop-owned paths the escalation touches (never a bare -A, so a
+# shared checkout's in-progress work is not swept into this commit).
+git add -A -- tasks bench_pool && git commit -q -m "escalate: import benchmark task ${num}_${next} (aider polyglot)" && git push -q 2>/dev/null || true
 exit 0
