@@ -17,13 +17,19 @@ run_one(){
   local out="$REPO/runs/current/$name/trial$k"
   rm -rf "$out"; mkdir -p "$out"
   [ -d "$t/seed" ] && cp -a "$t/seed/." "$out/" 2>/dev/null || true
-  # inject the tuned profile into the workdir (project-local opencode config)
-  cp "$REPO/oc_profile/opencode.json" "$out/opencode.json"
-  cp "$REPO/oc_profile/AGENTS.md" "$out/AGENTS.md"
-  timeout 900 opencode run --dir "$out" -m "$MODEL" "$(cat "$t/prompt.txt")" \
-    > "$out/_oc_stdout.txt" 2>&1
-  # remove profile files so verify.sh only sees task artifacts
-  rm -f "$out/opencode.json" "$out/AGENTS.md"
+  if [ -f "$t/solve.sh" ]; then
+    # per-task solver OVERRIDE (e.g. tier-B subagent fan-out). It manages its own
+    # harness profile(s) per subagent, so no top-level profile is injected here.
+    timeout 1800 bash "$t/solve.sh" "$out" > "$out/_oc_stdout.txt" 2>&1
+  else
+    # default: one opencode run over the whole task with the tuned profile
+    cp "$REPO/oc_profile/opencode.json" "$out/opencode.json"
+    cp "$REPO/oc_profile/AGENTS.md" "$out/AGENTS.md"
+    timeout 900 opencode run --dir "$out" -m "$MODEL" "$(cat "$t/prompt.txt")" \
+      > "$out/_oc_stdout.txt" 2>&1
+    # remove profile files so verify.sh only sees task artifacts
+    rm -f "$out/opencode.json" "$out/AGENTS.md"
+  fi
   echo "done $name trial$k"
 }
 export -f run_one
