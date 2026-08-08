@@ -24,7 +24,7 @@ LLM**. For the corpus it:
 1. compiles every `examples/good/*` — all must pass clean;
 2. checks the mutators cover the fault catalogue (`spec/common-mistakes.md`);
 3. for each good example × each rule-id, derives one bad example via
-   `mutators/<name>.py` and asserts the linter rejects it with **exactly** that
+   `mutations/<name>.py` and asserts the linter rejects it with **exactly** that
    rule-id, at the **expected line**.
 
 The bad set is *derived*, never hand-authored or LLM-invented, so the test that
@@ -37,7 +37,7 @@ example that fails to compile, or a mutant that trips the wrong id all make
 
 A rule-id lives in four places that must agree: the linter diagnosis
 (`grammars/<name>.py`), the cheatsheet + `spec/common-mistakes.md`, the `.expect`
-sidecars, and one mutation operator in `mutators/<name>.py`. `selftest` is what
+sidecars, and one mutation operator in `mutations/<name>.py`. `selftest` is what
 enforces that they agree.
 
 ## Add a new DSL (reuse)

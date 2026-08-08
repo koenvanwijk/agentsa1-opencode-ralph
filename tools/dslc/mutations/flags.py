@@ -6,7 +6,7 @@ good examples by breaking one on exactly one axis. Each operator here owns one
 stable rule-id (matching spec/common-mistakes.md and grammars/flags.py) and, by
 construction, injects exactly that one fault into an otherwise-valid file.
 
-Living in `mutators/` — separate from the linter in `grammars/` — is deliberate:
+Living in `mutations/` — separate from the linter in `grammars/` — is deliberate:
 the test set that judges the linter must be independent of the (LLM-authored)
 linter. These operators are small enough to review by hand.
 

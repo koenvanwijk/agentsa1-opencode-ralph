@@ -23,7 +23,7 @@ without touching dslc.py.
 `selftest` is the golden gate from CORPUS_REQUIREMENTS.md: it validates a DSL's
 linter against its corpus WITHOUT any LLM. It (1) checks every good/ example
 compiles clean, (2) checks the mutators cover the fault catalogue, and (3) for
-each good example derives one bad example per rule-id (via mutators/<name>.py)
+each good example derives one bad example per rule-id (via mutations/<name>.py)
 and checks the linter rejects it with EXACTLY that rule-id, at the expected
 line. The derived-bad set is what keeps the test independent of the linter.
 """
@@ -121,9 +121,9 @@ def cmd_selftest(corpus_dir, emit_bad=None):
     if grammar is None:
         print(f"selftest: no grammar grammars/{name}.py", file=sys.stderr)
         return 2
-    mutmod = _load_module("mutators", name)
+    mutmod = _load_module("mutations", name)
     if mutmod is None or not getattr(mutmod, "MUTATORS", None):
-        print(f"selftest: no mutators mutators/{name}.py with MUTATORS", file=sys.stderr)
+        print(f"selftest: no mutations mutations/{name}.py with MUTATORS", file=sys.stderr)
         return 2
 
     exts = tuple(manifest["extensions"])

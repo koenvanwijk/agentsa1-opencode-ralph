@@ -815,9 +815,9 @@
         <p>Acceptatie: alle <code>good/</code> passeren, elk afgeleid <code>bad/</code> faalt met de verwachte
           rule-id. Precies dezelfde <b>propose → test → keep/rollback</b> als de grote loop, maar één niveau dieper.</p>
         <p style="color:var(--teal)"><b>Nu geïmplementeerd</b> voor de <code>flags</code>-referentie:
-          <code>tools/dslc/mutators/flags.py</code> + <code>dslc.py selftest</code> — groen, en faalt
-          aantoonbaar bij een rule-id zonder mutator. (Bij een echte plugin heet deze map
-          <code>mutations/</code> en woont hij in de plugin-repo.)</p>
+          <code>tools/dslc/mutations/flags.py</code> + <code>dslc.py selftest</code> — groen, en faalt
+          aantoonbaar bij een rule-id zonder mutator. Bij een echte plugin woont dezelfde
+          <code>mutations/</code>-map in de plugin-repo (submodule).</p>
       </div>
     </div>
     <p class="repo mono" style="margin-top:16px">
