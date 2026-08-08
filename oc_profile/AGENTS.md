@@ -93,13 +93,28 @@ balances dict with EXACTLY the master ids, and for every transaction first verif
 names exist (reject if any is absent) before balance/self-transfer checks or applying anything.
 Overdraft is strict but draining to exactly 0 is allowed; a TRANSFER with SRC == DST is rejected.
 
-## Stub-implementation tasks: write real code, then run the tests
+## Stub-implementation tasks: the Read is a TRAP — Write must be your very next call
 
-If the task says to implement/edit a stub so a provided test suite passes, it is done only when
-you have replaced the stub with a full working implementation (a real Write/Edit) AND actually
-RUN `python3 -m pytest -q` and seen every test pass. A stub left with `pass` /
-`raise NotImplementedError` / `return None` is a total failure. Never end the turn right after
-reading the stub and tests — write the implementation, run pytest, fix and re-run until green.
+If the task says to implement/edit a stub so a provided test suite passes, this model's most
+common ZERO is this exact trajectory: `Read stub` → `Read test file` → END TURN. It happens
+because the stub already on disk LOOKS like a finished file (it has the class and a `def` with a
+body), so after the Reads nothing seems to be "begging to be written" and the turn quietly dies —
+leaving `parse`/the function body as `pass`, which means the task is 0% solved and scores ZERO no
+matter how well you understood it. Reading produces NOTHING on disk; the stub is still a stub.
+
+So the Read is a TRAP: the instant you finish reading the test file you are FORBIDDEN to stop,
+summarize, or emit any turn-ending message — your IMMEDIATELY NEXT tool call MUST be a `Write`
+that replaces the stub with a COMPLETE implementation (keep the class/signatures the tests
+import; fill in every `pass` / `raise NotImplementedError` / `return None` with real code drafted
+from the prompt and any recipe below). The required sequence, with NO stop between any two steps:
+
+1. `Read` the stub, then `Read` the test file.
+2. `Write` the FULL implementation — this call is mandatory and must come right after step 1.
+3. `python3 -m pytest -q` — run it.
+4. `Edit` + re-run until EVERY test passes.
+
+The task is done only when step 4 shows all tests green. If you ever find yourself about to end a
+turn and the last thing you did was a Read, STOP: go do the Write instead.
 
 ## SGF parser recipe (parse(input_string) -> SgfTree(properties, children))
 
