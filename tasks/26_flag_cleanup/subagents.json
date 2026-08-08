@@ -1,0 +1,30 @@
+{
+  "spec": "Feature-flag cleanup. Remove the two DEAD flags LEGACY_EXPORT and OLD_BILLING completely; keep the three others (DARK_MODE, BETA_SEARCH, MULTI_REGION) and their values/behaviour unchanged. Remove every trace of the two dead flags in the files you own: enum members, switch/branch arms, dictionaries/maps/sets, comments, docstrings and docs. Leave no dangling reference, empty entry, or dead code.",
+  "subagents": [
+    {
+      "name": "python",
+      "files": ["features.py", "app.py"],
+      "hint": "Python `Feature` enum + helpers, and app.py. Keep `python3 -c \"import features, app\"` working (mind the module-level ALL_FEATURES tuple)."
+    },
+    {
+      "name": "c",
+      "files": ["features.h", "features.c"],
+      "hint": "C `feature_t` enum + feature_name(). Remove the enum members AND their switch cases; keep `gcc -c features.c` compiling."
+    },
+    {
+      "name": "java",
+      "files": ["Feature.java", "FeatureRegistry.java"],
+      "hint": "Java `Feature` enum + FeatureRegistry. Remove enum constants AND their switch cases / EnumSet uses; keep `javac Feature.java FeatureRegistry.java` compiling."
+    },
+    {
+      "name": "dsl",
+      "files": ["features.flags"],
+      "hint": "The feature-flag DSL. Remove the two whole `feature { ... }` blocks; it must still compile with tools/dslc."
+    },
+    {
+      "name": "docs",
+      "files": ["docs/FLAGS.md"],
+      "hint": "Human docs. Remove the two table rows and any prose mentioning the dead flags."
+    }
+  ]
+}

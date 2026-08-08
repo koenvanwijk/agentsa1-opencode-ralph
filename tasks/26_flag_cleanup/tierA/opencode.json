@@ -1,0 +1,54 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "agentsa1/deepseek-v4-flash",
+  "permission": { "edit": "allow", "bash": "allow", "webfetch": "allow", "read": "allow", "external_directory": "allow" },
+  "provider": {
+    "agentsa1": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "DeepSeek V4 Flash (spark-480b, was Agents-A1 slot)",
+      "options": {
+        "baseURL": "http://192.168.86.32:8000/v1",
+        "apiKey": "EMPTY"
+      },
+      "models": {
+        "deepseek-v4-flash": {
+          "name": "DeepSeek V4 Flash",
+          "limit": { "context": 32768, "output": 8192 },
+          "options": { "temperature": 0.1 }
+        },
+        "Agents-A1": {
+          "name": "Agents-A1 (alias -> current spark backend)",
+          "limit": { "context": 32768, "output": 8192 },
+          "options": { "temperature": 0.1 }
+        }
+      }
+    }
+  },
+  "agent": {
+    "python-flags": {
+      "mode": "subagent",
+      "description": "Clean feature flags in the Python files ONLY (features.py, app.py).",
+      "prompt": "You edit ONLY features.py and app.py. Remove exactly the feature flags you are told to remove and keep the rest unchanged. Remove them from the enum, dicts, comments and docstrings. Keep `python3 -c \"import features, app\"` working. Do not touch any other file."
+    },
+    "c-flags": {
+      "mode": "subagent",
+      "description": "Clean feature flags in the C files ONLY (features.h, features.c).",
+      "prompt": "You edit ONLY features.h and features.c. Remove the named enum members AND their switch cases. Keep `gcc -c features.c` compiling. Do not touch any other file."
+    },
+    "java-flags": {
+      "mode": "subagent",
+      "description": "Clean feature flags in the Java files ONLY (Feature.java, FeatureRegistry.java).",
+      "prompt": "You edit ONLY Feature.java and FeatureRegistry.java. Remove the named enum constants AND their switch cases / EnumSet uses. Keep `javac Feature.java FeatureRegistry.java` compiling. Do not touch any other file."
+    },
+    "dsl-flags": {
+      "mode": "subagent",
+      "description": "Clean feature flags in the DSL file ONLY (features.flags).",
+      "prompt": "You edit ONLY features.flags. Remove the two whole `feature NAME { ... }` blocks for the named dead flags. It must still compile with the DSL compiler. Do not touch any other file."
+    },
+    "docs-flags": {
+      "mode": "subagent",
+      "description": "Clean feature flags in the docs ONLY (docs/FLAGS.md).",
+      "prompt": "You edit ONLY docs/FLAGS.md. Remove the table rows and any prose that mention the named dead flags. Do not touch any other file."
+    }
+  }
+}
