@@ -1,0 +1,32 @@
+# Feature flag registry — machine-readable source of truth.
+# Compiled/validated by tools/dslc (`dslc.py check features.flags`).
+
+feature DARK_MODE {
+    default on
+    owner ui
+    description "New dark theme"
+}
+
+feature BETA_SEARCH {
+    default off
+    owner search
+    description "Experimental search ranking"
+}
+
+feature MULTI_REGION {
+    default on
+    owner platform
+    description "Serve from multiple regions"
+}
+
+feature LEGACY_EXPORT {
+    default off
+    owner platform
+    description "Old CSV export path, superseded"
+}
+
+feature OLD_BILLING {
+    default off
+    owner billing
+    description "Pre-2021 billing engine"
+}

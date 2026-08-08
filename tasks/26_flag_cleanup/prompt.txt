@@ -1,0 +1,22 @@
+This project declares the SAME set of feature flags in four places that must stay in sync:
+- features.py                        (Python `Feature` enum + helpers)
+- features.h / features.c            (C `feature_t` enum + feature_name)
+- Feature.java / FeatureRegistry.java (Java `Feature` enum + registry)
+- features.flags                     (a feature-flag DSL, compiled by tools/dslc)
+
+Two flags are dead and must be removed completely: LEGACY_EXPORT and OLD_BILLING.
+Keep the other three exactly as they are: DARK_MODE, BETA_SEARCH, MULTI_REGION.
+
+Requirements:
+- Remove the two dead flags from ALL files above (including the DSL), and from every
+  usage: enum members, switch/branch arms, dictionaries/maps/sets, comments, docstrings,
+  and the human docs in docs/FLAGS.md.
+- Do NOT change the behaviour or values of the three remaining flags.
+- Everything must still compile/parse afterwards:
+    python3 -c "import features, app"
+    gcc -std=c11 -c features.c
+    javac Feature.java FeatureRegistry.java
+    and features.flags must still compile with the DSL compiler.
+- Leave no dangling references, empty table rows, empty enum entries, or dead code behind.
+
+Then verify your work compiles.
