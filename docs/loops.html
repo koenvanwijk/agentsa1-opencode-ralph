@@ -1,0 +1,1025 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%81%3C/text%3E%3C/svg%3E">
+<!-- Self-contained visual documentation of the Ralph loops (also published as an Artifact). This file is the canonical repo copy — edit it directly. -->
+<style>*{box-sizing:border-box}body{margin:0}</style>
+<title>De loops van agentsa1-opencode-ralph</title>
+<style>
+  :root{
+    --bg:#f3f2ee; --surface:#fbfaf7; --surface-2:#eceae3;
+    --ink:#1b1e24; --muted:#5c636e; --faint:#8a909a;
+    --line:#d9d6cd; --line-strong:#c3bfb2;
+    --teal:#0b6e78; --teal-soft:#0b6e7818;
+    --gold:#a86a12; --gold-soft:#a86a1216;
+    --red:#a8443a; --red-soft:#a8443a14;
+    --core:#0b6e78;
+    --shadow:0 1px 2px rgba(20,22,28,.05),0 8px 24px rgba(20,22,28,.06);
+  }
+  :root:not([data-theme="light"]){ }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#111318; --surface:#181b21; --surface-2:#1f232b;
+      --ink:#e9eaee; --muted:#a2a9b4; --faint:#727986;
+      --line:#2b2f38; --line-strong:#3a3f4a;
+      --teal:#43b9c5; --teal-soft:#43b9c51e;
+      --gold:#e0a93c; --gold-soft:#e0a93c1c;
+      --red:#e07568; --red-soft:#e0756814;
+      --core:#43b9c5;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#111318; --surface:#181b21; --surface-2:#1f232b;
+    --ink:#e9eaee; --muted:#a2a9b4; --faint:#727986;
+    --line:#2b2f38; --line-strong:#3a3f4a;
+    --teal:#43b9c5; --teal-soft:#43b9c51e;
+    --gold:#e0a93c; --gold-soft:#e0a93c1c;
+    --red:#e07568; --red-soft:#e0756814;
+    --core:#43b9c5;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    line-height:1.6;font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+
+  /* ---- header ---- */
+  header{padding:64px 0 40px;border-bottom:1px solid var(--line)}
+  .eyebrow{
+    font-family:ui-monospace,monospace;font-size:12px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--teal);margin:0 0 18px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--teal)}
+  h1{
+    font-size:clamp(30px,5.2vw,50px);line-height:1.05;letter-spacing:-.02em;
+    margin:0 0 20px;font-weight:680;text-wrap:balance;
+  }
+  .lede{font-size:clamp(17px,2.2vw,20px);color:var(--muted);max-width:60ch;margin:0}
+  .repo{
+    margin-top:22px;font-family:ui-monospace,monospace;font-size:12.5px;
+    color:var(--faint);display:flex;flex-wrap:wrap;gap:6px 16px;
+  }
+  .repo b{color:var(--muted);font-weight:500}
+
+  /* ---- section scaffolding ---- */
+  section{padding:52px 0;border-bottom:1px solid var(--line)}
+  .sec-label{
+    font-family:ui-monospace,monospace;font-size:12px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--faint);margin:0 0 8px;
+  }
+  h2{font-size:clamp(22px,3.4vw,30px);letter-spacing:-.01em;margin:0 0 14px;font-weight:660;text-wrap:balance}
+  .sec-intro{color:var(--muted);max-width:64ch;margin:0 0 6px}
+
+  /* ---- hero figure ---- */
+  figure{margin:0}
+  .fig-hero{margin-top:8px}
+  .fig-hero svg{width:100%;height:auto;display:block}
+  figcaption{font-size:13.5px;color:var(--faint);margin-top:14px;max-width:70ch;font-style:italic}
+
+  /* ---- legend ---- */
+  .legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin:22px 0 0;padding:0;list-style:none}
+  .legend li{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--muted)}
+  .swatch{width:15px;height:15px;border-radius:4px;flex:none;border:1px solid var(--line-strong)}
+  .sw-eval{background:var(--teal-soft);border-color:var(--teal)}
+  .sw-learn{background:var(--gold-soft);border-color:var(--gold)}
+  .sw-ctrl{background:transparent;border:1.5px dashed var(--muted)}
+  .sw-core{background:var(--core)}
+
+  /* ---- loop cards ---- */
+  .loops{display:flex;flex-direction:column;gap:18px;margin-top:26px}
+  .loop{
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .loop-head{
+    display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+    padding:18px 22px 14px;border-bottom:1px solid var(--line);
+  }
+  .ring-id{
+    font-family:ui-monospace,monospace;font-weight:700;font-size:13px;
+    color:var(--bg);background:var(--ink);border-radius:6px;
+    padding:3px 9px;letter-spacing:.02em;flex:none;
+  }
+  .loop.learn .ring-id{background:var(--gold);color:#1b1206}
+  .loop.core .ring-id{background:var(--core);color:#04191b}
+  .loop.ctrl .ring-id{background:transparent;color:var(--muted);border:1.5px dashed var(--line-strong)}
+  .loop-title{font-size:18px;font-weight:640;margin:0;letter-spacing:-.01em}
+  .cadence{
+    margin-left:auto;font-family:ui-monospace,monospace;font-size:11.5px;
+    color:var(--faint);text-transform:uppercase;letter-spacing:.08em;
+    white-space:nowrap;
+  }
+  .loop-body{padding:16px 22px 20px;display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:660px){.loop-body{grid-template-columns:1.15fr .85fr}}
+
+  .flow{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:0}
+  .flow li{position:relative;padding:0 0 14px 26px;font-size:14.5px;color:var(--ink)}
+  .flow li:last-child{padding-bottom:0}
+  .flow li::before{
+    content:"";position:absolute;left:5px;top:6px;width:9px;height:9px;border-radius:50%;
+    background:var(--surface);border:2px solid var(--teal);
+  }
+  .flow li::after{
+    content:"";position:absolute;left:9px;top:15px;bottom:0;width:2px;background:var(--line);
+  }
+  .flow li:last-child::after{display:none}
+  .loop.learn .flow li::before{border-color:var(--gold)}
+  .flow .step-t{font-weight:600}
+  .flow small{display:block;color:var(--muted);font-size:13px;margin-top:1px}
+
+  .meta{
+    background:var(--surface-2);border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;font-size:13px;align-self:start;
+  }
+  .meta dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:7px 12px}
+  .meta dt{color:var(--faint);font-family:ui-monospace,monospace;font-size:11px;text-transform:uppercase;letter-spacing:.07em;padding-top:2px}
+  .meta dd{margin:0;color:var(--ink)}
+  code{
+    font-family:ui-monospace,monospace;font-size:.86em;
+    background:var(--surface-2);border:1px solid var(--line);border-radius:5px;
+    padding:.5px 5px;color:var(--ink);white-space:nowrap;
+  }
+  .meta code{background:var(--surface);}
+  .tag{
+    display:inline-block;font-family:ui-monospace,monospace;font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:999px;
+    border:1px solid var(--line-strong);color:var(--muted);margin:2px 4px 0 0;
+  }
+  .tag.learn{border-color:var(--gold);color:var(--gold);background:var(--gold-soft)}
+  .tag.exit{border-color:var(--red);color:var(--red);background:var(--red-soft)}
+
+  /* ---- mini figures ---- */
+  .minis{display:grid;grid-template-columns:1fr;gap:26px;margin-top:24px}
+  @media(min-width:720px){.minis{grid-template-columns:1fr 1fr}}
+  .mini{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)}
+  .mini h3{margin:0 0 4px;font-size:16px;font-weight:640}
+  .mini p{margin:0 0 12px;font-size:13.5px;color:var(--muted)}
+  .mini svg{width:100%;height:auto;display:block}
+
+  /* ---- learning thread ---- */
+  .learn-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:24px}
+  @media(min-width:720px){.learn-grid{grid-template-columns:repeat(2,1fr)}}
+  .lcard{border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:10px;background:var(--surface);padding:18px 20px}
+  .lcard h3{margin:0 0 6px;font-size:16px;display:flex;align-items:center;gap:9px}
+  .lcard h3 .k{font-family:ui-monospace,monospace;font-size:11px;color:var(--gold);border:1px solid var(--gold);border-radius:5px;padding:1px 6px}
+  .lcard p{margin:0;font-size:14px;color:var(--muted)}
+  .lcard p + p{margin-top:8px}
+  .lcard b{color:var(--ink);font-weight:600}
+
+  .callout{
+    margin-top:30px;background:var(--surface-2);border:1px solid var(--line);
+    border-radius:12px;padding:20px 22px;font-size:14.5px;color:var(--ink);
+  }
+  .callout b{color:var(--teal)}
+
+  footer{padding:40px 0 60px;color:var(--faint);font-size:13px}
+  footer .mono{font-size:12px}
+
+  a{color:var(--teal);text-decoration:none;border-bottom:1px solid transparent}
+  a:hover{border-bottom-color:var(--teal)}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:3px}
+  @media(prefers-reduced-motion:no-preference){
+    .pulse{animation:pulse 3.4s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:.85}50%{opacity:.35}}
+  }
+</style>
+</head>
+<body>
+
+
+<header>
+  <div class="wrap">
+    <p class="eyebrow">Denken in loops · agentsa1-opencode-ralph</p>
+    <h1>Zes geneste loops die een lokaal model beter leren coderen</h1>
+    <p class="lede">Het hele project is één idee, herhaald op zes tijdschalen: van een trage
+      curriculum-loop die maanden draait, tot de agentische loop van het model dat in seconden
+      een bestand bewerkt. Elke ring voedt de ring erbinnen — en op twee plekken wordt er geleerd.</p>
+    <div class="repo mono">
+      <span><b>repo:</b> koenvanwijk/agentsa1-opencode-ralph</span>
+      <span><b>doel:</b> Agents-A1 → <span style="color:var(--gold)">DeepSeek V4 Flash</span> (backend geswitcht, alias)</span>
+      <span><b>harness:</b> OpenCode CLI</span>
+      <span><b>zonder:</b> fine-tuning van gewichten</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO DIAGRAM ============ -->
+<section>
+  <div class="wrap">
+    <p class="sec-label">De kaart</p>
+    <h2>Loops binnen loops</h2>
+    <p class="sec-intro">Lees van buiten naar binnen: elke ring is een lus die de ring erbinnen
+      vele malen laat draaien voordat hij zelf één stap zet. Buiten = traag en zeldzaam,
+      binnen = snel en constant. De kern is het model dat écht typt.</p>
+
+    <figure class="fig-hero">
+      <svg viewBox="0 0 900 662" role="img" aria-label="Concentrische diagram van zes geneste loops, van de buitenste curriculum-loop tot de binnenste agentische model-loop">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- L1 curriculum (learn = gold) -->
+        <rect x="24" y="24" width="852" height="614" rx="18" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5"/>
+        <text x="42" y="49" class="mono" font-size="13.5" font-weight="700" fill="var(--gold)">L1 · CURRICULUM-LOOP</text>
+        <text x="858" y="49" text-anchor="end" class="mono" font-size="11.5" fill="var(--gold)">draait ~1×/dag · leert</text>
+
+        <!-- L2 evolutie (learn = gold) -->
+        <rect x="48" y="74" width="804" height="540" rx="16" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5"/>
+        <text x="66" y="98" class="mono" font-size="13" font-weight="700" fill="var(--gold)">L2 · RALPH EVOLUTIE-LOOP</text>
+        <text x="834" y="98" text-anchor="end" class="mono" font-size="11" fill="var(--gold)">per ronde · leert · commit+push</text>
+
+        <!-- L3 adaptive proposer / health (control = dashed) -->
+        <rect x="72" y="122" width="756" height="468" rx="14" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <text x="90" y="146" class="mono" font-size="12.5" font-weight="700" fill="var(--muted)">L3 · PROPOSER + HEALTH (control)</text>
+        <text x="810" y="146" text-anchor="end" class="mono" font-size="11" fill="var(--muted)">per ronde · nooit stallen</text>
+
+        <!-- L4 evaluatie -->
+        <rect x="96" y="170" width="708" height="396" rx="13" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="114" y="194" class="mono" font-size="12.5" font-weight="700" fill="var(--teal)">L4 · EVALUATIE-LOOP  (taken × trials)</text>
+        <text x="786" y="194" text-anchor="end" class="mono" font-size="11" fill="var(--teal)">4 parallel · fitness</text>
+
+        <!-- L5 opencode run -->
+        <rect x="120" y="218" width="660" height="324" rx="12" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="138" y="242" class="mono" font-size="12" font-weight="700" fill="var(--teal)">L5 · opencode run  (1 trial)</text>
+        <text x="762" y="242" text-anchor="end" class="mono" font-size="11" fill="var(--teal)">timeout 900s</text>
+
+        <!-- L6 model turn (core) -->
+        <rect x="150" y="268" width="600" height="248" rx="14" fill="var(--core)" stroke="var(--core)" stroke-width="1.5"/>
+        <text x="450" y="300" text-anchor="middle" class="mono" font-size="13" font-weight="700" fill="#04191b" style="fill:#04191b">L6 · AGENTISCHE MODEL-LOOP</text>
+        <text x="450" y="320" text-anchor="middle" class="mono" font-size="10.5" fill="#04191b" style="fill:#04191b" opacity=".8">de kern — hier typt het model écht</text>
+
+        <!-- L6 inner cycle -->
+        <g transform="translate(450,410)" fill="#04191b" style="fill:#04191b" stroke="#04191b" text-anchor="middle">
+          <g class="mono" font-size="11.5" font-weight="600" stroke="none">
+            <text x="0" y="-58">Read</text>
+            <text x="112" y="4">Edit / Write</text>
+            <text x="0" y="66">bash · run</text>
+            <text x="-112" y="4">verify</text>
+          </g>
+          <!-- circular arrows between the four -->
+          <g fill="none" stroke-width="1.6" opacity=".9">
+            <path d="M 40,-52 A 66 66 0 0 1 74,-14" marker-end="url(#ah)"/>
+            <path d="M 78,20 A 66 66 0 0 1 40,54" marker-end="url(#ah)"/>
+            <path d="M -40,54 A 66 66 0 0 1 -78,16" marker-end="url(#ah)"/>
+            <path d="M -74,-16 A 66 66 0 0 1 -40,-52" marker-end="url(#ah)"/>
+          </g>
+          <circle cx="0" cy="0" r="4" fill="#04191b" stroke="none"/>
+        </g>
+
+        <!-- feedback arrow: L6 result climbs back out to L2 (learning) -->
+        <g stroke="var(--gold)" fill="var(--gold)" class="pulse">
+          <path d="M 750,392 C 862,392 866,300 866,120 C 866,86 852,74 852,74"
+                fill="none" stroke-width="1.8" stroke-dasharray="2 4" marker-end="url(#ah)"/>
+          <text x="872" y="300" class="mono" font-size="10.5" transform="rotate(90 872 300)" text-anchor="middle">score → keep/rollback → AGENTS.md</text>
+        </g>
+      </svg>
+      <figcaption>Elke buitenring moet volledig “rondgaan” door zijn binnenring een groot aantal
+        keren te laten draaien. L2 draait L4 één keer per voorstel; L4 draait L5 twaalf keer
+        (4 taken × 3 trials); L5 is één turn van het model = L6. De gouden stippellijn is de
+        terugkoppeling: de gemeten score bepaalt of de edit blijft, en dus wat het model leert.</figcaption>
+    </figure>
+
+    <ul class="legend">
+      <li><span class="swatch sw-learn"></span> Leren — gehouden verandering / groeiend curriculum</li>
+      <li><span class="swatch sw-eval"></span> Evaluatie — meet de fitness (score)</li>
+      <li><span class="swatch sw-ctrl"></span> Control — houdt de loop draaiend, leert niet</li>
+      <li><span class="swatch sw-core"></span> Kern — het model dat écht bestanden bewerkt</li>
+    </ul>
+    <p class="sec-intro" style="margin-top:20px;font-size:14.5px">Naast deze 6 geneste <em>uitvoerings</em>-loops
+      haken er nog <b>drie zij-/meta-loops</b> in: de adaptieve proposer (wie schrijft het voorstel),
+      de fan-out (subagenten met eigen scoped <code>AGENTS.md</code>) en de DSL-builder-loop (per DSL leren
+      van externe plugins) — alle drie verderop.</p>
+  </div>
+</section>
+
+<!-- ============ LOOP BY LOOP ============ -->
+<section>
+  <div class="wrap">
+    <p class="sec-label">Loop voor loop</p>
+    <h2>Wat draait er, waarmee, en waar stopt het</h2>
+    <p class="sec-intro">Zes lussen, plus twee zij-loops. Per loop: het ritme, de stappen,
+      het script/de tool dat het aandrijft (met <code class="mono">bestand:regel</code>), en de exit-conditie.</p>
+
+    <div class="loops">
+
+      <!-- L1 -->
+      <div class="loop learn">
+        <div class="loop-head">
+          <span class="ring-id">L1</span>
+          <p class="loop-title">Curriculum-loop — escalatie</p>
+          <span class="cadence">buitenste · traagste</span>
+        </div>
+        <div class="loop-body">
+          <ul class="flow">
+            <li><span class="step-t">Meet verzadiging</span><small>elke Ralph-ronde: slagen álle taken? Zo 2 rondes achter elkaar → vuur.</small></li>
+            <li><span class="step-t">Importeer hardere taak</span><small>haalt de volgende zwaarste aider-polyglot-oefening uit <code>bench_pool/</code>, hard-first volgens <code>ORDER.txt</code>.</small></li>
+            <li><span class="step-t">Re-baseline</span><small>run + score de grotere takenset opnieuw; reset de <code>bar</code>.</small></li>
+          </ul>
+          <div class="meta">
+            <dl>
+              <dt>Script</dt><dd><code>ralph.sh:154–171</code> → <code>scripts/import_bench.sh</code></dd>
+              <dt>Bron</dt><dd><code>bench_pool/</code> · 27 taken over</dd>
+              <dt>Waarom</dt><dd>altijd kop-ruimte houden, zodat de selectiedruk nooit wegvalt</dd>
+            </dl>
+            <div style="margin-top:10px">
+              <span class="tag learn">leren: curriculum</span>
+              <span class="tag exit">exit: pool leeg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- L2 -->
+      <div class="loop learn">
+        <div class="loop-head">
+          <span class="ring-id">L2</span>
+          <p class="loop-title">Ralph evolutie-loop — de grote lus</p>
+          <span class="cadence">per ronde · het hart</span>
+        </div>
+        <div class="loop-body">
+          <ul class="flow">
+            <li><span class="step-t">Voorstel</span><small>de proposer maakt precies ÉÉN edit onder <code>oc_profile/</code> (meestal <code>AGENTS.md</code>).</small></li>
+            <li><span class="step-t">Apply → run → score</span><small>injecteer profiel, draai alle taken (L4), bereken nieuwe score.</small></li>
+            <li><span class="step-t">Keep of rollback</span><small>score ≥ <code>bar</code>? → houden, <code>bar</code> ratchet omhoog. Anders → <code>git checkout</code> terug, <code>bar</code> zakt via EMA (<code>DECAY=0.7</code>).</small></li>
+            <li><span class="step-t">Commit + push</span><small>elke ronde vastgelegd in git en in <code>RESULTS.md</code>.</small></li>
+          </ul>
+          <div class="meta">
+            <dl>
+              <dt>Script</dt><dd><code>ralph.sh:99–172</code></dd>
+              <dt>Selectie</dt><dd><code>bar</code>: high-water-mark met verval — een toevalspiek erodeert, een reproduceerbare score blijft</dd>
+              <dt>Ledger</dt><dd><code>RESULTS.md</code> + git-historie</dd>
+            </dl>
+            <div style="margin-top:10px">
+              <span class="tag learn">leren: gehouden regels stapelen in AGENTS.md</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- L3 -->
+      <div class="loop ctrl">
+        <div class="loop-head">
+          <span class="ring-id">L3</span>
+          <p class="loop-title">Proposer- + health-loop — control</p>
+          <span class="cadence">per ronde · resilience</span>
+        </div>
+        <div class="loop-body">
+          <ul class="flow">
+            <li><span class="step-t">Wacht op backend</span><small><code>wait_for_model</code>: poll <code>/models</code> elke 60s tot vLLM leeft — geen signaal als het model plat ligt.</small></li>
+            <li><span class="step-t">Kies proposer</span><small>bij voorkeur <code>claude -p</code>. Bij quota-out → val terug op de lokale proposer (Agents-A1 zelf via <code>local_propose.py</code>), of Copilot (<code>hermes</code>).</small></li>
+            <li><span class="step-t">Probe & schakel terug</span><small>in fallback-modus test elke ronde <code>claude_up</code>/<code>copilot_up</code> en schakelt terug zodra het weer kan.</small></li>
+          </ul>
+          <div class="meta">
+            <dl>
+              <dt>Script</dt><dd><code>ralph.sh:28–37, 100–120</code></dd>
+              <dt>Tools</dt><dd><code>claude -p</code> · <code>local_propose.py</code> · <code>hermes</code></dd>
+              <dt>Doel</dt><dd>de loop stalt nooit — er is altijd een proposer</dd>
+            </dl>
+            <div style="margin-top:10px"><span class="tag">geen leren · pure resilience</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- L4 -->
+      <div class="loop">
+        <div class="loop-head">
+          <span class="ring-id">L4</span>
+          <p class="loop-title">Evaluatie-loop — de fitnessfunctie</p>
+          <span class="cadence">taken × trials · 4 parallel</span>
+        </div>
+        <div class="loop-body">
+          <ul class="flow">
+            <li><span class="step-t">Voor elke taak × elke trial</span><small><code>TRIALS=3</code>: elke taak wordt 3× gedraaid in een geïsoleerde workdir met het geïnjecteerde profiel.</small></li>
+            <li><span class="step-t">Draai (L5)</span><small><code>opencode run</code>, of een per-taak <code>solve.sh</code>-override (zie fan-out). <code>PARALLEL_JOBS=4</code> tegelijk.</small></li>
+            <li><span class="step-t">Majority-vote</span><small><code>verify.sh</code> per trial; taak = PASS bij ≥2/3. Score = geslaagd/totaal — volledig lokaal, geen LLM-jury.</small></li>
+          </ul>
+          <div class="meta">
+            <dl>
+              <dt>Script</dt><dd><code>scripts/run_all.sh:39–45</code> + <code>scripts/score.sh:6–15</code></dd>
+              <dt>Levert</dt><dd><code>SCORE.txt</code> — met per-taak trial-tellingen (zichtbaar wat flaky is)</dd>
+              <dt>Rol</dt><dd>dit ís het gradient-signaal voor L2</dd>
+            </dl>
+            <div style="margin-top:10px"><span class="tag">evaluatie · geen leren</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- L5 + L6 -->
+      <div class="loop core">
+        <div class="loop-head">
+          <span class="ring-id">L5·L6</span>
+          <p class="loop-title">opencode run → agentische model-loop</p>
+          <span class="cadence">binnenste · snelste · de kern</span>
+        </div>
+        <div class="loop-body">
+          <ul class="flow">
+            <li><span class="step-t">Eén turn = één opencode run</span><small><code>AGENTS.md</code> + <code>opencode.json</code> worden elke turn in de systeemprompt geïnjecteerd. <code>timeout 900s</code>.</small></li>
+            <li><span class="step-t">Het model lust rond</span><small>Read → denk → Edit/Write → bash/run → verify, net zolang tot de turn eindigt.</small></li>
+            <li><span class="step-t">Hier bijten de regels</span><small>“exploreren is geen vooruitgang”, “stop nooit direct na een Read”, “schrijf het output-bestand écht weg” — precies om déze loop bij te sturen.</small></li>
+          </ul>
+          <div class="meta">
+            <dl>
+              <dt>Aandrijving</dt><dd><code>opencode run</code> (Agents-A1)</dd>
+              <dt>Gestuurd door</dt><dd>gelaagd: hoofd-<code>AGENTS.md</code> + scoped subagent-<code>AGENTS.md</code> + on-demand DSL-cheatsheet</dd>
+              <dt>Kernpunt</dt><dd>ál het leren in L1/L2 mikt op het gedrag van déze loop</dd>
+            </dl>
+            <div style="margin-top:10px"><span class="tag">doelwit van al het leren</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ DETERMINISM ============ -->
+<section>
+  <div class="wrap">
+    <p class="sec-label">Binnen L4 · de fitnessfunctie</p>
+    <h2>Deterministisch of niet — twee assen</h2>
+    <p class="sec-intro">De evaluatie is niet één ding. De <b>meetlat</b> (de verifier) is bewust
+      deterministisch; de <b>generator</b> (het model) is bewust stochastisch. De loop draait
+      elke taak daarom 3× en neemt een meerderheid — zo wordt een wiebelige generator + een harde
+      meetlat samen een stabiel signaal.</p>
+
+    <figure>
+      <svg viewBox="0 0 900 226" role="img" aria-label="Eén taak gaat door drie stochastische model-runs, elk door een deterministische verifier, waarna een meerderheid de score bepaalt">
+        <defs>
+          <marker id="ad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- group headers -->
+        <text x="280" y="14" text-anchor="middle" class="mono" font-size="11" font-weight="700" fill="var(--gold)">STOCHASTISCH · generator</text>
+        <text x="280" y="27" text-anchor="middle" class="mono" font-size="9.5" fill="var(--muted)">temp 0.4 — elke run kan anders lopen</text>
+        <text x="505" y="14" text-anchor="middle" class="mono" font-size="11" font-weight="700" fill="var(--teal)">DETERMINISTISCH · verifier</text>
+        <text x="505" y="27" text-anchor="middle" class="mono" font-size="9.5" fill="var(--muted)">zelfde bestanden ⇒ zelfde uitkomst</text>
+
+        <!-- task -->
+        <rect x="16" y="82" width="104" height="56" rx="10" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="68" y="106" text-anchor="middle" class="mono" font-size="12" font-weight="700" fill="var(--ink)">1 taak</text>
+        <text x="68" y="122" text-anchor="middle" class="mono" font-size="9.5" fill="var(--muted)">prompt.txt</text>
+
+        <!-- trials (dashed = stochastic) -->
+        <g class="mono">
+          <rect x="196" y="36" width="168" height="44" rx="9" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="6 4"/>
+          <text x="210" y="55" font-size="11" font-weight="600" fill="var(--ink)">trial 1 · opencode run</text>
+          <text x="210" y="70" font-size="9.5" fill="var(--muted)">Read→Write→verify</text>
+          <text x="352" y="62" text-anchor="end" font-size="13" fill="var(--teal)">✓</text>
+
+          <rect x="196" y="90" width="168" height="44" rx="9" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="6 4"/>
+          <text x="210" y="109" font-size="11" font-weight="600" fill="var(--ink)">trial 2 · opencode run</text>
+          <text x="210" y="124" font-size="9.5" fill="var(--muted)">Read→Write→verify</text>
+          <text x="352" y="116" text-anchor="end" font-size="13" fill="var(--teal)">✓</text>
+
+          <rect x="196" y="144" width="168" height="44" rx="9" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="6 4"/>
+          <text x="210" y="163" font-size="11" font-weight="600" fill="var(--ink)">trial 3 · opencode run</text>
+          <text x="210" y="178" font-size="9.5" fill="var(--muted)">stopte na Read ✗</text>
+          <text x="352" y="170" text-anchor="end" font-size="13" fill="var(--red)">✗</text>
+        </g>
+
+        <!-- verify gates (solid sharp = deterministic) -->
+        <g class="mono">
+          <rect x="424" y="36" width="162" height="44" rx="3" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="505" y="55" text-anchor="middle" font-size="11" font-weight="700" fill="var(--teal)">verify.sh</text>
+          <text x="505" y="70" text-anchor="middle" font-size="9" fill="var(--muted)">exacte diff · pytest · gate</text>
+          <rect x="424" y="90" width="162" height="44" rx="3" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="505" y="109" text-anchor="middle" font-size="11" font-weight="700" fill="var(--teal)">verify.sh</text>
+          <text x="505" y="124" text-anchor="middle" font-size="9" fill="var(--muted)">geen LLM-jury</text>
+          <rect x="424" y="144" width="162" height="44" rx="3" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+          <text x="505" y="163" text-anchor="middle" font-size="11" font-weight="700" fill="var(--teal)">verify.sh</text>
+          <text x="505" y="178" text-anchor="middle" font-size="9" fill="var(--muted)">reproduceerbaar</text>
+        </g>
+
+        <!-- majority -->
+        <rect x="650" y="78" width="180" height="64" rx="10" fill="var(--teal)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="740" y="104" text-anchor="middle" class="mono" font-size="12.5" font-weight="700" fill="#04191b" style="fill:#04191b">majority ≥ 2/3</text>
+        <text x="740" y="122" text-anchor="middle" class="mono" font-size="11" fill="#04191b" style="fill:#04191b" opacity=".85">2 ✓ / 1 ✗ → PASS</text>
+
+        <!-- arrows: task -> trials -->
+        <g stroke="var(--muted)" fill="var(--muted)" stroke-width="1.3">
+          <path d="M120,102 C160,78 168,58 194,58" fill="none" marker-end="url(#ad)"/>
+          <path d="M120,110 L194,112" fill="none" marker-end="url(#ad)"/>
+          <path d="M120,118 C160,142 168,166 194,166" fill="none" marker-end="url(#ad)"/>
+        </g>
+        <!-- arrows: trial -> verify -->
+        <g stroke="var(--teal)" fill="var(--teal)" stroke-width="1.4">
+          <path d="M364,58 L422,58" marker-end="url(#ad)"/>
+          <path d="M364,112 L422,112" marker-end="url(#ad)"/>
+          <path d="M364,166 L422,166" marker-end="url(#ad)"/>
+        </g>
+        <!-- arrows: verify -> majority -->
+        <g stroke="var(--teal)" fill="var(--teal)" stroke-width="1.4">
+          <path d="M586,58 C620,58 624,96 648,102" fill="none" marker-end="url(#ad)"/>
+          <path d="M586,112 L648,110" fill="none" marker-end="url(#ad)"/>
+          <path d="M586,166 C620,166 624,128 648,122" fill="none" marker-end="url(#ad)"/>
+        </g>
+      </svg>
+      <figcaption>Eén stochastische trial die na een Read stopt (✗) sleept de score niet omlaag: de
+        meerderheid van 3 deterministisch geverifieerde runs beslist. Dit is waarom “flaky” taken
+        (1/3, 2/3) bestaan naast “stabiele” (0/3, 3/3) — de meetlat is hard, het model wiebelt.</figcaption>
+    </figure>
+
+    <div class="learn-grid" style="margin-top:22px">
+      <div class="lcard" style="border-left-color:var(--teal)">
+        <h3><span class="k" style="color:var(--teal);border-color:var(--teal)">as 1</span> De meetlat — deterministisch</h3>
+        <p><b>Exacte output-diff:</b> <code>17_bank_ledger</code>, <code>18_txn_wal</code> vergelijken
+          <code>statement.txt</code>/<code>final.txt</code>/… tegen een golden string — één byte verschil = fail.</p>
+        <p><b>pytest:</b> <code>21_sgf_parsing</code> herstelt de pristine test en draait <code>pytest</code>.
+          <b>Gate + DSL:</b> <code>26_flag_cleanup</code> checkt dode flags weg, alle talen compileren, de DSL via <code>dslc.py</code>.</p>
+        <p style="margin-top:8px;color:var(--ink)"><b>Uitzondering (opt-in, standaard UIT):</b> <code>JUDGE=llm</code>
+          → <code>judge.py</code> scoort de “subjectieve residue” met een LLM — <em>niet</em>-deterministisch,
+          daarom uit: het houdt de loop snel én reproduceerbaar.</p>
+      </div>
+      <div class="lcard" style="border-left-color:var(--gold)">
+        <h3><span class="k">as 2</span> De generator — niet-deterministisch</h3>
+        <p><b>temperature 0.4:</b> elke trial sampelt anders, dus dezelfde taak kan <em>flaky</em> zijn
+          (1/3, 2/3) of <em>stabiel</em> (0/3, 3/3). Het antwoord van de loop: <code>TRIALS=3</code> + majority-vote.</p>
+        <p>De temperatuur werd juist bewust verhoogd (<code>0.1 → 0.4</code>) om de <b>deterministische
+          “explore-then-stop”-attractor</b> op 17/18 te breken: bij temp 0.1 landt het model elke keer
+          op dezelfde “lees en stop”-voortzetting; wat entropie geeft sommige trials de “schrijf solve.py”-tak.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SIDE LOOPS ============ -->
+<section>
+  <div class="wrap">
+    <p class="sec-label">Twee zij-loops</p>
+    <h2>De adaptieve proposer en de fan-out</h2>
+    <p class="sec-intro">Niet elke lus is concentrisch. Twee loops zitten er zijdelings in
+      gehaakt: een toestandsmachine die kiest wie het voorstel schrijft, en een fan-out die
+      één moeilijke taak opsplitst in kleine subagenten.</p>
+
+    <div class="minis">
+
+      <!-- adaptive proposer state machine -->
+      <div class="mini">
+        <h3>Adaptieve proposer (state machine)</h3>
+        <p>Claude is primair; bij quota-out valt de loop terug op de lokale proposer en probeert
+          elke ronde terug te schakelen. Stalt nooit.</p>
+        <figure>
+          <svg viewBox="0 0 380 220" role="img" aria-label="Toestandsmachine: Claude valt bij quota terug op de lokale proposer en schakelt bij herstel terug">
+            <defs>
+              <marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+            <!-- CLAUDE state -->
+            <rect x="26" y="30" width="150" height="56" rx="10" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+            <text x="101" y="55" text-anchor="middle" class="mono" font-size="13" font-weight="700" fill="var(--teal)">claude -p</text>
+            <text x="101" y="72" text-anchor="middle" class="mono" font-size="10" fill="var(--muted)">voorkeur</text>
+            <!-- LOCAL state -->
+            <rect x="204" y="30" width="150" height="56" rx="10" fill="var(--surface-2)" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>
+            <text x="279" y="55" text-anchor="middle" class="mono" font-size="13" font-weight="700" fill="var(--ink)">local</text>
+            <text x="279" y="72" text-anchor="middle" class="mono" font-size="10" fill="var(--muted)">Agents-A1 zelf</text>
+            <!-- arrows -->
+            <g stroke="var(--red)" fill="var(--red)">
+              <path d="M176,46 L204,46" stroke-width="1.6" marker-end="url(#ah2)"/>
+              <text x="190" y="38" text-anchor="middle" class="mono" font-size="9.5">quota-out</text>
+            </g>
+            <g stroke="var(--teal)" fill="var(--teal)">
+              <path d="M204,70 L176,70" stroke-width="1.6" marker-end="url(#ah2)"/>
+              <text x="190" y="86" text-anchor="middle" class="mono" font-size="9.5">claude_up ✓</text>
+            </g>
+            <!-- self loop on claude (propose) -->
+            <g stroke="var(--muted)" fill="var(--muted)">
+              <path d="M60,30 C50,8 152,8 142,30" fill="none" stroke-width="1.4" marker-end="url(#ah2)"/>
+              <text x="101" y="10" text-anchor="middle" class="mono" font-size="9">propose · elke ronde</text>
+            </g>
+            <g stroke="var(--muted)" fill="var(--muted)">
+              <path d="M238,86 C228,108 330,108 320,86" fill="none" stroke-width="1.4" marker-end="url(#ah2)"/>
+              <text x="279" y="122" text-anchor="middle" class="mono" font-size="9">propose · elke ronde</text>
+            </g>
+            <!-- health gate -->
+            <rect x="90" y="160" width="200" height="40" rx="9" fill="none" stroke="var(--line-strong)" stroke-width="1.4"/>
+            <text x="190" y="178" text-anchor="middle" class="mono" font-size="10.5" fill="var(--muted)">wait_for_model — poll /models</text>
+            <text x="190" y="192" text-anchor="middle" class="mono" font-size="9.5" fill="var(--faint)">gate vóór elke ronde · elke 60s</text>
+            <path d="M190,160 L190,130 M101,86 L101,130 L279,130 L279,86" stroke="var(--line-strong)" stroke-width="1.2" fill="none" stroke-dasharray="3 3"/>
+          </svg>
+        </figure>
+      </div>
+
+      <!-- fanout -->
+      <div class="mini">
+        <h3>Fan-out (tier-B subagenten)</h3>
+        <p>Taak 26 splitst per taal/DSL: één opencode-subagent per deel met kleine context én
+          een <b>eigen scoped <code>AGENTS.md</code></b> (met de anti-freeze-regel), daarna worden
+          de edits teruggemerged en gescoord.</p>
+        <figure>
+          <svg viewBox="0 0 380 220" role="img" aria-label="Fan-out: één taak splitst in vier subagenten per taal die parallel bewerken en terug worden gemerged">
+            <defs>
+              <marker id="ah3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+            <!-- source task -->
+            <rect x="140" y="14" width="100" height="40" rx="9" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5"/>
+            <text x="190" y="32" text-anchor="middle" class="mono" font-size="11.5" font-weight="700" fill="var(--ink)">taak 26</text>
+            <text x="190" y="46" text-anchor="middle" class="mono" font-size="9" fill="var(--muted)">subagents.json</text>
+            <!-- subagents -->
+            <g class="mono" font-size="10.5" font-weight="600">
+              <rect x="14" y="96" width="74" height="42" rx="8" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.3"/>
+              <text x="51" y="114" text-anchor="middle" fill="var(--teal)">python</text>
+              <rect x="102" y="96" width="74" height="42" rx="8" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.3"/>
+              <text x="139" y="114" text-anchor="middle" fill="var(--teal)">c</text>
+              <rect x="204" y="96" width="74" height="42" rx="8" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.3"/>
+              <text x="241" y="114" text-anchor="middle" fill="var(--teal)">java</text>
+              <rect x="292" y="96" width="74" height="42" rx="8" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.3"/>
+              <text x="329" y="114" text-anchor="middle" fill="var(--teal)">dsl</text>
+            </g>
+            <text x="51" y="130" text-anchor="middle" class="mono" font-size="8" fill="var(--muted)">kleine context</text>
+            <!-- split arrows -->
+            <g stroke="var(--muted)" fill="var(--muted)" stroke-width="1.3">
+              <path d="M160,54 L60,94" marker-end="url(#ah3)"/>
+              <path d="M178,54 L142,94" marker-end="url(#ah3)"/>
+              <path d="M202,54 L238,94" marker-end="url(#ah3)"/>
+              <path d="M220,54 L322,94" marker-end="url(#ah3)"/>
+            </g>
+            <!-- merge -->
+            <rect x="120" y="168" width="140" height="40" rx="9" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5"/>
+            <text x="190" y="186" text-anchor="middle" class="mono" font-size="11" font-weight="700" fill="var(--gold)">merge + verify.sh</text>
+            <text x="190" y="200" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">dslc.py compile-gate</text>
+            <g stroke="var(--gold)" fill="var(--gold)" stroke-width="1.3">
+              <path d="M51,138 L150,166" marker-end="url(#ah3)"/>
+              <path d="M139,138 L175,166" marker-end="url(#ah3)"/>
+              <path d="M241,138 L205,166" marker-end="url(#ah3)"/>
+              <path d="M329,138 L230,166" marker-end="url(#ah3)"/>
+            </g>
+          </svg>
+        </figure>
+      </div>
+
+    </div>
+    <p class="repo mono" style="margin-top:18px">
+      <span><b>fan-out:</b> tasks/26_flag_cleanup/solve.sh → tools/fanout/fanout.py:70–119</span>
+      <span><b>DSL-gate:</b> tools/dslc/dslc.py</span>
+    </p>
+  </div>
+</section>
+
+<!-- ============ DSL BUILDER LOOP ============ -->
+<section>
+  <div class="wrap">
+    <p class="sec-label">Een meta-loop · per DSL-plugin</p>
+    <h2>De DSL-builder-loop — leren van externe plugins</h2>
+    <p class="sec-intro">Voor elke mini-DSL is er nóg een propose-&amp;-test-loop, maar op een ander
+      niveau: niet het kleine model leert hier, maar een <b>capabel builder-model</b> destilleert uit
+      een <b>externe corpus</b> (documentatie + goede voorbeelden) een linter + cheatsheet —
+      getoetst voordat ze de loop in mogen. Cruciaal: de <b>loop-kern blijft generiek en
+      bedrijfsneutraal</b>; elke DSL is een <b>plugin in een eigen git-repo</b>, als submodule
+      aangehaakt. Zo komt bedrijfscontent (mogelijk IP-gebonden of R1/R2) nóóit in de loop-repo.</p>
+
+    <p style="margin:14px 0 2px">
+      <span class="tag learn" style="border-color:var(--teal);color:var(--teal);background:var(--teal-soft)">✓ deterministische helft geïmplementeerd voor <code>flags</code></span>
+      <span class="tag">groen: 2/2 good · 16 afgeleide bad · 8 rule-ids</span>
+      <span class="tag">✔ <code>flags</code> = referentie/smoke-test in de kern</span>
+      <span class="tag exit" style="border-color:var(--muted);color:var(--muted);background:transparent">nog open: LLM-builder + submodule-discovery</span>
+    </p>
+
+    <div class="learn-grid" style="margin-top:16px">
+      <div class="lcard" style="border-left-color:var(--teal)">
+        <h3><span class="k" style="color:var(--teal);border-color:var(--teal)">kern</span> Loop-kern — generiek &amp; publiek (deze repo)</h3>
+        <p><code>dslc</code>-engine + mutatie-runner + <code>selftest</code>; dit contract +
+          <code>manifest.schema.json</code>; de gap-detector + proposer-builder-tak; generieke
+          mutatie-primitieven. Alleen <code>flags</code> zit hier als referentie/smoke-test.</p>
+      </div>
+      <div class="lcard" style="border-left-color:var(--gold)">
+        <h3><span class="k">plugin</span> DSL-plugin — extern, per bedrijf/domein</h3>
+        <p>Eigen git-repo (submodule): <code>manifest.json</code>, <code>spec/</code>,
+          <code>examples/good/</code> én <code>mutations/</code> (de per-rule-id operatoren, door de
+          plugin-<em>eigenaar</em>). De loop genereert grammar+cheatsheet naar <code>.cache/</code>
+          (niet gecommit). De loop-repo bevat enkel een gitlink + URL + SHA.</p>
+      </div>
+    </div>
+
+    <figure style="margin-top:12px">
+      <svg viewBox="0 0 900 300" role="img" aria-label="De DSL-builder-loop: een capabel model destilleert een linter en cheatsheet uit een externe corpus, die via dslc selftest getoetst worden tegen goede en afgeleide slechte voorbeelden voordat ze de loop in mogen">
+        <defs>
+          <marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- lane labels -->
+        <text x="16" y="24" class="mono" font-size="10.5" font-weight="700" fill="var(--gold)">VOORSTEL · LLM (onvertrouwd)</text>
+        <text x="16" y="122" class="mono" font-size="10.5" font-weight="700" fill="var(--teal)">GRONDWAARHEID · extern (vertrouwd)</text>
+        <text x="16" y="200" class="mono" font-size="10.5" font-weight="700" fill="var(--teal)">AFGELEID · mutations/ (plugin, vertrouwd)</text>
+
+        <!-- row 1: builder -> linter + cheatsheet (gold dashed = LLM) -->
+        <rect x="16" y="34" width="150" height="56" rx="9" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="91" y="56" text-anchor="middle" class="mono" font-size="11" font-weight="700" fill="var(--ink)">builder</text>
+        <text x="91" y="71" text-anchor="middle" class="mono" font-size="9" fill="var(--muted)">capabel model</text>
+        <text x="91" y="83" text-anchor="middle" class="mono" font-size="9" fill="var(--muted)">leest corpus 1×</text>
+
+        <rect x="188" y="30" width="128" height="30" rx="6" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.3" stroke-dasharray="5 3"/>
+        <text x="252" y="49" text-anchor="middle" class="mono" font-size="9.5" fill="var(--ink)">.cache/grammar.py</text>
+        <rect x="188" y="66" width="128" height="30" rx="6" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.3" stroke-dasharray="5 3"/>
+        <text x="252" y="85" text-anchor="middle" class="mono" font-size="9.5" fill="var(--ink)">.cache/cheatsheet.md</text>
+
+        <!-- row 2: external good + spec (teal) -->
+        <rect x="16" y="130" width="300" height="52" rx="9" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="30" y="150" class="mono" font-size="10.5" font-weight="700" fill="var(--teal)">examples/good/* · spec/grammar.md</text>
+        <text x="30" y="164" class="mono" font-size="9" fill="var(--muted)">curated archief — elk construct ≥1 voorbeeld</text>
+        <text x="30" y="176" class="mono" font-size="9" fill="var(--muted)">common-mistakes.md → stabiele rule-ids</text>
+
+        <!-- row 3: mutator -> derived bad (teal) -->
+        <rect x="16" y="210" width="150" height="56" rx="9" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="91" y="230" text-anchor="middle" class="mono" font-size="11" font-weight="700" fill="var(--teal)">mutations/</text>
+        <text x="91" y="243" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">plugin-operator</text>
+        <text x="91" y="254" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">via core-runner</text>
+        <text x="91" y="264" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">breekt op 1 manier</text>
+        <rect x="188" y="216" width="128" height="44" rx="6" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.3"/>
+        <text x="252" y="235" text-anchor="middle" class="mono" font-size="9.5" fill="var(--ink)">afgeleide bad/</text>
+        <text x="252" y="249" text-anchor="middle" class="mono" font-size="9" fill="var(--muted)">+ .expect (rule-id)</text>
+
+        <!-- gate -->
+        <rect x="470" y="88" width="156" height="128" rx="4" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.8"/>
+        <text x="548" y="112" text-anchor="middle" class="mono" font-size="12" font-weight="700" fill="var(--ink)">dslc selftest</text>
+        <text x="548" y="134" text-anchor="middle" class="mono" font-size="10" fill="var(--teal)">good  ⇒  PASS</text>
+        <text x="548" y="150" text-anchor="middle" class="mono" font-size="10" fill="var(--red)">bad  ⇒  FAIL(id)</text>
+        <text x="548" y="176" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">toetst de LLM-linter</text>
+        <text x="548" y="188" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">aan niet-LLM materiaal</text>
+        <text x="548" y="204" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">(trust-grens)</text>
+
+        <!-- outputs -->
+        <rect x="686" y="92" width="150" height="52" rx="9" fill="var(--teal)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="761" y="114" text-anchor="middle" class="mono" font-size="10" font-weight="700" fill="#04191b" style="fill:#04191b">groen → keep/rollback</text>
+        <text x="761" y="129" text-anchor="middle" class="mono" font-size="9" fill="#04191b" style="fill:#04191b" opacity=".85">op DSL-taak 26</text>
+
+        <rect x="686" y="200" width="150" height="60" rx="9" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="761" y="222" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="var(--ink)">cheatsheet on-demand</text>
+        <text x="761" y="236" text-anchor="middle" class="mono" font-size="9" fill="var(--muted)">klein model haalt op</text>
+        <text x="761" y="248" text-anchor="middle" class="mono" font-size="9" fill="var(--muted)">→ voedt L6</text>
+
+        <!-- builder outputs -->
+        <g stroke="var(--gold)" fill="var(--gold)" stroke-width="1.3">
+          <path d="M166,52 L186,45" fill="none" marker-end="url(#ab)"/>
+          <path d="M166,66 L186,79" fill="none" marker-end="url(#ab)"/>
+        </g>
+        <!-- mutator output -->
+        <g stroke="var(--teal)" fill="var(--teal)" stroke-width="1.3">
+          <path d="M166,238 L186,238" fill="none" marker-end="url(#ab)"/>
+        </g>
+        <!-- inputs to gate -->
+        <g fill="none" stroke-width="1.4">
+          <path d="M316,45 C400,45 400,110 468,116" stroke="var(--gold)" marker-end="url(#ab)"/>
+          <path d="M316,156 L468,152" stroke="var(--teal)" marker-end="url(#ab)"/>
+          <path d="M316,238 C400,238 400,192 468,188" stroke="var(--teal)" marker-end="url(#ab)"/>
+        </g>
+        <!-- gate -> keep/rollback -->
+        <path d="M626,118 L684,118" fill="none" stroke="var(--teal)" stroke-width="1.5" marker-end="url(#ab)"/>
+        <!-- cheatsheet -> small model (routed below) -->
+        <path d="M316,81 L360,81 L360,282 L678,282 L678,246" fill="none" stroke="var(--gold)" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ab)"/>
+      </svg>
+      <figcaption>De <b>trust-grens</b> is de crux: de linter komt van een LLM (goud, onvertrouwd),
+        maar wordt getoetst aan materiaal dat <em>niet</em> van die LLM komt — de externe goede
+        voorbeelden (grondwaarheid) en de <em>afgeleide</em> slechte voorbeelden, die de mutator
+        deterministisch maakt door één goed voorbeeld op precies één manier te breken. Zo kan een
+        mogelijk-hallucinerende linter zichzelf niet goedkeuren. Pas ná een groene selftest scoort
+        de gewone keep/rollback-poort de assets op de echte DSL-taken. De vertrouwde kant (spec +
+        goede voorbeelden + <code>mutations/</code>) hoort bij de <b>plugin-eigenaar</b>; de LLM-kant en de
+        generieke runner zijn de <b>loop-kern</b>.</figcaption>
+    </figure>
+
+    <div class="learn-grid" style="margin-top:22px">
+      <div class="lcard" style="border-left-color:var(--gold)">
+        <h3><span class="k">voorstel</span> Assets naar <code>.cache/</code>, corpus in de plugin</h3>
+        <p>De builder distilleert uit de plugin-corpus een <b>cheatsheet</b> + <b>linter/grammar</b> en
+          schrijft ze naar <code>.cache/</code> (niet gecommit) — plus de <b>golden self-test set</b>.
+          De cheatsheet haalt het kleine model on-demand op; de linter geeft compiler-feedback.</p>
+        <p>Spec + goede voorbeelden + <code>mutations/</code> leven in de <b>externe plugin-repo</b>
+          (submodule) — governance: alleen IP van ICT, geen R1/R2 of persoonsgegevens,
+          synthetisch/geanonimiseerd. De loop-kern blijft bedrijfsneutraal.</p>
+      </div>
+      <div class="lcard" style="border-left-color:var(--teal)">
+        <h3><span class="k" style="color:var(--teal);border-color:var(--teal)">test</span> Deterministisch, per rule-id</h3>
+        <p>Elke fout in <code>common-mistakes.md</code> heeft een stabiele <code>UPPER_SNAKE</code>-id, gebruikt
+          door de linter, de cheatsheet, de <code>.expect</code>-sidecars én de mutator — vier plekken,
+          identieke ids.</p>
+        <p>Acceptatie: alle <code>good/</code> passeren, elk afgeleid <code>bad/</code> faalt met de verwachte
+          rule-id. Precies dezelfde <b>propose → test → keep/rollback</b> als de grote loop, maar één niveau dieper.</p>
+        <p style="color:var(--teal)"><b>Nu geïmplementeerd</b> voor de <code>flags</code>-referentie:
+          <code>tools/dslc/mutators/flags.py</code> + <code>dslc.py selftest</code> — groen, en faalt
+          aantoonbaar bij een rule-id zonder mutator. (Bij een echte plugin heet deze map
+          <code>mutations/</code> en woont hij in de plugin-repo.)</p>
+      </div>
+    </div>
+    <p class="repo mono" style="margin-top:16px">
+      <span><b>contract:</b> tools/dslc/CORPUS_REQUIREMENTS.md §0 (plugin-model)</span>
+      <span><b>schema:</b> tools/dslc/manifest.schema.json</span>
+      <span><b>referentie-plugin:</b> tools/dslc/corpus_template/flags/</span>
+      <span><b>discovery:</b> submodule-roots → manifest.json</span>
+    </p>
+  </div>
+</section>
+
+<!-- ============ WHERE LEARNING HAPPENS ============ -->
+<section>
+  <div class="wrap">
+    <p class="sec-label">De kern van je vraag</p>
+    <h2>Waar wordt er geleerd?</h2>
+    <p class="sec-intro">Nergens veranderen er modelgewichten. “Leren” gebeurt op vijf plekken,
+      allemaal buiten het model — in de prompt, in de selectie, in het curriculum, in het geheugen
+      en in externe corpora. En de prompt zélf is niet één bestand meer: de steering is gelaagd.</p>
+
+    <div class="learn-grid">
+      <div class="lcard">
+        <h3><span class="k">1</span> In-context — het hoofdleren</h3>
+        <p><b>Waar:</b> een <b>gelaagde</b> steering-surface, geen enkel bestand meer:
+          (a) hoofd <code>oc_profile/AGENTS.md</code> — elke default-turn geïnjecteerd;
+          (b) per-subagent <b>scoped <code>AGENTS.md</code></b> in de fan-out;
+          (c) on-demand DSL-cheatsheets <code>grammars/&lt;naam&gt;.md</code>.</p>
+        <p>Hill-climbing in <b>prompt-ruimte</b>: “stop nooit na een Read”, exacte SGF-parser-recepten,
+          hex-buur-offsets — stuk voor stuk gedestilleerd uit een geobserveerde fout in een trajectory.</p>
+      </div>
+      <div class="lcard">
+        <h3><span class="k">2</span> Selectiedruk — de <code>bar</code></h3>
+        <p><b>Waar:</b> <code>ralph.sh:136–149</code>. De <code>bar</code> beslist wát blijft:
+          ratchet omhoog bij winst, EMA-verval bij verlies.</p>
+        <p>Zo overleeft alleen een <b>reproduceerbare</b> verbetering; een toevalstreffer verdampt
+          over een paar rondes. Dit is de fitness/selectie van de evolutie.</p>
+      </div>
+      <div class="lcard">
+        <h3><span class="k">3</span> Curriculum — escalatie</h3>
+        <p><b>Waar:</b> L1. Zodra alle taken slagen, komt er een hardere taak bij.</p>
+        <p>Het systeem <b>vergroot zijn eigen leerdoel</b> zodat er altijd iets te winnen valt —
+          anders zou de selectiedruk wegvallen en stopt het leren.</p>
+      </div>
+      <div class="lcard">
+        <h3><span class="k">4</span> Meta-geheugen — over runs heen</h3>
+        <p><b>Waar:</b> <code>RESULTS.md</code> (het besluit-ledger) en de proposer die trajectories
+          leest als “gradient”.</p>
+        <p>Wat over experimenten heen werkte (temperatuur, subagenten, de explore-only-val) wordt
+          vastgelegd en hergebruikt bij het volgende voorstel.</p>
+      </div>
+      <div class="lcard">
+        <h3><span class="k">5</span> Externe plugin — per DSL</h3>
+        <p><b>Waar:</b> een capabel builder-model destilleert per DSL een cheatsheet + linter uit een
+          <b>externe DSL-plugin</b> (eigen git-repo, submodule) — de enige plek waar van <em>buiten</em>
+          geleerd wordt, terwijl de loop-kern generiek en bedrijfsneutraal blijft.</p>
+        <p>Weer een <b>propose → test → keep/rollback</b>-lus, maar één niveau dieper en getoetst met
+          <code>dslc selftest</code>. Zie de DSL-builder-loop hierboven. <em>(deterministische helft nu
+          geïmplementeerd voor de <code>flags</code>-referentie; LLM-builder + submodule-discovery nog niet.)</em></p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <b>De kortste samenvatting →</b> L4 meet, L2 selecteert, L1 vergroot de lat, en het
+      resultaat van al dat leren landt telkens op één plek: de tekst in <code>AGENTS.md</code>
+      die L6 — het model dat écht typt — bij elke turn opnieuw leest. Het model zelf blijft
+      onveranderd; de <em>harness</em> eromheen wordt slimmer.
+    </div>
+  </div>
+</section>
+
+<!-- ============ LEARNING CURVE ============ -->
+<section>
+  <div class="wrap">
+    <p class="sec-label">Het bewijs · run 4–8 aug 2026</p>
+    <h2>De leercurve is een trap</h2>
+    <p class="sec-intro">Hier zie je leren én curriculum samen werken. De <b>teal-lijn</b> is de score
+      (geslaagde taken); de <b>grijze traplijn</b> is het plafond (aantal taken). Telkens als álle
+      taken slagen, importeert L1 een hardere taak — het plafond stapt omhoog, de score valt één
+      terug, en een gehouden edit (L2) klimt weer naar het plafond. Zo blijft er altijd iets te leren.</p>
+
+    <p style="margin:14px 0 0"><span class="tag learn" style="border-color:var(--gold);color:var(--gold)">backend deze run: DeepSeek V4 Flash · na swap 4 aug · alias “Agents-A1”</span></p>
+
+    <figure style="margin-top:12px">
+      <svg viewBox="0 0 900 356" role="img" aria-label="Leercurve 4-8 augustus op DeepSeek V4 Flash: score volgt het stijgende plafond in een trap, met escalatie-, keep- en rollback-punten">
+        <!-- grid -->
+        <line x1="56" y1="310.0" x2="858" y2="310.0" stroke="var(--line)" stroke-width="1" opacity=".6"/>
+        <text x="47" y="313.0" text-anchor="end" class="mono" font-size="10" fill="var(--faint)">17</text>
+        <line x1="56" y1="274.8" x2="858" y2="274.8" stroke="var(--line)" stroke-width="1" opacity=".6"/>
+        <text x="47" y="277.8" text-anchor="end" class="mono" font-size="10" fill="var(--faint)">18</text>
+        <line x1="56" y1="239.5" x2="858" y2="239.5" stroke="var(--line)" stroke-width="1" opacity=".6"/>
+        <text x="47" y="242.5" text-anchor="end" class="mono" font-size="10" fill="var(--faint)">19</text>
+        <line x1="56" y1="204.2" x2="858" y2="204.2" stroke="var(--line)" stroke-width="1" opacity=".6"/>
+        <text x="47" y="207.2" text-anchor="end" class="mono" font-size="10" fill="var(--faint)">20</text>
+        <line x1="56" y1="169.0" x2="858" y2="169.0" stroke="var(--line)" stroke-width="1" opacity=".6"/>
+        <text x="47" y="172.0" text-anchor="end" class="mono" font-size="10" fill="var(--faint)">21</text>
+        <line x1="56" y1="133.8" x2="858" y2="133.8" stroke="var(--line)" stroke-width="1" opacity=".6"/>
+        <text x="47" y="136.8" text-anchor="end" class="mono" font-size="10" fill="var(--faint)">22</text>
+        <line x1="56" y1="98.5" x2="858" y2="98.5" stroke="var(--line)" stroke-width="1" opacity=".6"/>
+        <text x="47" y="101.5" text-anchor="end" class="mono" font-size="10" fill="var(--faint)">23</text>
+        <line x1="56" y1="63.2" x2="858" y2="63.2" stroke="var(--line)" stroke-width="1" opacity=".6"/>
+        <text x="47" y="66.2" text-anchor="end" class="mono" font-size="10" fill="var(--faint)">24</text>
+        <line x1="56" y1="28.0" x2="858" y2="28.0" stroke="var(--line)" stroke-width="1" opacity=".6"/>
+        <text x="47" y="31.0" text-anchor="end" class="mono" font-size="10" fill="var(--faint)">25</text>
+        <text x="20" y="169" text-anchor="middle" class="mono" font-size="10" fill="var(--faint)" transform="rotate(-90 20 169)">geslaagde taken</text>
+
+        <!-- escalation guide lines -->
+        <line x1="165.4" y1="24" x2="165.4" y2="310" stroke="var(--gold)" stroke-width="1" stroke-dasharray="3 4" opacity=".55"/>
+        <line x1="347.6" y1="24" x2="347.6" y2="310" stroke="var(--gold)" stroke-width="1" stroke-dasharray="3 4" opacity=".55"/>
+        <line x1="493.5" y1="24" x2="493.5" y2="310" stroke="var(--gold)" stroke-width="1" stroke-dasharray="3 4" opacity=".55"/>
+        <line x1="602.8" y1="24" x2="602.8" y2="310" stroke="var(--gold)" stroke-width="1" stroke-dasharray="3 4" opacity=".55"/>
+        <line x1="712.2" y1="24" x2="712.2" y2="310" stroke="var(--gold)" stroke-width="1" stroke-dasharray="3 4" opacity=".55"/>
+        <line x1="858.0" y1="24" x2="858.0" y2="310" stroke="var(--gold)" stroke-width="1" stroke-dasharray="3 4" opacity=".55"/>
+
+        <!-- ceiling (plafond) stepped line -->
+        <path d="M56.0,239.5 L92.5,239.5 L92.5,239.5 L128.9,239.5 L128.9,239.5 L165.4,239.5 L165.4,204.2 L201.8,204.2 L201.8,204.2 L238.3,204.2 L238.3,204.2 L274.7,204.2 L274.7,204.2 L311.2,204.2 L311.2,204.2 L347.6,204.2 L347.6,169.0 L384.1,169.0 L384.1,169.0 L420.5,169.0 L420.5,169.0 L457.0,169.0 L457.0,169.0 L493.5,169.0 L493.5,133.8 L529.9,133.8 L529.9,133.8 L566.4,133.8 L566.4,133.8 L602.8,133.8 L602.8,98.5 L639.3,98.5 L639.3,98.5 L675.7,98.5 L675.7,98.5 L712.2,98.5 L712.2,63.2 L748.6,63.2 L748.6,63.2 L785.1,63.2 L785.1,63.2 L821.5,63.2 L821.5,63.2 L858.0,63.2 L858.0,28.0"
+              fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linejoin="round" opacity=".7"/>
+
+        <!-- score line -->
+        <polyline points="56.0,274.8 92.5,239.5 128.9,239.5 165.4,204.2 201.8,239.5 238.3,239.5 274.7,204.2 311.2,204.2 347.6,239.5 384.1,239.5 420.5,169.0 457.0,169.0 493.5,133.8 529.9,133.8 566.4,133.8 602.8,98.5 639.3,98.5 675.7,98.5 712.2,133.8 748.6,98.5 785.1,63.2 821.5,63.2 858.0,63.2"
+                  fill="none" stroke="var(--teal)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+
+        <!-- escalation labels -->
+        <text x="165.4" y="20" text-anchor="middle" class="mono" font-size="9.5" fill="var(--gold)">→20</text>
+        <text x="347.6" y="20" text-anchor="middle" class="mono" font-size="9.5" fill="var(--gold)">→21</text>
+        <text x="493.5" y="20" text-anchor="middle" class="mono" font-size="9.5" fill="var(--gold)">→22</text>
+        <text x="602.8" y="20" text-anchor="middle" class="mono" font-size="9.5" fill="var(--gold)">→23</text>
+        <text x="712.2" y="20" text-anchor="middle" class="mono" font-size="9.5" fill="var(--gold)">→24</text>
+        <text x="858.0" y="20" text-anchor="middle" class="mono" font-size="9.5" fill="var(--gold)">→25</text>
+
+        <!-- markers -->
+        <circle cx="56.0" cy="274.8" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="92.5" cy="239.5" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="128.9" cy="239.5" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <path d="M165.4,198.2 L171.4,204.2 L165.4,210.2 L159.4,204.2 Z" fill="var(--gold)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="201.8" cy="239.5" r="4.5" fill="var(--surface)" stroke="var(--red)" stroke-width="2"/>
+        <circle cx="238.3" cy="239.5" r="4.5" fill="var(--surface)" stroke="var(--red)" stroke-width="2"/>
+        <circle cx="274.7" cy="204.2" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="311.2" cy="204.2" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <path d="M347.6,233.5 L353.6,239.5 L347.6,245.5 L341.6,239.5 Z" fill="var(--gold)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="384.1" cy="239.5" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="420.5" cy="169.0" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="457.0" cy="169.0" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <path d="M493.5,127.8 L499.5,133.8 L493.5,139.8 L487.5,133.8 Z" fill="var(--gold)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="529.9" cy="133.8" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="566.4" cy="133.8" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <path d="M602.8,92.5 L608.8,98.5 L602.8,104.5 L596.8,98.5 Z" fill="var(--gold)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="639.3" cy="98.5" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="675.7" cy="98.5" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <path d="M712.2,127.8 L718.2,133.8 L712.2,139.8 L706.2,133.8 Z" fill="var(--gold)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="748.6" cy="98.5" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="785.1" cy="63.2" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <circle cx="821.5" cy="63.2" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"/>
+        <path d="M858.0,57.2 L864.0,63.2 L858.0,69.2 L852.0,63.2 Z" fill="var(--gold)" stroke="var(--surface)" stroke-width="1.5"/>
+
+        <!-- inline series labels -->
+        <text x="112" y="228" class="mono" font-size="10.5" fill="var(--teal)" font-weight="600">score</text>
+        <text x="628" y="88" class="mono" font-size="10.5" fill="var(--muted)">plafond (taken)</text>
+        <!-- x axis caption -->
+        <text x="56" y="332" class="mono" font-size="9.5" fill="var(--faint)">iter 1</text>
+        <text x="457" y="332" text-anchor="middle" class="mono" font-size="9.5" fill="var(--faint)">17 Ralph-rondes + 6 escalaties →</text>
+        <text x="858" y="332" text-anchor="end" class="mono" font-size="9.5" fill="var(--faint)">24/25</text>
+      </svg>
+      <figcaption>Elke gouden ruit is een escalatie: L1 voegt de volgende zwaarste aider-polyglot-taak
+        toe, het plafond gaat +1. De open rode punten zijn rollbacks (score zakte onder de <code>bar</code>,
+        edit teruggedraaid). De teal-lijn kruipt steeds terug naar het plafond: 18 → 24 taken geslaagd,
+        terwijl de takenset zwaarder werd van 19 naar 25.</figcaption>
+    </figure>
+
+    <ul class="legend">
+      <li><span class="swatch" style="background:var(--teal);border-color:var(--teal)"></span> Score — geslaagde taken (KEEP)</li>
+      <li><span class="swatch" style="background:var(--surface);border:2px solid var(--red)"></span> Rollback — edit teruggedraaid</li>
+      <li><span class="swatch" style="background:var(--gold);border-color:var(--gold);transform:rotate(45deg)"></span> Escalatie — hardere taak, plafond +1</li>
+      <li><span class="swatch" style="background:transparent;border:1.6px solid var(--muted)"></span> Plafond — totaal aantal taken</li>
+    </ul>
+
+    <div class="callout" style="margin-top:26px;border-left:3px solid var(--gold)">
+      <b style="color:var(--gold)">⚠ Let op — er draait niet één model onder deze grafiek.</b> De backend werd op
+      <b>4 aug</b> geswitcht van <b>Agents-A1</b> (InternScience 35B MoE, 131k context) naar
+      <b>DeepSeek V4 Flash</b> (32k context). Omdat <code>run_all.sh</code> hard <code>-m agentsa1/Agents-A1</code>
+      draait, houdt een <em>alias</em> in <code>opencode.json</code> die naam in leven — maar het model
+      erachter is sindsdien DeepSeek. Álle punten in de trap hierboven draaien dus op DeepSeek; de
+      swap veroorzaakte eerst <code>score 0/19</code> (onbekende model-id) tot iter 1 de alias herstelde.
+    </div>
+    <div class="callout" style="margin-top:16px">
+      <b>Vier campagnes in ~4 maanden →</b> <b>Juli 23–27</b> — echte <b>Agents-A1</b>, tasks 01–18,
+      plateau rond 17–18/18 (veel rollbacks, winst zat vast). <b>Juli 30–aug 3</b> — nog Agents-A1,
+      eerste escalaties, ~18/19. <b>Aug 4–8 (hierboven)</b> — na de swap: <b>DeepSeek V4 Flash</b>,
+      de schone klim 18 → 24 taken. En <b>sinds 8 aug</b> een <em>nieuwe</em> run (DeepSeek) op een
+      zwaardere 4-taken-subset (17, 18, 21, 26) — bewust terug naar <code>1/4</code>, want daar zit nu
+      de moeilijkste kop-ruimte: precies waar het volgende leren moet gebeuren.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap mono">
+    Gevisualiseerd uit de repo-scripts: ralph.sh · scripts/{run_all,score,apply_profile,import_bench}.sh ·
+    local_propose.py · proposer/PROPOSER.md · tools/{fanout,dslc}. <br>
+    Huidige run: 4-taken-subset (17_bank_ledger, 18_txn_wal, 21_sgf_parsing, 26_flag_cleanup) · score 1/4 ·
+    backend DeepSeek V4 Flash (alias “Agents-A1”, geswitcht 4 aug) · temp 0.4.
+  </div>
+</footer>
+
+</body>
+</html>

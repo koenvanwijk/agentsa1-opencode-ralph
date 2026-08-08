@@ -24,6 +24,14 @@ loop:
 Each task runs 3 times; it passes if a **majority** of trials pass. Scoring is
 pass/total — fully local, no LLM judge.
 
+## Loop map (visual docs)
+[`docs/loops.html`](docs/loops.html) is a self-contained visual map of every loop
+in this project — the six nested execution loops, the adaptive proposer, the
+fan-out, and the per-DSL builder loop — with the tools, scripts, where learning
+happens, the score-over-iterations curve, the model swap, deterministic vs
+stochastic evaluation, and the DSL plugin model. Open it in a browser. Keep it in
+sync when the loop architecture changes.
+
 ## The tunable surface: `oc_profile/`
 OpenCode injects `AGENTS.md` from the project root into the system prompt every
 turn and reads `opencode.json` for harness behaviour, so those two files are
