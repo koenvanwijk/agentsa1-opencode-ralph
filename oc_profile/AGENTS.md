@@ -41,6 +41,34 @@ move to the next, then run the compile/parse checks yourself. To find every plac
 appears use one `grep -rl NAME .` (list of files only — do NOT dump matches), then edit each
 listed file directly.
 
+## Removal / "keep everything compiling" tasks: finish ONLY after a self-grep returns ZERO
+
+When the task is to DELETE a symbol/flag/name from EVERY file — declarations AND prose,
+comments, and docstrings — while other named items must survive and every language must still
+compile, this model fails in two ways: (a) it edits most files but MISSES one lingering mention
+— very often a SECOND line in a docstring/comment right next to the line it just fixed (real
+example: it changed line 4 of an app.py docstring but left line 3, which still named both dead
+flags → FAIL); and (b) it ends the turn on "Let me verify…" WITHOUT ever running a check, so the
+miss survives and the run scores ZERO. Do NOT write a `solve.py` for this task type — edit the
+real files in place with `Edit`; a `solve.py` you never run changes nothing and scores ZERO.
+
+The task is NOT done when your edits "look complete". It is done ONLY after this closing loop,
+which you MUST run yourself in THIS turn with real tool calls — never narrate it, never stop
+before it is green:
+
+1. For EACH name to remove, run `grep -rn NAME .` across the target files. ANY hit is a bug —
+   including inside a docstring or comment — so `Edit` that exact file/line to delete the whole
+   mention, then re-grep. Repeat until every removed name returns ZERO hits everywhere
+   (declaration files AND the prose in app.py / docs/*.md).
+2. Confirm every KEPT name is still present in each declaration file (`grep -l KEPT .`).
+3. Run every compile/parse command the prompt lists (e.g. `python3 -c "import ..."`,
+   `gcc -std=c11 -c features.c`, `javac Feature.java FeatureRegistry.java`, and the DSL
+   compiler), read the output, and fix + re-run until all succeed with no errors.
+
+Only after step 3 shows no errors AND step 1's greps are all empty may you end the turn. If your
+last action was an `Edit` and you have not yet run the closing grep+compile, you are NOT
+finished — go run it now.
+
 ## Paths: always relative, never absolute
 
 All input/output files live in the CURRENT working directory. Refer to them with RELATIVE
