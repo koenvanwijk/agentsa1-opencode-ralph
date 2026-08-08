@@ -79,10 +79,10 @@ propose_copilot(){  # $1=iter ; Claude Sonnet 5 via Copilot. Returns 0 iff a val
 LOOP_PATHS=(oc_profile RESULTS.md tasks bench_pool)
 commit(){ git add -A -- "${LOOP_PATHS[@]}" && git commit -q -m "$1" && git push -q 2>/dev/null || true; }
 
-log "=== ralph start (opencode/Agents-A1): up to $N iterations, TRIALS=$TRIALS ==="
+log "=== ralph start (opencode/Agents-A1): up to $N iterations, TRIALS=$TRIALS, PARALLEL_JOBS=$PARALLEL_JOBS, GPU_METRICS=${GPU_METRICS:-auto} ==="
 wait_for_model
 bash scripts/apply_profile.sh
-bash scripts/run_all.sh | tee -a "$REPO/ralph.log"
+RALPH_RUN_LABEL=baseline bash scripts/run_all.sh | tee -a "$REPO/ralph.log"
 bash scripts/score.sh
 best=$(cat runs/current/SCORE_NUM.txt 2>/dev/null || echo 0)
 # `bar` is the DECAYING high-water mark the loop must beat. A keep raises it to
@@ -134,7 +134,7 @@ for i in $(seq 1 "$N"); do
     commit "iter $i [$mode] rollback (invalid profile)"
     continue
   fi
-  bash scripts/run_all.sh | tee -a "$REPO/ralph.log"
+  RALPH_RUN_LABEL="iter-$i" bash scripts/run_all.sh | tee -a "$REPO/ralph.log"
   bash scripts/score.sh
   new=$(cat runs/current/SCORE_NUM.txt 2>/dev/null || echo 0)
   thr=$(round "$bar")
@@ -165,7 +165,7 @@ for i in $(seq 1 "$N"); do
       sat=0
       wait_for_model
       bash scripts/apply_profile.sh
-      bash scripts/run_all.sh | tee -a "$REPO/ralph.log"
+      RALPH_RUN_LABEL="rebaseline-$i" bash scripts/run_all.sh | tee -a "$REPO/ralph.log"
       bash scripts/score.sh
       best=$(cat runs/current/SCORE_NUM.txt 2>/dev/null || echo 0)
       bar="$best"   # reset the decaying bar to the new (larger) task set's baseline
@@ -177,3 +177,4 @@ for i in $(seq 1 "$N"); do
   fi
 done
 log "=== ralph done, best=$best ==="
+
