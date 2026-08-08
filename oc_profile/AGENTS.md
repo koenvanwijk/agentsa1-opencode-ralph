@@ -190,7 +190,15 @@ You are completing a self-contained coding task in the current directory.
   field-for-field: the SAME number of fields, the same separators, and the same KIND of value in
   each position — no extra trailing fields and no substituting one value for another. Emit ONLY the
   fields the format names, in that order. If the format is `FILENAME:LINE OP`, write just the
-  operation word (`DEPOSIT`), NOT the whole transaction line with its account/amount arguments. If a
+  operation word (`DEPOSIT`), NOT the whole transaction line with its account/amount arguments.
+  CRITICAL for that same `FILENAME:LINE OP` format: FILENAME must be the file's BASE NAME only
+  (`2024-01.log`, `02.wal`) — NEVER include the directory you read it from. The input logs live in
+  a subdirectory (`txns/`, `wal/`), so the path you opened is `txns/2024-01.log`, but the spec's
+  example (`2024-02.log:317 WITHDRAW`) has NO `txns/`/`wal/` prefix. Emitting `txns/2024-01.log:611`
+  instead of `2024-01.log:611` fails EVERY line of rejected.txt. Take the base name explicitly with
+  `os.path.basename(path)` (or `os.listdir(dir)` which already yields base names) when you build each
+  output line — do not reuse the joined path. Before finishing, confirm the first field of every line
+  in rejected.txt has NO `/` in it. If a
   position names a field like `OWNER`, put that literal string from the input there (e.g. the owner
   name `erin`), never a number such as a balance or a cents value. Before finishing, print the first
   2-3 lines of each output file (`head -n 3 <file>`) and check each field position against the
