@@ -74,8 +74,8 @@ propose_copilot(){  # $1=iter ; Claude Sonnet 5 via Copilot. Returns 0 iff a val
 # Stage ONLY the paths the loop owns (its write domain: the oc_profile/ profile
 # incl. AGENTS.md, the RESULTS.md ledger, and the task/bench sets). This stops a
 # `git add -A` from sweeping unrelated in-progress work in a shared checkout into
-# a proposer-labelled commit. Dev work lives in a separate `git worktree`; this
-# is the safety net for anything that still lands in the loop's own tree.
+# a proposer-labelled commit. See README.md "Cohabitation & path ownership" for
+# the full loop-owned vs dev-owned boundary; keep this list in sync with it.
 LOOP_PATHS=(oc_profile RESULTS.md tasks bench_pool)
 commit(){ git add -A -- "${LOOP_PATHS[@]}" && git commit -q -m "$1" && git push -q 2>/dev/null || true; }
 

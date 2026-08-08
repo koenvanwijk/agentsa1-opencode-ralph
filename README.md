@@ -43,6 +43,35 @@ agentic coding jobs). On saturation the escalator imports from `bench_pool/`,
 the Python subset of the [aider polyglot benchmark](https://github.com/Aider-AI/polyglot-benchmark)
 (34 Exercism exercises), hardest-first per `bench_pool/ORDER.txt`.
 
+## Cohabitation & path ownership
+The loop runs autonomously and **auto-commits + pushes every round** to `master`.
+To let development happen in the same checkout while the loop runs, edits must
+respect a path-ownership boundary. Both auto-commit sites — `ralph.sh` `commit()`
+and `scripts/import_bench.sh` — stage **only loop-owned paths** (`ralph.sh`
+`LOOP_PATHS`), never a bare `git add -A`, so in-progress work is not swept into a
+proposer-labelled commit.
+
+**Loop-owned** — the loop writes and auto-commits these; do **not** hand-edit
+them while the loop runs, or your change races the proposer's rollback:
+- `oc_profile/` — the tuned profile (`AGENTS.md` + `opencode.json`)
+- `RESULTS.md` — the keep/rollback ledger
+- `tasks/`, `bench_pool/` — the task set and the escalation pool
+
+**Dev-owned** — safe to edit and hand-commit in small scoped commits; the loop
+never auto-commits these:
+- `tools/` — `dslc`, `fanout`, and other tooling
+- `ralph.sh`, `scripts/`, `local_propose.py`, `proposer/` — loop infra. Edits
+  take effect on the **next loop restart** (the running bash has already parsed
+  the current script).
+- `README.md` and other docs
+
+**Ephemeral / untracked** (git-ignored, never committed): `runs/`, `ralph.log`,
+`.opencode/`, `.fanout/`, `.experiment/`.
+
+Practical rule: keep off the loop-owned paths, commit dev work in small scoped
+commits (e.g. `git add tools/dslc && git commit`), and remember infra edits land
+at the next restart. A separate `git worktree` also works but is not required.
+
 ## Run
 ```bash
 TRIALS=3 ./ralph.sh 30     # 30 iterations, 3 trials/task (detached for overnight)
