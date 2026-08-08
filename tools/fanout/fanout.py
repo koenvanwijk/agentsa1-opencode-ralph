@@ -36,10 +36,19 @@ MODEL = os.environ.get("OC_MODEL", "agentsa1/Agents-A1")
 OPENCODE = os.environ.get("OPENCODE_BIN", os.path.expanduser("~/.local/bin/opencode"))
 TIMEOUT = int(os.environ.get("FANOUT_TIMEOUT", "600"))
 
+# Small, scoped rules for each subagent. MUST carry the critical anti-freeze
+# rule — a fan-out that only shrinks context (dropping the main AGENTS.md)
+# regresses this model into reading files then ending its turn without editing.
 SCOPED_AGENTS = (
-    "# Cleanup subagent\n"
-    "Edit ONLY the files already present in this directory. Keep them\n"
-    "compiling/parsing. Do not create new files or read anything outside here.\n"
+    "# Cleanup subagent\n\n"
+    "You edit files in THIS directory to complete the change in the prompt.\n\n"
+    "CRITICAL — do NOT end your turn right after a Read. Reading changes nothing.\n"
+    "If the last thing you did was Read, your turn is UNFINISHED: your VERY NEXT\n"
+    "action MUST be an Edit/Write tool call that actually removes the dead flags.\n"
+    "You are only done once the file on disk has been edited; after editing,\n"
+    "briefly confirm the change is present and that the file still parses.\n\n"
+    "- Edit ONLY the files already in this directory; use relative paths.\n"
+    "- Do not create new files or read anything outside this directory.\n"
 )
 
 
