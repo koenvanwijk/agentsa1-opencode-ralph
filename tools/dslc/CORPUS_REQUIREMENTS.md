@@ -172,3 +172,12 @@ De **loop** levert daarna (buiten de externe deliverable):
 
 Pas na een groene `dslc selftest` gaat de gebruikelijke keep/rollback-poort de
 assets scoren op de echte DSL-taken.
+
+> **Status (`flags`).** Deliverables 5 en 6 zijn geïmplementeerd voor de
+> `flags`-DSL: de mutatie-operatoren staan in [`mutators/flags.py`](./mutators/flags.py)
+> (één per rule-id, los van de linter — de trust-grens) en de poort draait via
+> `python3 dslc.py selftest` (groen: 2/2 good, 16 afgeleide bad-mutanten, 8
+> rule-ids). De linter `grammars/flags.py` emit nu stabiele `[RULE_ID]`-tags. Het
+> enige nog niet-geautomatiseerde stuk is de **builder** die linter+cheatsheet
+> zélf uit de corpus genereert; hier is de linter met de hand geschreven en wordt
+> hij door dezelfde poort getoetst.
