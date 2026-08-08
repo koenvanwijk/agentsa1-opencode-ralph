@@ -1,0 +1,9 @@
+{
+  "name": "flags",
+  "extensions": [".flags"],
+  "version": "1.0",
+  "spec": "spec/grammar.md",
+  "mistakes": "spec/common-mistakes.md",
+  "examples_good": "examples/good/",
+  "examples_bad": "examples/bad/"
+}

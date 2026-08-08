@@ -1,0 +1,5 @@
+# Smallest valid block: only the two required fields.
+feature DARK_MODE {
+    default on
+    owner ui
+}

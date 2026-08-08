@@ -1,0 +1,9 @@
+feature DARK_MODE {
+    default on
+    owner ui
+}
+
+feature DARK_MODE {
+    default off
+    owner ui
+}

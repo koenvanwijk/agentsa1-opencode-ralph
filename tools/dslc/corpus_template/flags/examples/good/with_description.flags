@@ -1,0 +1,12 @@
+# Covers the optional `description` field and multiple blocks.
+feature BETA_SEARCH {
+    default off
+    owner search
+    description "Experimental search ranking"
+}
+
+feature MULTI_REGION {
+    default on
+    owner platform
+    description "Serve from multiple regions"
+}

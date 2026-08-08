@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/koenvanwijk/agentsa1-opencode-ralph/tools/dslc/manifest.schema.json",
+  "title": "DSL corpus manifest",
+  "description": "Per-DSL manifest that lets the Ralph builder step map an extension to its documentation/example corpus. See CORPUS_REQUIREMENTS.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "extensions", "version", "spec", "mistakes", "examples_good", "examples_bad"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Grammar name; matches tools/dslc/grammars/<name>.py once built."
+    },
+    "extensions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^\\.[A-Za-z0-9_.]+$" },
+      "description": "File extensions this DSL owns, leading dot included (e.g. \".flags\")."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+(\\.[0-9]+)*$",
+      "description": "Corpus version. Bump when spec/examples change so the loop can detect stale generated assets."
+    },
+    "spec": {
+      "type": "string",
+      "description": "Path (relative to the manifest) to the authoritative grammar/spec document."
+    },
+    "mistakes": {
+      "type": "string",
+      "description": "Path to the common-mistakes fault catalogue (defines the rule-ids)."
+    },
+    "examples_good": {
+      "type": "string",
+      "pattern": "/$",
+      "description": "Directory (trailing slash) of valid, isolate-compilable examples."
+    },
+    "examples_bad": {
+      "type": "string",
+      "pattern": "/$",
+      "description": "Directory (trailing slash) of invalid examples, each with a sibling .expect sidecar."
+    }
+  }
+}
