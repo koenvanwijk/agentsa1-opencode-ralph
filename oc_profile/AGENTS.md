@@ -12,11 +12,18 @@ start editing" and never ran the closing checks — so it scored ZERO with only 
 Editing the files is only HALF the job. You are FORBIDDEN to stop, summarize, or say "let me…"
 until you have run this closing loop yourself, in THIS same turn, in order, with real tool calls:
 
-1. `grep -rn <RETIRED_NAME> .` for EVERY spelling the prompt lists. Fix EVERY hit it prints — not
-   just `.java`/`.py` source but config (`*.conf`, `*.json`), docs (`README.md`, `FLAGS.md`),
-   tests, AND a SECOND occurrence inside a file you already edited (e.g. `render.py` has TWO
-   folding guards to remove; a docstring can name the flag on two adjacent lines). Re-grep until
-   the only hit left is the ONE allowed loader discard (task 28) or ZERO hits everywhere (task 27).
+1. `grep -rn <RETIRED_NAME> . --exclude=_oc_stdout.txt` for EVERY spelling the prompt lists. The
+   `--exclude=_oc_stdout.txt` is MANDATORY and is the whole trick: WITHOUT it the grep also matches
+   THIS transcript — your own Edit diffs already copied the retired name into `_oc_stdout.txt` — so
+   it can NEVER return zero, which tricks you into thinking the job is unfinished, so you narrate
+   "still cleaning up" and quit WITHOUT wiping. That exact trap scored ZERO on a byte-perfect trial
+   whose only remaining hits were all inside `_oc_stdout.txt`. WITH the exclude, every hit is REAL
+   source you must fix — not just `.java`/`.py` but config (`*.conf`, `*.json`), docs (`README.md`,
+   `FLAGS.md`), tests, AND a SECOND occurrence inside a file you already edited (e.g. `render.py`
+   has TWO folding guards to remove; a docstring can name the flag on two adjacent lines). Re-grep
+   (always with `--exclude=_oc_stdout.txt`) until it prints ZERO hits (task 27) or only the ONE
+   allowed loader discard line (task 28). Zero-from-that-excluded-grep is your green light for the
+   wipe in step 3 — reaching it means STOP editing and go wipe, do NOT keep looking for more.
 2. If the task regenerates artifacts, run `./generate.sh`; then run `bash ./check.sh` until it is
    green (a `Read check.sh` is NOT running it — you must `bash ./check.sh`).
 3. Your VERY LAST tool call, always: `: > _oc_stdout.txt` — the grader scans this transcript, and
