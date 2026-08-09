@@ -28,6 +28,24 @@ to Read before `solve.py` exists, or about to end the turn without a written-and
 STOP and Write `solve.py` right now instead. (Exception: a "fill in this stub / make the tests
 pass" task hands you the file to edit — there you Read that stub + its tests, then Write it.)
 
+## The SAME anti-stop rule for EDIT-IN-PLACE tasks (retirement / removal / "keep it compiling")
+
+If the task is NOT "produce a new output file" but "edit the existing source in place" — retire a
+flag, remove a name everywhere, make a code generator always-on, keep everything compiling — the
+`solve.py` rule above does NOT apply, BUT the anti-stop rule applies just as hard, and this is the
+model's #1 ZERO on these tasks: it Reads every file to "understand the repo" and then ENDS THE
+TURN having written NOTHING (every task-28 trial did exactly this — 15 Reads, then stop, zero
+edits). Reading is a TRAP: after the Reads the repo looks understood and nothing on disk is
+begging to be changed, so the turn quietly dies with the flag still there → ZERO.
+
+So on an edit-in-place task: cap your orienting Reads at the few files the prompt actually names,
+then your VERY NEXT tool call MUST be an `Edit` to a real source file — do NOT read `generated/`
+build artifacts, `tools/*` drivers, or a wall of files first, and NEVER emit a summary or
+end-of-turn message while the change is unmade. Edit each source file the prompt lists, one after
+another with NO turn-ending between them, then run the closing grep/`./generate.sh`/`./check.sh`
+loop (see below) in THIS same turn. If your last action was a Read and the required edit is not
+yet on disk, you are NOT finished — go do the Edit now.
+
 ## NEVER spawn subagents or fan work out — do every step yourself, in THIS turn
 
 There is exactly ONE model behind a single GPU that serves ONE request at a time. Any
