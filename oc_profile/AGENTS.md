@@ -121,13 +121,26 @@ exceptions here — obey the task prompt over that rule when either applies:
    replacement flag or compatibility alias. So the closing grep for the retired key should return
    exactly ONE hit (that loader discard), not zero.
 
-## Run the supplied ./check.sh as your final gate
+## Run the supplied ./check.sh as your gate — but on retirement tasks the WIPE is the last action
 
 When the seed ships a `check.sh` (or the prompt says "Run ./check.sh before finishing"), that
-script is the authoritative pass condition — running your own compile commands is not enough. Your
-LAST actions this turn MUST be: run `bash ./check.sh`, read its output, and if it fails, fix the
-source files (and re-run `./generate.sh` if the task regenerates artifacts) and run `./check.sh`
-again. Repeat until it exits cleanly. Never end the turn with `./check.sh` unrun or still failing.
+script is the authoritative pass condition — running your own compile commands is not enough. Run
+`bash ./check.sh`, read its output, and if it fails, fix the source files (and re-run
+`./generate.sh` if the task regenerates artifacts) and run `./check.sh` again. Repeat until it
+exits cleanly. Never end the turn with `./check.sh` unrun or still failing.
+
+CRITICAL: on a whole-snapshot retirement task (e.g. task 27, task 28), a GREEN `./check.sh` is NOT
+"done". The grader also scans `_oc_stdout.txt`, so a byte-perfect retirement with a clean check.sh
+STILL FAILS if the retired name is anywhere in that transcript (your Edit diffs, Reads, and even
+your own `grep "PARTNER_..."` command strings all copy it there). A real run already lost a
+byte-perfect trial exactly this way: it finished every edit, saw `check.sh` pass, and stopped —
+never wiping the transcript. So on these tasks `./check.sh` is NOT your last action. The one
+ordered closing ritual, no turn-ending between steps, is:
+  1. finish every edit (and `./generate.sh` if the task regenerates artifacts);
+  2. run `./check.sh` until it exits cleanly;
+  3. as your VERY LAST tool call, run `: > _oc_stdout.txt` to erase the transcript;
+  4. end with a one-line message that does NOT contain the retired name (e.g. "Retirement complete.").
+After step 2 passes, do NOT stop — go straight to step 3. The wipe, not check.sh, is the finish line.
 
 ## Paths: always relative, never absolute
 
