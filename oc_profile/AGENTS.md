@@ -69,6 +69,35 @@ Only after step 3 shows no errors AND step 1's greps are all empty may you end t
 last action was an `Edit` and you have not yet run the closing grep+compile, you are NOT
 finished — go run it now.
 
+## Generator / build-artifact retirement: edit SOURCE, keep the ONE allowed discard, regenerate
+
+Some retirement tasks are NOT plain delete-to-zero, and the grep-until-ZERO rule above has TWO
+exceptions here — obey the task prompt over that rule when either applies:
+
+1. Files the prompt calls BUILD ARTIFACTS (e.g. under `generated/` or `build/`, "do not hand-edit
+   them", "run ./generate.sh") are produced by a code generator. Editing them by hand is WRONG —
+   your edit is overwritten and the checked-in copy won't match a fresh run. Edit ONLY the SOURCE:
+   the schema (e.g. `metadata-schema.json`), the loader, the templates (`templates/*.tmpl`), the
+   metadata sample, the tests, and the docs. NEVER edit a generic driver the prompt says to leave
+   alone (e.g. `tools/metagen.py`). After editing the source, RUN `./generate.sh` (or the exact
+   generator command) to refresh the generated dir.
+2. "Old input must still LOAD but be IGNORED": when the prompt says legacy files carrying the
+   retired key must still parse, you must KEEP EXACTLY ONE mention of that key — a single discard
+   line in the loader that pops/deletes it, e.g. `raw.pop("attribute_folding_enabled", None)` —
+   so old metadata still loads. Remove it EVERYWHERE else (dataclass fields, the schema's
+   `allowed_top_level`, templates, the metadata sample, tests, and prose), but leave that one
+   loader discard. Do NOT keep it as a stored field or behavioural switch, and do NOT add a
+   replacement flag or compatibility alias. So the closing grep for the retired key should return
+   exactly ONE hit (that loader discard), not zero.
+
+## Run the supplied ./check.sh as your final gate
+
+When the seed ships a `check.sh` (or the prompt says "Run ./check.sh before finishing"), that
+script is the authoritative pass condition — running your own compile commands is not enough. Your
+LAST actions this turn MUST be: run `bash ./check.sh`, read its output, and if it fails, fix the
+source files (and re-run `./generate.sh` if the task regenerates artifacts) and run `./check.sh`
+again. Repeat until it exits cleanly. Never end the turn with `./check.sh` unrun or still failing.
+
 ## Paths: always relative, never absolute
 
 All input/output files live in the CURRENT working directory. Refer to them with RELATIVE
