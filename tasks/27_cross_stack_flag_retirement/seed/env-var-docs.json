@@ -1,0 +1,17 @@
+{
+  "settings": {
+    "PARTNER_PROGRAM_CARDS_ENABLED": {
+      "mode": "ADMIN_READABLE",
+      "description": "Enable showing partner program cards.",
+      "type": "bool",
+      "required": false
+    },
+    "PROGRAM_SLUG_URLS_ENABLED": {
+      "mode": "ADMIN_READABLE",
+      "description": "Enable URLs with program slugs.",
+      "type": "bool",
+      "required": false
+    }
+  }
+}
+

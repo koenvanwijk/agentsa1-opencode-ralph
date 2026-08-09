@@ -1,0 +1,13 @@
+component: sampletelemetry
+description: Sample telemetry emitted by the receiver.
+attribute_folding_enabled: false
+signals:
+  request_duration:
+    description: Request duration in milliseconds.
+    enabled: true
+    foldable_attributes: [method, status]
+  active_workers:
+    description: Number of active workers.
+    enabled: false
+    foldable_attributes: []
+

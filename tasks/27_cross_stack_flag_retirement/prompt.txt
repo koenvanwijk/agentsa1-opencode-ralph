@@ -1,0 +1,27 @@
+This is an isolated maintenance snapshot derived from a real production feature-flag
+retirement. The partner-program-card feature has been enabled in production for
+months and is now permanent. Retire its rollout flag and delete the disabled legacy
+path.
+
+Remove the feature flag PARTNER_PROGRAM_CARDS_ENABLED completely. Preserve the
+behaviour of the currently enabled path: external programs must always be visible,
+the program form must always offer DEFAULT, EXTERNAL, and PRE_SCREENER_FORM types,
+and slug labels must still distinguish external programs from hosted programs.
+
+Clean every supplied artifact:
+- Java production code and constructor dependencies
+- the setting manifest and feature-flags configuration
+- environment-variable documentation
+- tests and human documentation
+
+Requirements:
+- No spelling or casing variant of the retired flag may remain, including
+  PARTNER_PROGRAM_CARDS_ENABLED, partner_program_cards_enabled,
+  partnerProgramCardsEnabled, getPartnerProgramCardsEnabled, and prose/comments.
+- Remove flag-only fields, constructor parameters, imports, methods, branches, and
+  obsolete tests; do not leave dead code behind.
+- Keep unrelated settings and behaviour unchanged.
+- Do not add compatibility aliases or a replacement flag.
+- Work only from the supplied snapshot. It intentionally has no Git metadata,
+  remote, patch, or after-files.
+- Run ./check.sh before finishing and keep fixing until it passes.

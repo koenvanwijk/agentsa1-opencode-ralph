@@ -1,0 +1,10 @@
+{
+  "allowed_top_level": [
+    "component",
+    "description",
+    "attribute_folding_enabled",
+    "signals"
+  ],
+  "required_top_level": ["component", "description", "signals"]
+}
+

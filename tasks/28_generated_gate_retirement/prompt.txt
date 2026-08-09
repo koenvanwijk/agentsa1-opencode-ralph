@@ -1,0 +1,27 @@
+This repository contains a metadata-driven code generator. A rollout is complete:
+per-signal attribute folding is now permanent. Retire the opt-out setting
+ATTRIBUTE_FOLDING_ENABLED and make the generator always emit the richer per-signal
+configuration and folding implementation.
+
+The checked-in files under generated/ are build artifacts. Do not hand-edit them.
+Change the source metadata model/schema, loader, renderer/templates, samples, tests,
+and documentation, then run ./generate.sh to refresh generated/.
+
+Compatibility requirement:
+- New metadata must no longer declare ATTRIBUTE_FOLDING_ENABLED.
+- Old metadata containing `attribute_folding_enabled: false` or `true` must still
+  load successfully, but the key is ignored and generated output is identical to
+  metadata without that key. Do not retain it as a field or behavioural switch.
+
+Required final behaviour:
+- Every signal gets its own generated config class.
+- A signal with foldable attributes gets an `attributes` setting and generated
+  folding logic.
+- A signal without foldable attributes still gets its own config class.
+- Existing signal names, defaults, descriptions, and unrelated metadata survive.
+- Generated files exactly match a fresh generator run.
+- Do not modify the generic generator driver in tools/metagen.py.
+
+Work only from this history-free snapshot. It has no .git directory, upstream URL,
+reference patch, or after-tree. Run ./check.sh before finishing.
+
