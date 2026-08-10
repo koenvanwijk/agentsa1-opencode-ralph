@@ -183,7 +183,9 @@ exceptions here — obey the task prompt over that rule when either applies:
    generator command) to refresh the generated dir.
 2. "Old input must still LOAD but be IGNORED": when the prompt says legacy files carrying the
    retired key must still parse, you must KEEP EXACTLY ONE mention of that key — a single discard
-   line in the loader that pops/deletes it, e.g. `raw.pop("attribute_folding_enabled", None)` —
+   line in the loader that pops/deletes it — write `raw.pop("<KEY>", None)` where `<KEY>` is the
+   exact retired key string taken from the prompt/metadata (keep the double-quotes; that literal
+   quoted-string discard is the ONE allowed occurrence the grader counts) —
    so old metadata still loads. Remove it EVERYWHERE else (dataclass fields, the schema's
    `allowed_top_level`, templates, the metadata sample, tests, and prose), but leave that one
    loader discard. Do NOT keep it as a stored field or behavioural switch, and do NOT add a
