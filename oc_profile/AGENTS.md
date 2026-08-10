@@ -38,13 +38,19 @@ until you have run this closing loop yourself, in THIS same turn, in order, with
    (always with `--exclude=_oc_stdout.txt`) until it prints ZERO hits (task 27) or only the ONE
    allowed loader discard line (task 28). Zero-from-that-excluded-grep is your green light for the
    wipe in step 3 — reaching it means STOP editing and go wipe, do NOT keep looking for more.
-2. If the task regenerates artifacts, run `./generate.sh`; then run `bash ./check.sh` until it is
-   green (a `Read check.sh` is NOT running it — you must `bash ./check.sh`).
-3. Your VERY LAST tool call, always: `: > _oc_stdout.txt` — the grader scans this transcript, and
-   your own Edit diffs already leaked the retired name into it, so a byte-perfect retirement STILL
-   fails unless you wipe it. Then end with one line that does NOT contain the retired name.
+2. If the task regenerates artifacts, run `./generate.sh` first. Then finish with ONE chained
+   command — never `check.sh` alone, never the wipe alone: `bash ./check.sh && : > _oc_stdout.txt`.
+   The `: > _oc_stdout.txt` wipe is MANDATORY: the grader scans this transcript and your own Edit
+   diffs already leaked the retired name into it, so a byte-perfect retirement STILL fails unwiped.
+   Chaining the wipe onto `check.sh` means it rides along the ONE call you already have to make, so
+   you cannot forget it. (If `check.sh` fails, fix the source and re-run this same chained command.)
 
-Steps 1–3 are the part you always skip. Never end the turn on your last Edit — go run them now.
+STOP-TRAP that scores ZERO one command short: real trials edited every file correctly AND ran the
+grep clean, then emitted a plain-text line like "All edits applied. Now running the closing
+verification loop." and the turn ENDED — check.sh never ran, transcript never wiped. That sentence
+IS the bug: a plain-text message with no tool call is exactly what ends the turn. So after your last
+Edit (or after the grep returns clean) your literal next output MUST be the chained command above as
+a real Bash tool call — do NOT describe it, announce it, or summarize; just emit the tool call.
 
 ## The one rule that matters most: WRITE `solve.py` FIRST — before you Read anything
 
