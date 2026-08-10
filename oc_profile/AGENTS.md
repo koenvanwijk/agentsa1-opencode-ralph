@@ -76,34 +76,26 @@ to Read before `solve.py` exists, or about to end the turn without a written-and
 STOP and Write `solve.py` right now instead. (Exception: a "fill in this stub / make the tests
 pass" task hands you the file to edit — there you Read that stub + its tests, then Write it.)
 
-## EDIT-IN-PLACE tasks (retirement / removal / "keep it compiling"): interleave Read→Edit, NEVER batch-read
+## EDIT-IN-PLACE tasks (retirement / removal / "keep it compiling"): edit EVERY file in ONE burst
 
 If the task is NOT "produce a new output file" but "edit the existing source in place" — retire a
 flag, remove a name everywhere, make a code generator always-on, keep everything compiling — the
 `solve.py` rule above does NOT apply, but the anti-stop rule applies just as hard.
 
-THE #1 ZERO, seen in tasks 27 and 28 EVERY run: the model opens a WALL of files with back-to-back
-`Read`s "to understand the repo" (12–15 Reads in a row), and the instant the reading is done it
-lands on a SUMMARY CLIFF — it emits one plain-text line ("Now I understand the full codebase. Let
-me implement…", "Now I have a full picture. Let me make all the changes.", "Now I'll search and
-then make all edits.") and the turn ENDS with zero or partial edits → ZERO. BATCH-READING IS THE
-TRAP: reading N files in a row manufactures that exact cliff, because once the repo "looks
-understood" nothing on disk is begging to be changed and the next thing out of the model is a
-narration sentence, which is precisely what ends the turn. Do not walk up to that cliff.
-
-The cure is to NEVER batch-read. Interleave so you are never once left in a pure "done reading"
-state — every Read is immediately followed by the Edit it was for:
-1. Your VERY FIRST tool call is `grep -rl <FLAG_OR_NAME> . --exclude=_oc_stdout.txt` — the LIST of
-   files to change. Do NOT Read anything before this, and do NOT `grep -n`/dump matches (list only).
-2. Then walk that list ONE file at a time, back to back: `Read` that ONE file, IMMEDIATELY `Edit`
-   it, then move to the next file. Read fileA → Edit fileA → Read fileB → Edit fileB → … NEVER read
-   fileB before fileA is edited, and never queue up several Reads. Skip `generated/` build artifacts
-   and `tools/*` drivers entirely.
-3. When the last listed file is edited, go STRAIGHT into the closing
-   grep/`./generate.sh`/`./check.sh` loop (below) in THIS same turn — never a summary in between.
-
-If your last action was a `Read` (or worse, a run of Reads) and the matching `Edit` is not yet on
-disk, you are NOT finished and you are ONE plain sentence away from a ZERO — emit that `Edit` now.
+Copy the EXACT sequence that passes the flag-cleanup task every single run — it batch-reads, then
+edits ALL files in one uninterrupted run of `Edit` calls, then greps to zero. That burst is the
+win; do NOT stop partway. Concretely:
+1. First tool call: `grep -rl <FLAG_OR_NAME> . --exclude=_oc_stdout.txt` — the LIST of files to
+   change (list only; do NOT `grep -n`/dump matches). Skip `generated/` artifacts and `tools/*`.
+2. `Read` each listed file (reading them back-to-back is FINE — that is what the passing task does).
+3. THE STEP THAT SCORES: emit an `Edit` for EVERY listed file, one right after another, with NO
+   prose between any two Edits. The #1 ZERO on tasks 27/28 is editing only the first file (or zero)
+   and then stopping — the burst got cut off after one Edit. There are ~7 (task 27) files to change;
+   you are NOT done until you have emitted an Edit for the LAST file in the grep list. If you catch
+   yourself about to type a sentence and the grep list still has an unedited file, emit that Edit
+   instead — never narrate mid-burst.
+4. The instant the last file is edited, go STRAIGHT into the closing grep/`./generate.sh`/
+   `./check.sh`/wipe loop (below) in THIS same turn — never a summary in between.
 
 ## NEVER spawn subagents or fan work out — do every step yourself, in THIS turn
 
