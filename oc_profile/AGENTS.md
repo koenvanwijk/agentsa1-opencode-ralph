@@ -76,23 +76,34 @@ to Read before `solve.py` exists, or about to end the turn without a written-and
 STOP and Write `solve.py` right now instead. (Exception: a "fill in this stub / make the tests
 pass" task hands you the file to edit — there you Read that stub + its tests, then Write it.)
 
-## The SAME anti-stop rule for EDIT-IN-PLACE tasks (retirement / removal / "keep it compiling")
+## EDIT-IN-PLACE tasks (retirement / removal / "keep it compiling"): interleave Read→Edit, NEVER batch-read
 
 If the task is NOT "produce a new output file" but "edit the existing source in place" — retire a
 flag, remove a name everywhere, make a code generator always-on, keep everything compiling — the
-`solve.py` rule above does NOT apply, BUT the anti-stop rule applies just as hard, and this is the
-model's #1 ZERO on these tasks: it Reads every file to "understand the repo" and then ENDS THE
-TURN having written NOTHING (every task-28 trial did exactly this — 15 Reads, then stop, zero
-edits). Reading is a TRAP: after the Reads the repo looks understood and nothing on disk is
-begging to be changed, so the turn quietly dies with the flag still there → ZERO.
+`solve.py` rule above does NOT apply, but the anti-stop rule applies just as hard.
 
-So on an edit-in-place task: cap your orienting Reads at the few files the prompt actually names,
-then your VERY NEXT tool call MUST be an `Edit` to a real source file — do NOT read `generated/`
-build artifacts, `tools/*` drivers, or a wall of files first, and NEVER emit a summary or
-end-of-turn message while the change is unmade. Edit each source file the prompt lists, one after
-another with NO turn-ending between them, then run the closing grep/`./generate.sh`/`./check.sh`
-loop (see below) in THIS same turn. If your last action was a Read and the required edit is not
-yet on disk, you are NOT finished — go do the Edit now.
+THE #1 ZERO, seen in tasks 27 and 28 EVERY run: the model opens a WALL of files with back-to-back
+`Read`s "to understand the repo" (12–15 Reads in a row), and the instant the reading is done it
+lands on a SUMMARY CLIFF — it emits one plain-text line ("Now I understand the full codebase. Let
+me implement…", "Now I have a full picture. Let me make all the changes.", "Now I'll search and
+then make all edits.") and the turn ENDS with zero or partial edits → ZERO. BATCH-READING IS THE
+TRAP: reading N files in a row manufactures that exact cliff, because once the repo "looks
+understood" nothing on disk is begging to be changed and the next thing out of the model is a
+narration sentence, which is precisely what ends the turn. Do not walk up to that cliff.
+
+The cure is to NEVER batch-read. Interleave so you are never once left in a pure "done reading"
+state — every Read is immediately followed by the Edit it was for:
+1. Your VERY FIRST tool call is `grep -rl <FLAG_OR_NAME> . --exclude=_oc_stdout.txt` — the LIST of
+   files to change. Do NOT Read anything before this, and do NOT `grep -n`/dump matches (list only).
+2. Then walk that list ONE file at a time, back to back: `Read` that ONE file, IMMEDIATELY `Edit`
+   it, then move to the next file. Read fileA → Edit fileA → Read fileB → Edit fileB → … NEVER read
+   fileB before fileA is edited, and never queue up several Reads. Skip `generated/` build artifacts
+   and `tools/*` drivers entirely.
+3. When the last listed file is edited, go STRAIGHT into the closing
+   grep/`./generate.sh`/`./check.sh` loop (below) in THIS same turn — never a summary in between.
+
+If your last action was a `Read` (or worse, a run of Reads) and the matching `Edit` is not yet on
+disk, you are NOT finished and you are ONE plain sentence away from a ZERO — emit that `Edit` now.
 
 ## NEVER spawn subagents or fan work out — do every step yourself, in THIS turn
 
