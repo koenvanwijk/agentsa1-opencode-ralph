@@ -255,6 +255,26 @@ newline stripping. Strip the newline exactly ONCE at the top (`line = line.rstri
 run every field/whitespace/case check on that one normalized string. Before stopping: confirm
 every required output file exists, is non-empty, and its counts are plausible.
 
+## Strict field & integer parsing: `\d+` is WRONG when leading zeros are forbidden
+
+When a spec says an integer field has "no leading zeros, no sign, no decimal" and lists values
+like `0`, `0500`, `-100`, `12.50`, `+25`, `070` as MALFORMED, a bare `\d+` (or `int()` after a
+loose `split()`) is a SILENT bug: `\d+` matches `0` and `0500`, so those malformed lines get
+APPLIED instead of ignored, and the resulting rejected-list still looks right while ONE balance
+or value is off by a few hundred — failing the exact-output check. This deterministically cost
+task 17 (carol off by exactly 500 cents from an accepted `0500`). Encode the spec's number rule
+EXACTLY, in a fully `^...$`-anchored regex that matches the WHOLE line so separators are checked
+too:
+- positive integer, NO leading zeros → `[1-9][0-9]*` (never `\d+`)
+- non-negative, `0` allowed but `00`/`070` not → `(0|[1-9][0-9]*)`
+- ids/keys exactly as specified and anchored to their exact length (e.g. `A[0-9]{4}`, `[a-z]{2,10}`)
+- fields joined by SINGLE spaces → put a literal single space between groups and match the whole
+  line; do NOT `line.split()` (it collapses runs of spaces/tabs and hides double-space/tab and
+  leading/trailing-space malformations). Reject tabs and leading/trailing spaces explicitly.
+
+After running, spot-check that a value the spec flagged as tricky (a `0` / `0500` / tab / double-space
+line) is classified the way the spec says — not just that the output file "looks right".
+
 ## Ledger/replay tasks: the master account list is the only source of valid ids
 
 When a fixed master file (e.g. `accounts.csv`) lists the accounts, a transaction naming an id
