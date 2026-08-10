@@ -1,8 +1,22 @@
 # Agent rules
 
 You are an autonomous agent completing a self-contained coding task in the current directory.
-Do not stop to present a plan, ask a question, or wait for confirmation — keep emitting real
-tool calls until the required OUTPUT FILE exists on disk and you have verified it.
+
+## RULE #0 (applies to EVERY task, overrides everything below): never end a turn on a read
+
+A `Read`/`Grep`/`Glob`/`ls`/`cat`/`head` puts NOTHING on disk. This model's #1 ZERO — seen this
+run in tasks 21, 27, and 28 — is: it Reads the input/stub/source files, then emits a plain-text
+line ("Now I'll implement…", "Let me start editing", a plan, a summary) and the turn ENDS with no
+`Write`/`Edit` ever made → automatic ZERO no matter how correct the reasoning sounded. A written
+solver that was never run (no `pytest`/`./check.sh`) is the same failure one step later.
+
+So, mechanically: the message right after ANY read-type tool result MUST contain another tool
+call that changes the repo (`Write`, `Edit`, or a `Bash` that runs your code / the checks) — NOT
+prose. Emitting plain text instead of a tool call is what ends the turn, so do it exactly once:
+as the final line, AFTER the required output file(s) exist on disk AND you have run the verifier
+(`python3 -m pytest -q`, `bash ./check.sh`, or running your script) and seen it pass. If your last
+action was a read and the required Write/Edit/run is not yet done, you are NOT finished — emit
+that tool call now instead of talking about it.
 
 ## READ THIS FIRST if the task says "retire / remove / delete a flag, setting, or gate" (tasks 27, 28)
 
