@@ -8,6 +8,8 @@ export PATH="$HOME/.local/bin:$PATH"
 TRIALS="${TRIALS:-3}"
 MODEL="${OC_MODEL:-agentsa1/Agents-A1}"
 PARALLEL_JOBS="${PARALLEL_JOBS:-2}"
+OC_MAX_TURNS="${OC_MAX_TURNS:-3}"
+OC_TURN_TIMEOUT="${OC_TURN_TIMEOUT:-900}"
 RUN_LABEL="${RALPH_RUN_LABEL:-manual}"
 safe_label=$(printf '%s' "$RUN_LABEL" | tr -cs '[:alnum:]_.-' '-')
 RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)-${safe_label}-p${PARALLEL_JOBS}-$$"
@@ -23,6 +25,8 @@ mkdir -p "$METRICS_DIR"
   printf 'parallel_jobs=%q\n' "$PARALLEL_JOBS"
   printf 'trials=%q\n' "$TRIALS"
   printf 'model=%q\n' "$MODEL"
+  printf 'oc_max_turns=%q\n' "$OC_MAX_TURNS"
+  printf 'oc_turn_timeout=%q\n' "$OC_TURN_TIMEOUT"
   printf 'task_count=%q\n' "$(find "$REPO/tasks" -mindepth 1 -maxdepth 1 -type d | wc -l)"
 } > "$METRICS_DIR/run.env"
 
@@ -30,25 +34,66 @@ run_one(){
   local t="$1" k="$2"
   local name; name=$(basename "$t")
   local out="$REPO/runs/current/$name/trial$k"
+  local transcript_dir="$REPO/runs/transcripts/$RUN_ID/$name/trial$k"
   rm -rf "$out"; mkdir -p "$out"
+  mkdir -p "$transcript_dir"
   [ -d "$t/seed" ] && cp -a "$t/seed/." "$out/" 2>/dev/null || true
   if [ -f "$t/solve.sh" ]; then
     # per-task solver OVERRIDE (e.g. tier-B subagent fan-out). It manages its own
     # harness profile(s) per subagent, so no top-level profile is injected here.
     timeout 1800 bash "$t/solve.sh" "$out" > "$out/_oc_stdout.txt" 2>&1
   else
-    # default: one opencode run over the whole task with the tuned profile
-    cp "$REPO/oc_profile/opencode.json" "$out/opencode.json"
-    cp "$REPO/oc_profile/AGENTS.md" "$out/AGENTS.md"
-    timeout 900 opencode run --dir "$out" -m "$MODEL" "$(cat "$t/prompt.txt")" \
-      > "$out/_oc_stdout.txt" 2>&1
-    # remove profile files so verify.sh only sees task artifacts
-    rm -f "$out/opencode.json" "$out/AGENTS.md"
+    # Give an incomplete solution bounded follow-up turns in the same workdir.
+    # Every opencode invocation starts with fresh context; the files on disk and
+    # the deterministic verifier output carry progress between turns.
+    local prompt turn turn_rc verify_rc verify_excerpt
+    prompt=$(cat "$t/prompt.txt")
+    verify_rc=1
+    for turn in $(seq 1 "$OC_MAX_TURNS"); do
+      cp "$REPO/oc_profile/opencode.json" "$out/opencode.json"
+      cp "$REPO/oc_profile/AGENTS.md" "$out/AGENTS.md"
+      timeout "$OC_TURN_TIMEOUT" opencode run --dir "$out" -m "$MODEL" "$prompt" \
+        > "$transcript_dir/turn$turn.txt" 2>&1
+      turn_rc=$?
+
+      # Profile and transcript files are harness state, not candidate artifacts.
+      # Keep transcripts outside the workdir while verify.sh scans the snapshot.
+      rm -f "$out/opencode.json" "$out/AGENTS.md" "$out/_oc_stdout.txt"
+      bash "$t/verify.sh" "$out" > "$transcript_dir/verify$turn.txt" 2>&1
+      verify_rc=$?
+      if [ "$verify_rc" -eq 0 ]; then
+        verify_rc=0
+        : > "$out/_oc_stdout.txt"
+        break
+      fi
+
+      verify_excerpt=$(tail -c 6000 "$transcript_dir/verify$turn.txt" 2>/dev/null)
+      prompt=$(printf '%s\n\n%s\n%s\n%s\n' \
+        'Continue the existing implementation in this same working directory.' \
+        'The previous turn did not pass the deterministic verifier. Inspect the files already changed, fix the remaining issues, and run the required checks. Do not merely summarize or ask for clarification.' \
+        "Previous OpenCode exit status: $turn_rc. Verifier output:" \
+        "$verify_excerpt")
+    done
+
+    # Failed trajectories remain available at the historical path used by both
+    # proposers. Successful snapshots keep this file empty so whole-tree gates
+    # judge task artifacts rather than harness chatter; full logs stay archived.
+    if [ "$verify_rc" -ne 0 ]; then
+      {
+        for turn in $(seq 1 "$OC_MAX_TURNS"); do
+          [ -f "$transcript_dir/turn$turn.txt" ] || continue
+          printf '\n===== OpenCode turn %s =====\n' "$turn"
+          cat "$transcript_dir/turn$turn.txt"
+          printf '\n===== verifier after turn %s =====\n' "$turn"
+          cat "$transcript_dir/verify$turn.txt" 2>/dev/null || true
+        done
+      } > "$out/_oc_stdout.txt"
+    fi
   fi
   echo "done $name trial$k"
 }
 export -f run_one
-export REPO MODEL
+export REPO MODEL RUN_ID OC_MAX_TURNS OC_TURN_TIMEOUT
 
 jobs_file=$(mktemp)
 trap 'rm -f "$jobs_file"' EXIT
@@ -77,4 +122,3 @@ for t in "$REPO"/tasks/*/; do
 done
 echo "gpu metrics: $METRICS_DIR"
 exit "$run_rc"
-

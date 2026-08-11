@@ -24,6 +24,14 @@ loop:
 Each task runs 3 times; it passes if a **majority** of trials pass. Scoring is
 pass/total — fully local, no LLM judge.
 
+Within a normal trial, the runner gives an incomplete solution up to three
+fresh-context OpenCode turns in the same workdir. It runs the task's deterministic
+`verify.sh` after every turn, stops immediately on success, and feeds a compact
+verifier failure into the next turn. Configure this with `OC_MAX_TURNS` and
+`OC_TURN_TIMEOUT` (defaults: `3` and `900` seconds). Full turn transcripts live
+outside the candidate snapshot under `runs/transcripts/`, so whole-tree verifiers
+cannot mistake harness chatter for task artifacts.
+
 ## Loop map (visual docs)
 [`docs/loops.html`](docs/loops.html) is a self-contained visual map of every loop
 in this project — the six nested execution loops, the adaptive proposer, the
@@ -122,4 +130,3 @@ memory bandwidth, so it cannot by itself prove that decode is memory-bound.
 - Agents-A1 served OpenAI-compatible at `http://192.168.86.32:8000/v1` (DGX Spark spark-480b).
 - `opencode` CLI installed (`~/.local/bin/opencode`).
 - `claude` CLI authenticated — used as the autonomous proposer.
-

@@ -426,7 +426,7 @@
         </div>
         <div class="loop-body">
           <ul class="flow">
-            <li><span class="step-t">One turn = one opencode run</span><small><code>AGENTS.md</code> + <code>opencode.json</code> are injected into the system prompt every turn. <code>timeout 900s</code>.</small></li>
+            <li><span class="step-t">One trial = up to three OpenCode turns</span><small><code>AGENTS.md</code> + <code>opencode.json</code> are injected into each fresh-context turn. The deterministic verifier stops the trial early on success or feeds a compact failure into the next turn. Default timeout: <code>900s</code> per turn.</small></li>
             <li><span class="step-t">The model loops</span><small>Read → think → Edit/Write → bash/run → verify, until the turn ends.</small></li>
             <li><span class="step-t">This is where the rules bite</span><small>“exploring is not progress”, “never stop right after a Read”, “actually write the output file” — precisely to steer THIS loop.</small></li>
           </ul>
