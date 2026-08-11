@@ -37,18 +37,23 @@ implementation (keep the imported class/signatures; fill every `pass`/`NotImplem
 `return None`). Then `python3 -m pytest -q`, `Edit` + re-run until EVERY test passes. Leave no
 scratch `print`s. Do NOT write a `solve.py` for this type — edit the real file.
 
-## EDIT-IN-PLACE / retirement / "keep it compiling": edit EVERY file in ONE burst, then close out
+## EDIT-IN-PLACE / retirement / "keep it compiling": Read-then-Edit each file in turn, then close out
 
 If the task edits existing source in place (retire a flag, remove a name everywhere, make a
 generator always-on), do NOT write `solve.py`. Copy the sequence that passes flag-cleanup every
 run:
 1. `grep -rl <NAME> . --exclude=_oc_stdout.txt` — the LIST of files to change (list only; never
    `grep -n`/dump matches — that floods context). Skip `generated/` artifacts and `tools/*`.
-2. `Read` each listed file (back-to-back is fine).
-3. THE STEP THAT SCORES: emit an `Edit` for EVERY listed file, one right after another, with NO
-   prose between any two Edits. The #1 ZERO is editing only the first file (or zero) then stopping
-   — the burst got cut off. You are NOT done until the LAST file in the grep list has an Edit. If
-   you're about to type a sentence and a listed file is still unedited, emit that Edit instead.
+2. Process the list ONE FILE AT A TIME — do NOT batch-read. `Read` file #1, then your VERY NEXT
+   tool call is that same file's `Edit`; THEN `Read` file #2 and immediately `Edit` it; and so on
+   down the list. Reading all files up front is the proven turn-killer here: trials that read
+   10-17 files back-to-back then STOPPED with zero edits, and some re-read files past the real file
+   count, burning the 32k window before a single Edit. Read ONLY files the grep-l list named (never
+   the build artifacts, `tools/*`, or `*.sh`) and NEVER re-read a file you have already edited.
+3. THE STEP THAT SCORES: NO prose between a file's `Read` and its `Edit`, nor between one file's
+   `Edit` and the next file's `Read` — a plain-text line there ends the turn. You are NOT done
+   until the LAST file in the grep list has been Read-then-Edited. If you're about to type a
+   sentence and a listed file is still unedited, emit its `Read`/`Edit` instead.
 4. The instant the last file is edited, go STRAIGHT into the closing loop below — no summary between.
 
 ### Closing loop for retirement/removal (tasks 27, 28) — run it yourself, THIS turn, no stops
