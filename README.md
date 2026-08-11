@@ -33,12 +33,14 @@ outside the candidate snapshot under `runs/transcripts/`, so whole-tree verifier
 cannot mistake harness chatter for task artifacts.
 
 ## Loop map (visual docs)
-[`docs/loops.html`](docs/loops.html) is a self-contained visual map of every loop
-in this project — the six nested execution loops, the adaptive proposer, the
-fan-out, and the per-DSL builder loop — with the tools, scripts, where learning
-happens, the score-over-iterations curve, the model swap, deterministic vs
-stochastic evaluation, and the DSL plugin model. Open it in a browser. Keep it in
-sync when the loop architecture changes.
+[`docs/loops.html`](docs/loops.html) is a self-contained visual map of the whole
+project framed as a **feedback control loop** — setpoint, controller (the
+proposer), plant (the model under OpenCode), sensor (verify + score), feedforward
+(learned rules + DSL cheatsheet), and the loops nested inside each other
+(cascade). It also covers the adaptive proposer, the fan-out, the per-DSL builder
+loop, where learning happens, the score-over-iterations curve, the model swap,
+deterministic vs stochastic evaluation, and the DSL plugin model. Open it in a
+browser. Keep it in sync when the loop architecture changes.
 
 ## The tunable surface: `oc_profile/`
 OpenCode injects `AGENTS.md` from the project root into the system prompt every

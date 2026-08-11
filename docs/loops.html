@@ -193,6 +193,11 @@
     .pulse{animation:pulse 3.4s ease-in-out infinite}
     @keyframes pulse{0%,100%{opacity:.85}50%{opacity:.35}}
   }
+  .ctrl-map{width:100%;border-collapse:collapse;margin-top:22px;font-size:13.5px;min-width:580px}
+  .ctrl-map th,.ctrl-map td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  .ctrl-map thead th{font-family:ui-monospace,monospace;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);border-bottom:1px solid var(--line-strong)}
+  .ctrl-map td:first-child{font-weight:600;color:var(--ink);white-space:nowrap}
+  .ctrl-map tbody tr:last-child td{border-bottom:none}
 </style>
 </head>
 <body>
@@ -200,11 +205,11 @@
 
 <header>
   <div class="wrap">
-    <p class="eyebrow">Thinking in loops · agentsa1-opencode-ralph</p>
-    <h1>Six nested loops that teach a local model to code better</h1>
-    <p class="lede">The whole project is one idea, repeated at six time scales: from a slow
-      curriculum loop that runs for months, to the agentic loop of the model that in seconds
-      edits a file. Each ring feeds the ring inside it — and learning happens in two places.</p>
+    <p class="eyebrow">A control-systems view · agentsa1-opencode-ralph</p>
+    <h1>A control loop that teaches a local model to code better</h1>
+    <p class="lede">The whole system is one feedback control loop, repeated at several time scales: a slow
+      supervisory loop sets the target for a tuning loop, whose plant is the model itself running
+      in seconds. Controller, plant, sensor, feedforward — and the loops nest inside one another.</p>
     <div class="repo mono">
       <span><b>repo:</b> koenvanwijk/agentsa1-opencode-ralph</span>
       <span><b>target:</b> Agents-A1 → <span style="color:var(--gold)">DeepSeek V4 Flash</span> (backend swapped, alias)</span>
@@ -217,91 +222,155 @@
 <!-- ============ HERO DIAGRAM ============ -->
 <section>
   <div class="wrap">
-    <p class="sec-label">The map</p>
-    <h2>Loops within loops</h2>
-    <p class="sec-intro">Read from the outside in: each ring is a loop that spins the ring inside it
-      many times before taking one step itself. Outer = slow and rare,
-      inner = fast and constant. The core is the model that actually types.</p>
+    <p class="sec-label">The system as a control loop</p>
+    <h2>Setpoint, controller, plant, sensor — with the loops nested inside each other</h2>
+    <p class="sec-intro">Read it as a feedback control system. A <b>setpoint</b> defines what “good” is;
+      a <b>controller</b> nudges a <b>plant</b>; a <b>sensor</b> measures the result and feeds it back
+      to form the error; a <b>feedforward</b> path pre-compensates known disturbances before they even
+      reach the error. Every Ralph mechanism is one of these blocks — and the loops sit <em>inside one
+      another</em> (cascade): a slow supervisory loop sets the target for the tuning loop, whose plant
+      holds the model’s own fast loop, and whose sensor holds a noise filter.</p>
 
     <figure class="fig-hero">
-      <svg viewBox="0 0 900 662" role="img" aria-label="Concentric diagram of six nested loops, from the outer curriculum loop to the inner agentic model loop">
+      <svg viewBox="0 0 960 596" role="img" aria-label="Feedback control block diagram: a setpoint feeds a summing junction, a controller (the proposer) drives a plant (OpenCode running the model) that contains the model's own inner loop, a sensor (verify + score with a 3-trial filter) feeds the measurement back, a feedforward path (learned rules + DSL cheatsheet) pre-compensates disturbances, and an outer supervisory loop (curriculum escalation) raises the setpoint">
         <defs>
-          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <marker id="cf" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
           </marker>
         </defs>
 
-        <!-- L1 curriculum (learn = gold) -->
-        <rect x="24" y="24" width="852" height="614" rx="18" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5"/>
-        <text x="42" y="49" class="mono" font-size="13.5" font-weight="700" fill="var(--gold)">L1 · CURRICULUM LOOP</text>
-        <text x="858" y="49" text-anchor="end" class="mono" font-size="11.5" fill="var(--gold)">runs ~1×/day · learns</text>
+        <!-- ===== supervisory outer loop (setpoint scheduler) ===== -->
+        <rect x="14" y="14" width="932" height="568" rx="16" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="7 5"/>
+        <text x="30" y="35" class="mono" font-size="11.5" font-weight="700" fill="var(--gold)">SUPERVISORY LOOP · setpoint scheduler — curriculum escalation (L1)</text>
+        <!-- scheduler adjusts r -->
+        <path d="M96,196 L96,246" fill="none" stroke="var(--gold)" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#cf)"/>
+        <text x="30" y="188" class="mono" font-size="9.5" fill="var(--gold)">all tasks pass → raise r</text>
+        <text x="30" y="176" class="mono" font-size="9.5" fill="var(--gold)">(import a harder task)</text>
 
-        <!-- L2 evolutie (learn = gold) -->
-        <rect x="48" y="74" width="804" height="540" rx="16" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5"/>
-        <text x="66" y="98" class="mono" font-size="13" font-weight="700" fill="var(--gold)">L2 · RALPH EVOLUTION LOOP</text>
-        <text x="834" y="98" text-anchor="end" class="mono" font-size="11" fill="var(--gold)">per round · learns · commit+push</text>
+        <!-- ===== setpoint r ===== -->
+        <rect x="36" y="250" width="120" height="52" rx="9" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="96" y="272" text-anchor="middle" class="mono" font-size="11" font-weight="700" fill="var(--ink)">SETPOINT r</text>
+        <text x="96" y="288" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">all pass · bar</text>
 
-        <!-- L3 adaptive proposer / health (control = dashed) -->
-        <rect x="72" y="122" width="756" height="468" rx="14" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="6 5"/>
-        <text x="90" y="146" class="mono" font-size="12.5" font-weight="700" fill="var(--muted)">L3 · PROPOSER + HEALTH (control)</text>
-        <text x="810" y="146" text-anchor="end" class="mono" font-size="11" fill="var(--muted)">per round · never stall</text>
+        <!-- ===== summing junction 1 (error) ===== -->
+        <circle cx="196" cy="276" r="16" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="196" y="281" text-anchor="middle" class="mono" font-size="14" font-weight="700" fill="var(--ink)">Σ</text>
+        <text x="180" y="266" text-anchor="middle" class="mono" font-size="11" fill="var(--teal)">+</text>
+        <text x="181" y="300" text-anchor="middle" class="mono" font-size="12" fill="var(--red)">−</text>
+        <path d="M156,276 L178,276" fill="none" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#cf)"/>
 
-        <!-- L4 evaluatie -->
-        <rect x="96" y="170" width="708" height="396" rx="13" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
-        <text x="114" y="194" class="mono" font-size="12.5" font-weight="700" fill="var(--teal)">L4 · EVALUATION LOOP  (tasks × trials)</text>
-        <text x="786" y="194" text-anchor="end" class="mono" font-size="11" fill="var(--teal)">4 parallel · fitness</text>
+        <!-- ===== controller ===== -->
+        <rect x="240" y="238" width="182" height="76" rx="10" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+        <text x="331" y="262" text-anchor="middle" class="mono" font-size="12" font-weight="700" fill="var(--teal)">CONTROLLER</text>
+        <text x="331" y="279" text-anchor="middle" class="mono" font-size="9.5" fill="var(--ink)">the proposer</text>
+        <text x="331" y="293" text-anchor="middle" class="mono" font-size="9" fill="var(--muted)">claude ▸ local ▸ copilot</text>
+        <text x="331" y="305" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">reads error + trajectories</text>
+        <text x="214" y="264" text-anchor="middle" class="mono" font-size="9" fill="var(--muted)">e</text>
+        <path d="M212,276 L238,276" fill="none" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#cf)"/>
 
-        <!-- L5 opencode run -->
-        <rect x="120" y="218" width="660" height="324" rx="12" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
-        <text x="138" y="242" class="mono" font-size="12" font-weight="700" fill="var(--teal)">L5 · opencode run  (1 trial)</text>
-        <text x="762" y="242" text-anchor="end" class="mono" font-size="11" fill="var(--teal)">timeout 900s</text>
+        <!-- u signal -->
+        <text x="448" y="266" text-anchor="middle" class="mono" font-size="9" fill="var(--muted)">u: profile edit</text>
+        <path d="M422,276 L458,276" fill="none" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#cf)"/>
 
-        <!-- L6 model turn (core) -->
-        <rect x="150" y="268" width="600" height="248" rx="14" fill="var(--core)" stroke="var(--core)" stroke-width="1.5"/>
-        <text x="450" y="300" text-anchor="middle" class="mono" font-size="13" font-weight="700" fill="#04191b" style="fill:#04191b">L6 · AGENTIC MODEL LOOP</text>
-        <text x="450" y="320" text-anchor="middle" class="mono" font-size="10.5" fill="#04191b" style="fill:#04191b" opacity=".8">the core — where the model actually types</text>
+        <!-- ===== summing junction 2 (control + feedforward) ===== -->
+        <circle cx="474" cy="276" r="16" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="474" y="281" text-anchor="middle" class="mono" font-size="14" font-weight="700" fill="var(--ink)">+</text>
+        <path d="M490,276 L518,276" fill="none" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#cf)"/>
 
-        <!-- L6 inner cycle -->
-        <g transform="translate(450,410)" fill="#04191b" style="fill:#04191b" stroke="#04191b" text-anchor="middle">
-          <g class="mono" font-size="11.5" font-weight="600" stroke="none">
-            <text x="0" y="-58">Read</text>
-            <text x="112" y="4">Edit / Write</text>
-            <text x="0" y="66">bash · run</text>
-            <text x="-112" y="4">verify</text>
+        <!-- ===== feedforward ===== -->
+        <rect x="240" y="92" width="182" height="60" rx="10" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.6" stroke-dasharray="6 4"/>
+        <text x="331" y="114" text-anchor="middle" class="mono" font-size="11.5" font-weight="700" fill="var(--gold)">FEEDFORWARD</text>
+        <text x="331" y="130" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">learned AGENTS.md rules</text>
+        <text x="331" y="142" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">+ on-demand DSL cheatsheet</text>
+        <path d="M356,152 C380,200 430,232 466,262" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#cf)"/>
+        <text x="430" y="196" class="mono" font-size="8.5" fill="var(--gold)">pre-compensation</text>
+
+        <!-- ===== disturbance ===== -->
+        <text x="700" y="126" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="var(--red)">d — disturbance</text>
+        <text x="700" y="139" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">temp 0.4 · outages · model swap</text>
+        <path d="M700,146 L700,168" fill="none" stroke="var(--red)" stroke-width="1.5" marker-end="url(#cf)"/>
+
+        <!-- ===== plant (contains inner loop) ===== -->
+        <rect x="520" y="168" width="272" height="220" rx="12" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.8"/>
+        <text x="536" y="190" class="mono" font-size="12" font-weight="700" fill="var(--ink)">PLANT — OpenCode runs the task</text>
+        <text x="536" y="204" class="mono" font-size="8.5" fill="var(--muted)">input: harness profile + task · output: artifacts</text>
+
+        <!-- inner agentic loop -->
+        <g transform="translate(656,300)">
+          <g class="mono" font-size="10" font-weight="600" fill="var(--ink)" text-anchor="middle">
+            <text x="0" y="-40">Read</text>
+            <text x="78" y="4">Edit / Write</text>
+            <text x="0" y="52">bash · run</text>
+            <text x="-70" y="4">verify</text>
           </g>
-          <!-- circular arrows between the four -->
-          <g fill="none" stroke-width="1.6" opacity=".9">
-            <path d="M 40,-52 A 66 66 0 0 1 74,-14" marker-end="url(#ah)"/>
-            <path d="M 78,20 A 66 66 0 0 1 40,54" marker-end="url(#ah)"/>
-            <path d="M -40,54 A 66 66 0 0 1 -78,16" marker-end="url(#ah)"/>
-            <path d="M -74,-16 A 66 66 0 0 1 -40,-52" marker-end="url(#ah)"/>
+          <g fill="none" stroke="var(--core)" stroke-width="1.5">
+            <path d="M28,-36 A 46 46 0 0 1 50,-8" marker-end="url(#cf)"/>
+            <path d="M52,14 A 46 46 0 0 1 26,40" marker-end="url(#cf)"/>
+            <path d="M-26,40 A 46 46 0 0 1 -52,12" marker-end="url(#cf)"/>
+            <path d="M-50,-10 A 46 46 0 0 1 -28,-36" marker-end="url(#cf)"/>
           </g>
-          <circle cx="0" cy="0" r="4" fill="#04191b" stroke="none"/>
+          <circle cx="0" cy="0" r="3" fill="var(--core)"/>
         </g>
+        <text x="656" y="376" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">inner loop — the model self-corrects per turn (L6)</text>
 
-        <!-- feedback arrow: L6 result climbs back out to L2 (learning) -->
-        <g stroke="var(--gold)" fill="var(--gold)" class="pulse">
-          <path d="M 750,392 C 862,392 866,300 866,120 C 866,86 852,74 852,74"
-                fill="none" stroke-width="1.8" stroke-dasharray="2 4" marker-end="url(#ah)"/>
-          <text x="872" y="300" class="mono" font-size="10.5" transform="rotate(90 872 300)" text-anchor="middle">score → keep/rollback → AGENTS.md</text>
-        </g>
+        <!-- plant output down to sensor -->
+        <path d="M656,388 L656,452" fill="none" stroke="var(--ink)" stroke-width="1.5" marker-end="url(#cf)"/>
+        <text x="666" y="424" class="mono" font-size="9" fill="var(--muted)">y_raw: task result</text>
+
+        <!-- ===== sensor (contains 3-trial filter) ===== -->
+        <rect x="520" y="452" width="272" height="120" rx="12" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+        <text x="536" y="474" class="mono" font-size="12" font-weight="700" fill="var(--teal)">SENSOR — verify.sh + score.sh</text>
+        <text x="536" y="488" class="mono" font-size="8.5" fill="var(--muted)">deterministic · no LLM judge</text>
+        <!-- filter mini -->
+        <circle cx="560" cy="525" r="8" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.3"/>
+        <text x="560" y="529" text-anchor="middle" font-size="9" fill="#04191b" style="fill:#04191b">✓</text>
+        <circle cx="588" cy="525" r="8" fill="var(--teal)" stroke="var(--surface)" stroke-width="1.3"/>
+        <text x="588" y="529" text-anchor="middle" font-size="9" fill="#04191b" style="fill:#04191b">✓</text>
+        <circle cx="616" cy="525" r="8" fill="var(--surface)" stroke="var(--red)" stroke-width="1.6"/>
+        <text x="616" y="529" text-anchor="middle" font-size="9" fill="var(--red)">✗</text>
+        <path d="M628,525 L664,525" fill="none" stroke="var(--teal)" stroke-width="1.4" marker-end="url(#cf)"/>
+        <rect x="668" y="510" width="104" height="30" rx="6" fill="var(--surface)" stroke="var(--teal)" stroke-width="1.3"/>
+        <text x="720" y="529" text-anchor="middle" class="mono" font-size="9" font-weight="700" fill="var(--teal)">majority → y</text>
+        <text x="536" y="558" class="mono" font-size="8.5" fill="var(--muted)">3-trial majority = filter · rejects the plant’s sampling noise</text>
+
+        <!-- feedback path sensor -> Σ1 -->
+        <path d="M520,512 L196,512 L196,292" fill="none" stroke="var(--ink)" stroke-width="1.5" marker-end="url(#cf)"/>
+        <text x="300" y="506" class="mono" font-size="9" fill="var(--muted)">y: measured score (feedback)</text>
+
+        <!-- ===== primary loop label ===== -->
+        <text x="474" y="52" text-anchor="middle" class="mono" font-size="10.5" font-weight="700" fill="var(--teal)">PRIMARY FEEDBACK LOOP · Ralph tuning (L2)</text>
       </svg>
-      <figcaption>Each outer ring completes one turn only by spinning its inner ring a great many
-        times. L2 runs L4 once per proposal; L4 runs L5 twelve times
-        (4 tasks × 3 trials); L5 is one turn of the model = L6. The gold dashed line is the
-        feedback: the measured score decides whether the edit stays — and thus what the model learns.</figcaption>
+      <figcaption>The closed path <b>Σ → controller → plant → sensor → Σ</b> is the Ralph tuning loop (L2):
+        the proposer moves the harness until the measured score meets the setpoint. Nested inside it, the
+        <b>plant</b> holds the model’s own Read→act→verify loop (L6), and the <b>sensor</b> holds the
+        3-trial majority filter (L4) that rejects the plant’s stochastic noise. Around it, the <b>supervisory
+        loop</b> (L1) raises the setpoint whenever the plant tracks it, and the <b>feedforward</b> path
+        injects learned rules so known disturbances are corrected before they ever reach the error.</figcaption>
     </figure>
 
-    <ul class="legend">
-      <li><span class="swatch sw-learn"></span> Learning — kept change / growing curriculum</li>
-      <li><span class="swatch sw-eval"></span> Evaluation — measures fitness (score)</li>
-      <li><span class="swatch sw-ctrl"></span> Control — keeps the loop running, does not learn</li>
-      <li><span class="swatch sw-core"></span> Core — the model that actually edits files</li>
-    </ul>
-    <p class="sec-intro" style="margin-top:20px;font-size:14.5px">Besides these 6 nested <em>execution</em> loops,
-      <b>three side/meta loops</b> also hook in: the adaptive proposer (who writes the proposal),
-      the fan-out (subagents with their own scoped <code>AGENTS.md</code>) and the DSL-builder loop (per-DSL learning
-      from external plugins) — all three further down.</p>
+    <div style="overflow-x:auto">
+      <table class="ctrl-map">
+        <thead><tr><th>Control block</th><th>In this system</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>Setpoint <span class="mono">r</span></td><td>target score — all tasks pass; the <code>bar</code> to beat</td><td><code>ralph.sh</code> bar/EMA</td></tr>
+          <tr><td>Controller</td><td>the <b>proposer</b> — reads the error and the trajectories, emits one edit</td><td><code>claude -p</code> · <code>local_propose.py</code></td></tr>
+          <tr><td>Signal <span class="mono">u</span></td><td>the edit to the profile (the manipulated variable)</td><td><code>oc_profile/AGENTS.md</code></td></tr>
+          <tr><td>Plant</td><td>OpenCode + the model executing the task</td><td><code>opencode run</code> (L5·L6)</td></tr>
+          <tr><td>Disturbance <span class="mono">d</span></td><td>sampling noise, backend outages, the model swap</td><td>temperature 0.4</td></tr>
+          <tr><td>Sensor</td><td>deterministic verifier + scorer</td><td><code>verify.sh</code> · <code>score.sh</code></td></tr>
+          <tr><td>Filter</td><td>3-trial majority — rejects the plant’s noise</td><td><code>score.sh</code> ≥2/3</td></tr>
+          <tr><td>Feedforward</td><td>learned rules + DSL cheatsheet pre-compensate known disturbances</td><td><code>AGENTS.md</code> · <code>grammars/&lt;n&gt;.md</code></td></tr>
+          <tr><td>Setpoint scheduler</td><td>curriculum escalation raises the target on saturation</td><td><code>import_bench.sh</code> (L1)</td></tr>
+          <tr><td>Controller failover</td><td>adaptive proposer switch + health gate (anti-windup)</td><td><code>ralph.sh</code></td></tr>
+          <tr><td>Decentralized control</td><td>fan-out — sub-plants with their own scoped controllers</td><td><code>fanout.py</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="sec-intro" style="margin-top:22px;font-size:14.5px">The sections below break each loop down in
+      this same control vocabulary. Two <b>side loops</b> add controller failover (the adaptive proposer)
+      and decentralized control (the fan-out); an <b>auxiliary loop</b> (the DSL builder) synthesizes the
+      feedforward term and validates it before deployment.</p>
   </div>
 </section>
 
@@ -333,6 +402,7 @@
               <dt>Script</dt><dd><code>ralph.sh:154–171</code> → <code>scripts/import_bench.sh</code></dd>
               <dt>Source</dt><dd><code>bench_pool/</code> · 27 tasks left</dd>
               <dt>Why</dt><dd>always keep headroom so selection pressure never disappears</dd>
+              <dt>Control</dt><dd><b>Setpoint scheduler</b> — raises r on saturation</dd>
             </dl>
             <div style="margin-top:10px">
               <span class="tag learn">learns: curriculum</span>
@@ -361,6 +431,7 @@
               <dt>Script</dt><dd><code>ralph.sh:99–172</code></dd>
               <dt>Selection</dt><dd><code>bar</code>: high-water mark with decay — a lucky spike erodes, a reproducible score holds</dd>
               <dt>Ledger</dt><dd><code>RESULTS.md</code> + git history</dd>
+              <dt>Control</dt><dd><b>Feedback controller</b> — u = the profile edit</dd>
             </dl>
             <div style="margin-top:10px">
               <span class="tag learn">learns: kept rules accumulate in AGENTS.md</span>
@@ -387,6 +458,7 @@
               <dt>Script</dt><dd><code>ralph.sh:28–37, 100–120</code></dd>
               <dt>Tools</dt><dd><code>claude -p</code> · <code>local_propose.py</code> · <code>hermes</code></dd>
               <dt>Goal</dt><dd>the loop never stalls — there is always a proposer</dd>
+              <dt>Control</dt><dd><b>Controller failover</b> + anti-windup (health gate)</dd>
             </dl>
             <div style="margin-top:10px"><span class="tag">no learning · pure resilience</span></div>
           </div>
@@ -411,6 +483,7 @@
               <dt>Script</dt><dd><code>scripts/run_all.sh:39–45</code> + <code>scripts/score.sh:6–15</code></dd>
               <dt>Produces</dt><dd><code>SCORE.txt</code> — with per-task trial counts (so flakiness is visible)</dd>
               <dt>Role</dt><dd>this IS the gradient signal for L2</dd>
+              <dt>Control</dt><dd><b>Sensor + filter</b> — measurement with noise rejection</dd>
             </dl>
             <div style="margin-top:10px"><span class="tag">evaluation · no learning</span></div>
           </div>
@@ -426,7 +499,7 @@
         </div>
         <div class="loop-body">
           <ul class="flow">
-            <li><span class="step-t">One trial = up to three OpenCode turns</span><small><code>AGENTS.md</code> + <code>opencode.json</code> are injected into each fresh-context turn. The deterministic verifier stops the trial early on success or feeds a compact failure into the next turn. Default timeout: <code>900s</code> per turn.</small></li>
+            <li><span class="step-t">One turn = one opencode run</span><small><code>AGENTS.md</code> + <code>opencode.json</code> are injected into the system prompt every turn. <code>timeout 900s</code>.</small></li>
             <li><span class="step-t">The model loops</span><small>Read → think → Edit/Write → bash/run → verify, until the turn ends.</small></li>
             <li><span class="step-t">This is where the rules bite</span><small>“exploring is not progress”, “never stop right after a Read”, “actually write the output file” — precisely to steer THIS loop.</small></li>
           </ul>
@@ -435,6 +508,7 @@
               <dt>Engine</dt><dd><code>opencode run</code> (Agents-A1)</dd>
               <dt>Steered by</dt><dd>layered: main <code>AGENTS.md</code> + scoped subagent <code>AGENTS.md</code> + on-demand DSL cheatsheet</dd>
               <dt>Key point</dt><dd>all the learning in L1/L2 targets the behaviour of THIS loop</dd>
+              <dt>Control</dt><dd><b>Plant</b> — contains the model’s inner loop</dd>
             </dl>
             <div style="margin-top:10px"><span class="tag">target of all the learning</span></div>
           </div>
@@ -453,7 +527,7 @@
     <p class="sec-intro">Evaluation is not one thing. The <b>ruler</b> (the verifier) is deliberately
       deterministic; the <b>generator</b> (the model) is deliberately stochastic. So the loop runs
       each task 3× and takes a majority — turning a wobbly generator + a hard
-      ruler into a stable signal together.</p>
+      ruler into a stable signal together. In control terms: the <b>plant</b> is noisy, the <b>sensor</b> is clean, and the 3-trial majority is the <b>filter</b>.</p>
 
     <figure>
       <svg viewBox="0 0 900 226" role="img" aria-label="One task goes through three stochastic model runs, each through a deterministic verifier, after which a majority decides the score">
@@ -564,7 +638,7 @@
     <h2>The adaptive proposer and the fan-out</h2>
     <p class="sec-intro">Not every loop is concentric. Two loops hook in from the side:
       a state machine that chooses who writes the proposal, and a fan-out that
-      splits one hard task into small subagents.</p>
+      splits one hard task into small subagents. In control terms: <b>controller failover</b> (redundant controllers, bumpless switch) and <b>decentralized control</b> (sub-plants, each with a scoped controller).</p>
 
     <div class="minis">
 
@@ -683,7 +757,7 @@
       an <b>external corpus</b> (documentation + good examples) a linter + cheatsheet —
       tested before they may enter the loop. Crucially, the <b>loop core stays generic and
       company-neutral</b>; each DSL is a <b>plugin in its own git repo</b>, attached as a submodule.
-      So company content (possibly IP-bound or R1/R2) never enters the loop repo.</p>
+      So company content (possibly IP-bound or R1/R2) never enters the loop repo. In control terms this is an <b>auxiliary loop</b> that synthesizes and validates a <b>feedforward</b> compensator (cheatsheet + linter) before it is deployed into the plant.</p>
 
     <p style="margin:14px 0 2px">
       <span class="tag learn" style="border-color:var(--teal);color:var(--teal);background:var(--teal-soft)">✓ deterministic half implemented for <code>flags</code></span>
