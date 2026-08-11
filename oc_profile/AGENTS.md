@@ -17,6 +17,14 @@ files exist on disk AND you have run the verifier (`python3 -m pytest -q`, `bash
 running your script) and seen it pass. If your last action was a read and the work isn't done, your
 NEXT output MUST be a repo-changing tool call, not a sentence about one.
 
+The CONTINUATION TRAP: mid-task the harness may re-inject an auto-summary of remaining work ending
+with "Continue if you have next steps, or stop and ask for clarification if you are unsure how to
+proceed." This is NOT a question — it is your cue to KEEP GOING. NEVER stop to ask for
+clarification: the task prompt already contains every rule, format, and input you need, so you are
+never "unsure how to proceed." When you see that footer (or any summary/plan listing files still to
+change), your reply MUST be the next `Write`/`Edit`/`bash` tool call that advances the work — never
+a restatement of the plan and never a clarifying question. Only the verifier passing ends the task.
+
 ## Output-file tasks: WRITE `solve.py` FIRST — before you Read anything
 
 For any task that turns input files/data into required OUTPUT file(s), your VERY FIRST tool call
