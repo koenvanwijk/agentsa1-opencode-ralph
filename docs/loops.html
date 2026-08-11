@@ -374,6 +374,156 @@
   </div>
 </section>
 
+<!-- ============ CONTROL HIERARCHY ============ -->
+<section>
+  <div class="wrap">
+    <p class="sec-label">Several loops, not one</p>
+    <h2>The control hierarchy — three cascaded loops + three auxiliaries</h2>
+    <p class="sec-intro">Yes: it is not one loop but a <b>hierarchy of coupled control loops</b>. Each level
+      is a full feedback loop (setpoint → controller → plant → sensor → back), and each level’s
+      <b>plant is the loop below it</b>. What differs is <em>how</em> the levels couple — and that
+      distinction is the whole point:</p>
+
+    <figure class="fig-hero">
+      <svg viewBox="0 0 960 566" role="img" aria-label="Three stacked feedback control loops. Level 1 supervisory (curriculum escalator) whose plant is the tuning loop; Level 2 tuning (the proposer) whose plant is the model loop; Level 3 execution (the model policy) whose plant is the workdir. Level 1 sets Level 2's setpoint (cascade); Level 2 retunes Level 3's controller via AGENTS.md (adaptive control); measurements bubble up the right; three auxiliary loops attach: proposer failover, backend health gate, and the DSL builder feedforward.">
+        <defs>
+          <marker id="ch" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- ============ three stacked loops ============ -->
+        <!-- generic per row: Sigma (104,cy) -> Controller(146..302) -> Plant(356..546) -> Sensor(628..804) -> feedback arc -->
+
+        <!-- ---- LEVEL 1: supervisory ---- -->
+        <text x="150" y="30" class="mono" font-size="11" font-weight="700" fill="var(--gold)">LEVEL 1 · SUPERVISORY — curriculum (L1)</text>
+        <circle cx="104" cy="78" r="13" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="104" y="82" text-anchor="middle" class="mono" font-size="12" font-weight="700" fill="var(--ink)">Σ</text>
+        <text x="60" y="66" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">r₁: keep</text>
+        <text x="62" y="76" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">headroom</text>
+        <path d="M44,86 L91,86" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+        <rect x="146" y="49" width="156" height="58" rx="9" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5"/>
+        <text x="224" y="72" text-anchor="middle" class="mono" font-size="10.5" font-weight="700" fill="var(--gold)">CONTROLLER</text>
+        <text x="224" y="86" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">escalator</text>
+        <text x="224" y="98" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">import_bench.sh</text>
+        <rect x="356" y="49" width="190" height="58" rx="9" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="451" y="74" text-anchor="middle" class="mono" font-size="10.5" font-weight="700" fill="var(--ink)">PLANT = Level-2 loop</text>
+        <text x="451" y="90" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">the tuning loop below</text>
+        <rect x="628" y="49" width="176" height="58" rx="9" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="716" y="72" text-anchor="middle" class="mono" font-size="10.5" font-weight="700" fill="var(--teal)">SENSOR</text>
+        <text x="716" y="86" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">saturation:</text>
+        <text x="716" y="97" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">all tasks pass?</text>
+        <path d="M302,78 L356,78" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+        <path d="M546,78 L628,78" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+        <path d="M716,107 L716,130 L104,130 L104,91" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+
+        <!-- ---- LEVEL 2: tuning ---- -->
+        <text x="150" y="222" class="mono" font-size="11" font-weight="700" fill="var(--teal)">LEVEL 2 · TUNING — Ralph (L2)</text>
+        <circle cx="104" cy="270" r="13" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="104" y="274" text-anchor="middle" class="mono" font-size="12" font-weight="700" fill="var(--ink)">Σ</text>
+        <rect x="146" y="241" width="156" height="58" rx="9" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="224" y="264" text-anchor="middle" class="mono" font-size="10.5" font-weight="700" fill="var(--teal)">CONTROLLER</text>
+        <text x="224" y="278" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">the proposer</text>
+        <text x="224" y="290" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">u = profile edit</text>
+        <rect x="356" y="241" width="190" height="58" rx="9" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="451" y="266" text-anchor="middle" class="mono" font-size="10.5" font-weight="700" fill="var(--ink)">PLANT = Level-3 loop</text>
+        <text x="451" y="282" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">the model loop below</text>
+        <rect x="628" y="241" width="176" height="58" rx="9" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="716" y="264" text-anchor="middle" class="mono" font-size="10.5" font-weight="700" fill="var(--teal)">SENSOR</text>
+        <text x="716" y="278" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">verify + score</text>
+        <text x="716" y="290" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">3-trial filter</text>
+        <path d="M117,270 L146,270" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+        <path d="M302,270 L356,270" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+        <path d="M546,270 L628,270" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+        <path d="M716,299 L716,322 L104,322 L104,283" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+
+        <!-- ---- LEVEL 3: execution ---- -->
+        <text x="150" y="414" class="mono" font-size="11" font-weight="700" fill="var(--core)">LEVEL 3 · EXECUTION — the model turn (L6)</text>
+        <circle cx="104" cy="462" r="13" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="104" y="466" text-anchor="middle" class="mono" font-size="12" font-weight="700" fill="var(--ink)">Σ</text>
+        <text x="60" y="450" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">r₃: pass</text>
+        <text x="60" y="460" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">the task</text>
+        <path d="M44,470 L91,470" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+        <rect x="146" y="433" width="156" height="58" rx="9" fill="var(--surface-2)" stroke="var(--core)" stroke-width="1.6"/>
+        <text x="224" y="456" text-anchor="middle" class="mono" font-size="10.5" font-weight="700" fill="var(--core)">CONTROLLER</text>
+        <text x="224" y="470" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">the model policy</text>
+        <text x="224" y="482" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">(shaped by AGENTS.md)</text>
+        <rect x="356" y="433" width="190" height="58" rx="9" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="451" y="456" text-anchor="middle" class="mono" font-size="10.5" font-weight="700" fill="var(--ink)">PLANT: workdir</text>
+        <text x="451" y="470" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">files + code execution</text>
+        <text x="451" y="482" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">fan-out → sub-plants</text>
+        <rect x="628" y="433" width="176" height="58" rx="9" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+        <text x="716" y="456" text-anchor="middle" class="mono" font-size="10.5" font-weight="700" fill="var(--teal)">SENSOR</text>
+        <text x="716" y="470" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">read files /</text>
+        <text x="716" y="482" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">run tests</text>
+        <path d="M117,462 L146,462" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+        <path d="M302,462 L356,462" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+        <path d="M546,462 L628,462" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+        <path d="M716,491 L716,514 L104,514 L104,475" fill="none" stroke="var(--ink)" stroke-width="1.3" marker-end="url(#ch)"/>
+
+        <!-- ============ inter-level couplings ============ -->
+        <!-- L1 -> L2 : cascade (sets setpoint r2) : left rail, gold -->
+        <path d="M146,90 L64,90 L64,270 L91,270" fill="none" stroke="var(--gold)" stroke-width="1.8" marker-end="url(#ch)"/>
+        <text x="30" y="176" class="mono" font-size="9" font-weight="700" fill="var(--gold)" transform="rotate(-90 30 176)">CASCADE · sets r₂ (score target N)</text>
+
+        <!-- L2 -> L3 : adaptive (retunes the controller) : gold dashed down into C3 -->
+        <path d="M224,299 L224,433" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#ch)"/>
+        <text x="234" y="356" class="mono" font-size="9" font-weight="700" fill="var(--gold)">ADAPTIVE · retunes the controller</text>
+        <text x="234" y="368" class="mono" font-size="8.5" fill="var(--muted)">AGENTS.md = the policy + feedforward</text>
+
+        <!-- measurement bubbles up : right rail, teal -->
+        <path d="M772,433 L772,299" fill="none" stroke="var(--teal)" stroke-width="1.6" marker-end="url(#ch)"/>
+        <path d="M772,241 L772,113" fill="none" stroke="var(--teal)" stroke-width="1.6" marker-end="url(#ch)"/>
+        <text x="930" y="300" class="mono" font-size="9" font-weight="700" fill="var(--teal)" transform="rotate(-90 930 300)">MEASUREMENT bubbles up</text>
+        <text x="784" y="372" class="mono" font-size="8.5" fill="var(--muted)">task result ↑</text>
+        <text x="784" y="182" class="mono" font-size="8.5" fill="var(--muted)">saturation ↑</text>
+
+        <!-- ============ auxiliary loops ============ -->
+        <!-- proposer failover on C2 -->
+        <rect x="150" y="215" width="152" height="18" rx="9" fill="none" stroke="var(--muted)" stroke-width="1.1" stroke-dasharray="4 3"/>
+        <text x="226" y="228" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">aux ⟲ proposer failover</text>
+        <!-- backend health gate near L2 sigma -->
+        <rect x="356" y="215" width="190" height="18" rx="9" fill="none" stroke="var(--muted)" stroke-width="1.1" stroke-dasharray="4 3"/>
+        <text x="451" y="228" text-anchor="middle" class="mono" font-size="8.5" fill="var(--muted)">aux ⟲ backend health gate (pause)</text>
+        <!-- DSL builder feedforward into C3 -->
+        <rect x="146" y="498" width="200" height="18" rx="9" fill="none" stroke="var(--gold)" stroke-width="1.1" stroke-dasharray="4 3"/>
+        <text x="246" y="511" text-anchor="middle" class="mono" font-size="8.5" fill="var(--gold)">aux ⟲ DSL builder → feedforward</text>
+      </svg>
+      <figcaption>Three loops, one inside the next. <b>Level 1 → Level 2 is cascade control</b> (the
+        supervisor’s output <em>is</em> the tuning loop’s setpoint — escalation raises the score target).
+        <b>Level 2 → Level 3 is adaptive control</b> (the tuning loop does not set the model’s goal; it
+        retunes the model’s controller — the <code>AGENTS.md</code> policy — and adds feedforward).
+        Measurements bubble up the right edge; three auxiliary loops (proposer failover, backend health
+        gate, DSL-builder feedforward) attach where they act.</figcaption>
+    </figure>
+
+    <div class="learn-grid" style="margin-top:22px">
+      <div class="lcard" style="border-left-color:var(--gold)">
+        <h3><span class="k" style="color:var(--gold);border-color:var(--gold)">L1</span> Supervisory · cascade</h3>
+        <p>Controlled variable: <b>saturation</b> (are all tasks passing?). When it hits 100% for 2 rounds,
+          the escalator imports a harder task — which <b>raises Level 2’s setpoint</b>. Classic cascade: the
+          outer controller’s output is the inner loop’s reference.</p>
+      </div>
+      <div class="lcard" style="border-left-color:var(--teal)">
+        <h3><span class="k" style="color:var(--teal);border-color:var(--teal)">L2</span> Tuning · adaptive</h3>
+        <p>Controlled variable: the <b>score</b>. The proposer edits the harness until the score meets the
+          setpoint. Its edit doesn’t move Level 3’s goal — it <b>retunes Level 3’s controller</b> (the model’s
+          policy) and installs feedforward. That is auto-tuning / adaptive control.</p>
+      </div>
+      <div class="lcard" style="border-left-color:var(--core)">
+        <h3><span class="k" style="color:var(--core);border-color:var(--core)">L3</span> Execution · the fast loop</h3>
+        <p>Controlled variable: the <b>task output</b>. Setpoint = pass <code>verify</code>. The model senses
+          (Read, run tests) and acts (Edit/Write) until its turn ends. This loop <b>is</b> Level 2’s plant;
+          fan-out decentralizes it into per-language sub-plants.</p>
+      </div>
+    </div>
+    <p class="sec-intro" style="margin-top:16px;font-size:14px">Plus three <b>auxiliary loops</b> that don’t sit
+      in the main chain but keep it healthy: <b>proposer failover</b> (redundant controller, bumpless switch),
+      the <b>backend health gate</b> (permissive gating / anti-windup), and the <b>DSL-builder loop</b>
+      (synthesizes and self-tests the feedforward term before deploying it). Each has its own diagram below.</p>
+  </div>
+</section>
+
 <!-- ============ LOOP BY LOOP ============ -->
 <section>
   <div class="wrap">
