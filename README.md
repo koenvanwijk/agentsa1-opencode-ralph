@@ -30,7 +30,9 @@ fresh-context OpenCode turns in the same workdir. It runs the task's determinist
 verifier failure into the next turn. Configure this with `OC_MAX_TURNS` and
 `OC_TURN_TIMEOUT` (defaults: `3` and `900` seconds). Full turn transcripts live
 outside the candidate snapshot under `runs/transcripts/`, so whole-tree verifiers
-cannot mistake harness chatter for task artifacts.
+cannot mistake harness chatter for task artifacts. A failed model call that makes
+no artifact changes is not retried, preventing an unavailable backend from
+multiplying the per-turn timeout.
 
 ## Loop map (visual docs)
 [`docs/loops.html`](docs/loops.html) is a self-contained visual map of the whole

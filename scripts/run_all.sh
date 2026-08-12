@@ -46,10 +46,13 @@ run_one(){
     # Give an incomplete solution bounded follow-up turns in the same workdir.
     # Every opencode invocation starts with fresh context; the files on disk and
     # the deterministic verifier output carry progress between turns.
-    local prompt turn turn_rc verify_rc verify_excerpt
+    local prompt turn turn_rc verify_rc verify_excerpt before_state after_state
     prompt=$(cat "$t/prompt.txt")
     verify_rc=1
     for turn in $(seq 1 "$OC_MAX_TURNS"); do
+      before_state=$(find "$out" -type f \
+        ! -name opencode.json ! -name AGENTS.md ! -name _oc_stdout.txt \
+        -exec sha256sum {} + 2>/dev/null | sort | sha256sum | cut -d' ' -f1)
       cp "$REPO/oc_profile/opencode.json" "$out/opencode.json"
       cp "$REPO/oc_profile/AGENTS.md" "$out/AGENTS.md"
       timeout "$OC_TURN_TIMEOUT" opencode run --dir "$out" -m "$MODEL" "$prompt" \
@@ -59,11 +62,22 @@ run_one(){
       # Profile and transcript files are harness state, not candidate artifacts.
       # Keep transcripts outside the workdir while verify.sh scans the snapshot.
       rm -f "$out/opencode.json" "$out/AGENTS.md" "$out/_oc_stdout.txt"
+      after_state=$(find "$out" -type f \
+        ! -name opencode.json ! -name AGENTS.md ! -name _oc_stdout.txt \
+        -exec sha256sum {} + 2>/dev/null | sort | sha256sum | cut -d' ' -f1)
       bash "$t/verify.sh" "$out" > "$transcript_dir/verify$turn.txt" 2>&1
       verify_rc=$?
       if [ "$verify_rc" -eq 0 ]; then
         verify_rc=0
         : > "$out/_oc_stdout.txt"
+        break
+      fi
+
+      # A failed model call with no artifact progress is unavailable, not an
+      # incomplete solution. Repeating it only multiplies the timeout.
+      if [ "$turn_rc" -ne 0 ] && [ "$before_state" = "$after_state" ]; then
+        printf 'No artifact progress; suppressing further turns (exit=%s).\n' \
+          "$turn_rc" >> "$transcript_dir/verify$turn.txt"
         break
       fi
 
