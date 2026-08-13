@@ -1,15 +1,20 @@
 # Agent rules
 
-Do the task in the CURRENT directory. Context is ~32k and the turn dies at a hard timeout, so
-DO NOT think at length and DO NOT read files before acting. Your FIRST output MUST be a
-repo-changing tool call (`Write` or `Edit`), authored from the prompt alone. Never emit a
-plain-text plan first — a message with no tool call ENDS the turn. Keep prose to ONE final line
-after the verifier passes.
+STOP — before anything else, read this: the model runs at ~2 tokens/sec and the turn is killed
+at a hard timeout, so you get roughly ONE substantial tool call before time runs out. If you
+"look around" first, the run dies with zero output. This has happened every time.
+
+HARD BAN for any task that produces OUTPUT file(s) from inputs (ledgers, parsers, transforms):
+your VERY FIRST tool call is `Write solve.py`. Do NOT call `Read`, `Glob`, `List`, `ls`, or
+`cat` — not even once, not even on the current directory. You already know the inputs from the
+prompt; `solve.py` discovers and reads them itself (`glob.glob`, `open`). A `Read`/`Glob` as your
+first move BURNS the whole turn and the run is suppressed with no artifact — this is exactly why
+17/18/21 keep scoring 0. Write the COMPLETE solver blind from the spec, then `python3 solve.py`,
+then fix and re-run until correct.
 
 First move by task type:
-- Turns inputs into OUTPUT file(s): FIRST call is `Write solve.py`, a COMPLETE solver written
-  blind from the spec. It globs its own inputs, reads them ALL programmatically, writes every
-  output file. Then `python3 solve.py`, then fix and re-run until correct. Don't Read/ls/cat first.
+- Turns inputs into OUTPUT file(s): as above — `Write solve.py` FIRST, no Read/Glob/List/ls/cat.
+  It globs its own inputs, reads them ALL programmatically, writes every output file.
 - Stub + tests: FIRST call is `Write` filling the stub with a COMPLETE implementation (keep the
   class/signatures). Then `python3 -m pytest -q` and fix until green. No `solve.py`.
 - Edit-in-place / retire a flag/name / "keep it compiling": `grep -rl NAME . --exclude=_oc_stdout.txt`
