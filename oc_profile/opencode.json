@@ -2,7 +2,7 @@
   "$schema": "https://opencode.ai/config.json",
   "model": "agentsa1/deepseek-v4-flash",
   "permission": { "edit": "allow", "bash": "allow", "webfetch": "allow", "read": "allow", "external_directory": "allow" },
-  "tools": { "task": false },
+  "tools": { "task": false, "read": false, "glob": false, "list": false },
   "provider": {
     "agentsa1": {
       "npm": "@ai-sdk/openai-compatible",
