@@ -10,6 +10,16 @@ WITHOUT fine-tuning the model.
 - `runs/current/<task>/trial*/` — the files actually produced; compare to `tasks/<task>/verify.sh`.
 - `tasks/<task>/prompt.txt` and `verify.sh` — the job and its exact pass condition.
 
+## Stuck on the same failure for 2+ rounds? Consult outside sources
+If the SAME task has failed 0/N for 2+ consecutive rounds (check RESULTS.md /
+git log for repeated task names), read `proposer/SOURCES.md` — a registry of
+external inspiration (prior-art repos, prompt-engineering docs, opencode.json
+semantics, Confluence when wired up) — before proposing another blind tweak.
+Cite the source in your `PROPOSAL:` line, e.g. `PROPOSAL: (via <source>) ...`,
+so RESULTS.md stays traceable. Don't do this every round — only when local
+evidence alone hasn't produced a fix, to avoid wasting the tunable-change
+budget on unfocused research.
+
 ## The tunable surface (make exactly ONE change under `oc_profile/`)
 OpenCode injects `AGENTS.md` from the project root into the model's system
 prompt every turn, and reads `opencode.json` for harness behaviour. Those two

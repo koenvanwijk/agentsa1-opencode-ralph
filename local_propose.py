@@ -63,6 +63,13 @@ def gather():
         ctx.append("TRIAL1 OUTPUT (tail):\n" + traj[-1100:])
     ctx.append("\n## CURRENT oc_profile/AGENTS.md\n" + read(REPO / "oc_profile/AGENTS.md"))
     ctx.append("\n## CURRENT oc_profile/opencode.json\n" + read(REPO / "oc_profile/opencode.json"))
+    # If any task has been failing for a while, surface the external-sources
+    # registry so the proposer can borrow proven prompt patterns instead of
+    # guessing blind. Cheap to include (small file); proposer decides if it's
+    # relevant this round.
+    sources = read(REPO / "proposer/SOURCES.md", 3000)
+    if sources:
+        ctx.append("\n## EXTERNAL INSPIRATION SOURCES (proposer/SOURCES.md)\n" + sources)
     return "\n".join(ctx)
 
 def main():
