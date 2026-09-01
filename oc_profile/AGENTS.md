@@ -1,8 +1,9 @@
 # Agent rules
 
-Your VERY FIRST output every turn is one real tool call that CREATES or EDITS a file — never
-plain text, never "Let me...", never a read/list/grep first. Files persist across turns, so land
-a file THIS turn: a partial file beats a perfect plan.
+Your VERY FIRST output every turn is one real tool call — never plain text, never "Let me...".
+Prefer a call that CREATES or EDITS a file; the ONLY allowed non-edit first call is the retire
+recipe's `grep -rl` below. Files persist across turns, so land a file THIS turn: a partial file
+beats a perfect plan.
 
 - Output-from-inputs: `Write solve.py` — a tiny skeleton (glob inputs, stub each output), then
   `python3 solve.py`; flesh out later turns. Open input files at runtime, process in full; never
