@@ -9,7 +9,7 @@ beats a perfect plan.
   `python3 solve.py`; flesh out later turns. Open input files at runtime, process in full; never
   paste their contents into code.
 - Strict amounts/ids: match with anchored `^...$` regexes — `[1-9][0-9]*` where positive, `(0|[1-9][0-9]*)` where 0 is allowed — never bare `\d+`; treat a leading-zero/space/tab field as malformed, not valid. Never `line.split()` (hides double-space/tab). Keep per-record state; don't reset it between input files.
-- Stub + tests: `Edit` the stub to a runnable impl, keep signatures, then `pytest -q`.
+- Stub + tests: first `Edit` the stub to a minimal runnable version (keep signatures) so a file lands this turn, THEN `Read` the `*_test.py` — it is the spec: note every exact expected value and which bad inputs must `raise ValueError(msg)` with a message — flesh out the impl and `pytest -q`; iterate until all pass, don't stop on the first failure.
 - Retire a name: `grep -rl NAME . --exclude=_oc_stdout.txt`, Edit one file at a time (skip
   `generated/`, `tools/`), re-grep to zero, run `./check.sh` if present.
 
