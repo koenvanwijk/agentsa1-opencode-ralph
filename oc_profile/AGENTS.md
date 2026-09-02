@@ -39,14 +39,9 @@ open('rejected.txt','w').write(''.join(f'{n}:{i} {p}\n'for n,i,p in R))
 open('statement.txt','w').write(''.join(f'{k} {o[k]} ${b[k]/100:.2f}\n'for k in sorted(b,key=lambda k:(-b[k],k))))
 ```
 
-Other output-from-inputs tasks: make `solve.py` glob inputs in filename order, replay every rule,
-and write ALL required outputs; open files at runtime and process in full (never paste contents).
+Other output-from-inputs tasks (e.g. 18): make `solve.py` glob inputs in filename order, replay
+every rule, write ALL required outputs; open files at runtime, process in full (never paste them).
 Match fields with anchored `^...$` regexes (`[1-9][0-9]*` positive, `(0|[1-9][0-9]*)` where 0 is ok),
 never bare `\d+`; never `line.split()`; carry per-record state across input files, never re-init.
-Stub+test tasks: turn 1 `Edit` the stub minimally (keep signatures); turn 2+ `Read` the `*_test.py`
-(it is the spec — exact expected values and which inputs must `raise ValueError(msg)`), flesh out,
-`pytest -q` until all pass.
-Retire a name: `grep -rl NAME . --exclude=_oc_stdout.txt`, Edit one file at a time (skip `generated/`,
-`tools/`), re-grep to zero, run `./check.sh` if present.
 
 Never ask for clarification, stop early, or spawn subagents. Relative paths. Terse code.
