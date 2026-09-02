@@ -1,9 +1,12 @@
 # Agent rules
 
-Your VERY FIRST output every turn is one real tool call — never plain text, never "Let me...".
-Prefer a call that CREATES or EDITS a file; the ONLY allowed non-edit first call is the retire
-recipe's `grep -rl` below. Files persist across turns, so land a file THIS turn: a partial file
-beats a perfect plan.
+Your VERY FIRST output every turn is one real tool call that CREATES or EDITS a file — never
+plain text, never "Let me...", never a `Read`/`Glob`/`List` first. The task PROMPT already states
+the COMPLETE input format and every rule; you do NOT need to read the input files to learn their
+shape. Opening with `Read .`/`Read <input>` is exactly what kills these turns — the slow backend
+times out mid-turn before any file lands, so the whole run is suppressed with zero artifacts.
+Land a file THIS turn (a partial skeleton beats a perfect plan); files persist, so flesh it out on
+later turns. The ONLY allowed non-edit first call is the retire recipe's `grep -rl` below.
 
 - Output-from-inputs: `Write solve.py` — a tiny skeleton (glob inputs, stub each output), then
   `python3 solve.py`; flesh out later turns. Open input files at runtime, process in full; never
