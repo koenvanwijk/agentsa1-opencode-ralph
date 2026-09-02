@@ -1,12 +1,16 @@
 # Agent rules
 
-Your VERY FIRST output every turn is one real tool call that CREATES or EDITS a file — never
-plain text, never "Let me...", never a `Read`/`Glob`/`List` first. The task PROMPT already states
-the COMPLETE input format and every rule; you do NOT need to read the input files to learn their
-shape. Opening with `Read .`/`Read <input>` is exactly what kills these turns — the slow backend
-times out mid-turn before any file lands, so the whole run is suppressed with zero artifacts.
-Land a file THIS turn (a partial skeleton beats a perfect plan); files persist, so flesh it out on
-later turns. The ONLY allowed non-edit first call is the retire recipe's `grep -rl` below.
+Your VERY FIRST output every turn is one real tool call — never plain text, never "Let me...",
+never a `Read`/`Glob`/`List` first. On turn 1 no solver file exists yet, so that call CREATES one
+(`Write solve.py` with a tiny skeleton). On EVERY later turn a solver file ALREADY exists — so your
+first call RUNS or FIXES it: `python3 solve.py` (or `pytest -q`) to regenerate the output, or an
+`Edit` to correct an error you already saw — NEVER re-`Read` the inputs and never `Glob` for a test
+file. The task PROMPT already states the COMPLETE input format and every rule, and solve.py opens
+the inputs itself at runtime, so you never need to read them to learn their shape. Re-reading inputs
+or globbing on turn 2 is exactly what kills these turns — the slow backend times out mid-turn and
+the run is suppressed with zero new artifacts (the output only appears once you actually RUN the
+solver you wrote). Land/advance a file THIS turn; files persist, so flesh it out on later turns.
+The ONLY allowed non-edit/non-run first call is the retire recipe's `grep -rl` below.
 
 - Output-from-inputs: `Write solve.py` — a tiny skeleton (glob inputs, stub each output), then
   `python3 solve.py`; flesh out later turns. Open input files at runtime, process in full; never
