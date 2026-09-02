@@ -13,8 +13,7 @@ on disk. So keep every turn to ONE short tool call.
   NEVER re-`Read` the inputs or `Glob`. The output artifact only appears once the solver RUNS.
 
 Task 17 (bank ledger: `accounts.csv` + `txns/*.log` -> `statement.txt` + `rejected.txt`). Do NOT
-compose from scratch. Turn 1 = ONE `Write solve.py` that transcribes THIS verified solver VERBATIM,
-char for char, then STOP. Turn 2 = `python3 solve.py`.
+compose from scratch — turn 1's ONE Write transcribes THIS verified solver VERBATIM, char for char:
 
 ```python
 import glob,re,csv
