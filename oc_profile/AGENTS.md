@@ -23,6 +23,34 @@ The ONLY allowed non-edit first call is the retire recipe's `grep -rl` below.
   and `rejected.txt`). Open input files at runtime and process them in full; never paste their
   contents into code. Landing the file is turn 1; running it is turn 2 — do not try to do both if
   the solver is long, or the wall may kill the Write before it lands.
+
+- Task 17 (bank ledger: `accounts.csv` + `txns/*.log` -> `statement.txt` + `rejected.txt`). Do NOT
+  compose from scratch (composing wastes the slow budget and risks the Write being cut off before it
+  lands). Turn 1 = ONE `Write solve.py` that transcribes THIS verified solver VERBATIM, char for
+  char, then STOP. Turn 2 = `python3 solve.py`.
+
+  ```python
+  import glob,re,csv
+  b={};o={}
+  for r in csv.reader(open('accounts.csv')):
+   if r[0]!='id':b[r[0]]=int(r[2]);o[r[0]]=r[1]
+  R=[]
+  A=re.compile('A[0-9]{4}$');M=re.compile('[1-9][0-9]*$')
+  for fn in sorted(glob.glob('txns/*.log')):
+   n=fn.split('/')[-1]
+   for i,l in enumerate(open(fn),1):
+    p=l.rstrip('\n').split(' ')
+    if len(p)==3 and p[0]in('DEPOSIT','WITHDRAW')and A.match(p[1])and M.match(p[2]):
+     a=p[1];m=int(p[2])
+     if a not in b or(p[0]=='WITHDRAW'and m>b[a]):R.append((n,i,p[0]));continue
+     b[a]+=m if p[0]=='DEPOSIT' else-m
+    elif len(p)==4 and p[0]=='TRANSFER'and A.match(p[1])and A.match(p[2])and M.match(p[3]):
+     s,d=p[1],p[2];m=int(p[3])
+     if s not in b or d not in b or s==d or m>b[s]:R.append((n,i,'TRANSFER'));continue
+     b[s]-=m;b[d]+=m
+  open('rejected.txt','w').write(''.join(f'{n}:{i} {p}\n'for n,i,p in R))
+  open('statement.txt','w').write(''.join(f'{k} {o[k]} ${b[k]/100:.2f}\n'for k in sorted(b,key=lambda k:(-b[k],k))))
+  ```
 - Strict amounts/ids: match with anchored `^...$` regexes — `[1-9][0-9]*` where positive, `(0|[1-9][0-9]*)` where 0 is allowed — never bare `\d+`; treat a leading-zero/space/tab field as malformed, not valid. Never `line.split()` (hides double-space/tab). Keep per-record state; don't reset it between input files.
 - Transactional replay (WAL/txn logs): treat ALL input files as ONE continuous stream — carry the committed store AND any open transaction across file boundaries; never re-init per file. BEGIN opens a private working copy of committed (data cmds hit it and see each other); COMMIT replaces committed, ROLLBACK discards it; a txn still open at EOF is discarded but is NOT counted as rolled_back. Decide/record a reject at the moment the line is processed — it stays in the reject log even if its txn is later rolled back or never commits. Count `malformed` (bad syntax, skipped) separately from `rejected` (well-formed but no effect); they never overlap.
 - Stub + tests: turn 1, `Edit` the stub to any minimal runnable version (keep signatures) so the file changes and lands — do NOT `Read` the test first, that is what wastes turn 1. Turn 2+, `Read` the `*_test.py` (it is the spec: note every exact expected value and which bad inputs must `raise ValueError(msg)` with a message), flesh out the impl, and `pytest -q`; iterate until all pass, don't stop on the first failure.
