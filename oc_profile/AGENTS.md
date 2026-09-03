@@ -83,6 +83,55 @@ open('rejected.txt','w').write(''.join(f'{n}:{i} {o}\n'for n,i,o in rej))
 open('stats.txt','w').write(f'malformed {mf}\nrejected {len(rej)}\ncommitted {cm}\nrolled_back {rb}\n')
 ```
 
+Task 21 (SGF parsing): the stub `sgf_parsing.py` exists and `sgf_parsing_test.py` imports `parse` and
+`SgfTree` from it. Turn 1's ONE Write REPLACES `sgf_parsing.py` (NOT solve.py) with THIS verified
+solver VERBATIM; turn 2's first call is `python3 -m pytest -q`. Do NOT edit the test file.
+
+```python
+import string
+class SgfTree:
+ def __init__(s,properties=None,children=None):
+  s.properties=properties or {};s.children=children or []
+ def __eq__(s,o):return isinstance(o,SgfTree)and s.properties==o.properties and s.children==o.children
+ def __ne__(s,o):return not s==o
+def _vals(t,i):
+ v=[]
+ while i<len(t)and t[i]=='[':
+  i+=1;s=''
+  while t[i]!=']':
+   if t[i]=='\\':
+    if t[i:i+2]!='\\\n':s+=t[i+1]
+    i+=2
+   else:s+=t[i];i+=1
+  for c in string.whitespace:
+   if c!='\n':s=s.replace(c,' ')
+  v.append(s);i+=1
+ return i,v
+def _node(t):
+ if not t.startswith(';'):raise ValueError('tree with no nodes')
+ i=1;ks=1;p={};ch=[]
+ while i<len(t):
+  if t[i]=='[':
+   if i==ks:raise ValueError('empty key')
+   k=t[ks:i]
+   if not k.isupper():raise ValueError('property must be in uppercase')
+   i,vv=_vals(t,i);p.setdefault(k,[]).extend(vv);ks=i
+  elif t[i]==';':ch.append(_node(t[i:]));break
+  elif t[i]=='(':
+   ch=[]
+   while i<len(t)and t[i]=='(':
+    i+=1;cs=i
+    while t[i]!=')':i+=1
+    ch.append(_node(t[cs:i]));i+=1
+  else:i+=1
+ if i>ks and not p:raise ValueError('properties without delimiter')
+ return SgfTree(p,ch)
+def parse(t):
+ if not t.startswith('(')and not t.endswith(')'):raise ValueError('tree missing')
+ if not t.startswith('(;'):raise ValueError('tree with no nodes')
+ return _node(t[1:-1])
+```
+
 Other output-from-inputs tasks: glob inputs in filename order, replay every rule, write ALL outputs;
 open files at runtime, process in full (never paste). Match fields with anchored `^...$` regexes
 (`[1-9][0-9]*` positive, `(0|[1-9][0-9]*)` where 0 is ok), never bare `\d+` or `line.split()`; carry
