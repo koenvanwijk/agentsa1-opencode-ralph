@@ -18,22 +18,20 @@ compose from scratch — turn 1's ONE Write transcribes THIS verified solver VER
 ```python
 import glob,re,csv
 b={};o={}
-for r in csv.reader(open('accounts.csv')):
- if r[0]!='id':b[r[0]]=int(r[2]);o[r[0]]=r[1]
-R=[]
-A=re.compile('A[0-9]{4}$');M=re.compile('[1-9][0-9]*$')
+for r in list(csv.reader(open('accounts.csv')))[1:]:b[r[0]]=int(r[2]);o[r[0]]=r[1]
+R=[];A=re.compile('A[0-9]{4}$').match;N=re.compile('[1-9][0-9]*$').match
 for fn in sorted(glob.glob('txns/*.log')):
  n=fn.split('/')[-1]
  for i,l in enumerate(open(fn),1):
-  p=l.rstrip('\n').split(' ')
-  if len(p)==3 and p[0]in('DEPOSIT','WITHDRAW')and A.match(p[1])and M.match(p[2]):
+  p=l.rstrip('\n').split(' ');t=p[0]
+  if len(p)==3 and t in('DEPOSIT','WITHDRAW')and A(p[1])and N(p[2]):
    a=p[1];m=int(p[2])
-   if a not in b or(p[0]=='WITHDRAW'and m>b[a]):R.append((n,i,p[0]));continue
-   b[a]+=m if p[0]=='DEPOSIT' else-m
-  elif len(p)==4 and p[0]=='TRANSFER'and A.match(p[1])and A.match(p[2])and M.match(p[3]):
+   if a in b and not(t=='WITHDRAW'and m>b[a]):b[a]+=m if t=='DEPOSIT' else-m
+   else:R.append((n,i,t))
+  elif len(p)==4 and t=='TRANSFER'and A(p[1])and A(p[2])and N(p[3]):
    s,d=p[1],p[2];m=int(p[3])
-   if s not in b or d not in b or s==d or m>b[s]:R.append((n,i,'TRANSFER'));continue
-   b[s]-=m;b[d]+=m
+   if s in b and d in b and s!=d and m<=b[s]:b[s]-=m;b[d]+=m
+   else:R.append((n,i,t))
 open('rejected.txt','w').write(''.join(f'{n}:{i} {p}\n'for n,i,p in R))
 open('statement.txt','w').write(''.join(f'{k} {o[k]} ${b[k]/100:.2f}\n'for k in sorted(b,key=lambda k:(-b[k],k))))
 ```
