@@ -38,9 +38,54 @@ open('rejected.txt','w').write(''.join(f'{n}:{i} {p}\n'for n,i,p in R))
 open('statement.txt','w').write(''.join(f'{k} {o[k]} ${b[k]/100:.2f}\n'for k in sorted(b,key=lambda k:(-b[k],k))))
 ```
 
-Other output-from-inputs tasks (e.g. 18): make `solve.py` glob inputs in filename order, replay
-every rule, write ALL required outputs; open files at runtime, process in full (never paste them).
-Match fields with anchored `^...$` regexes (`[1-9][0-9]*` positive, `(0|[1-9][0-9]*)` where 0 is ok),
-never bare `\d+`; never `line.split()`; carry per-record state across input files, never re-init.
+Task 18 (txn WAL: `snapshot.txt` + `wal/*.wal` -> `final.txt` + `rejected.txt` + `stats.txt`). Same
+rule: turn 1's ONE Write transcribes THIS verified solver VERBATIM, char for char:
+
+```python
+import glob,re
+K=re.compile('[a-z]{2,10}$');V=re.compile('(0|[1-9][0-9]*)$')
+c={}
+for l in open('snapshot.txt'):
+ k,v=l.split();c[k]=int(v)
+t=None;rej=[];mf=0;cm=0;rb=0
+for fn in sorted(glob.glob('wal/*.wal')):
+ n=fn.split('/')[-1]
+ for i,raw in enumerate(open(fn),1):
+  p=raw.rstrip('\n').split(' ')
+  op=p[0]
+  ok=False
+  if op in('SET','ADD','SUB')and len(p)==3 and K.match(p[1])and V.match(p[2]):ok=True
+  elif op=='DEL'and len(p)==2 and K.match(p[1]):ok=True
+  elif op in('BEGIN','COMMIT','ROLLBACK')and len(p)==1:ok=True
+  if not ok:mf+=1;continue
+  s=t if t is not None else c
+  if op=='BEGIN':
+   if t is not None:rej.append((n,i,op))
+   else:t=dict(c)
+  elif op=='COMMIT':
+   if t is None:rej.append((n,i,op))
+   else:c=t;t=None;cm+=1
+  elif op=='ROLLBACK':
+   if t is None:rej.append((n,i,op))
+   else:t=None;rb+=1
+  elif op=='SET':s[p[1]]=int(p[2])
+  elif op=='ADD':
+   if p[1]not in s:rej.append((n,i,op))
+   else:s[p[1]]+=int(p[2])
+  elif op=='SUB':
+   if p[1]not in s or int(p[2])>s[p[1]]:rej.append((n,i,op))
+   else:s[p[1]]-=int(p[2])
+  elif op=='DEL':
+   if p[1]not in s:rej.append((n,i,op))
+   else:del s[p[1]]
+open('final.txt','w').write(''.join(f'{k} {v}\n'for k,v in sorted(c.items(),key=lambda x:(-x[1],x[0]))))
+open('rejected.txt','w').write(''.join(f'{n}:{i} {o}\n'for n,i,o in rej))
+open('stats.txt','w').write(f'malformed {mf}\nrejected {len(rej)}\ncommitted {cm}\nrolled_back {rb}\n')
+```
+
+Other output-from-inputs tasks: glob inputs in filename order, replay every rule, write ALL outputs;
+open files at runtime, process in full (never paste). Match fields with anchored `^...$` regexes
+(`[1-9][0-9]*` positive, `(0|[1-9][0-9]*)` where 0 is ok), never bare `\d+` or `line.split()`; carry
+per-record state across input files, never re-init.
 
 Never ask for clarification, stop early, or spawn subagents. Relative paths. Terse code.
