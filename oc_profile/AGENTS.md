@@ -53,7 +53,7 @@ for fn in sorted(glob.glob('wal/*.wal')):
   elif op=='DEL'and L==2 and K(p[1]):pass
   elif op in('BEGIN','COMMIT','ROLLBACK')and L==1:pass
   else:mf+=1;continue
-  s=c if t is None else t;k=p[1] if L>1 else 0
+  s=c if t is None else t;k=p[1]if L>1 else 0
   if op=='BEGIN':
    if t is None:t=dict(c)
    else:R()
@@ -64,15 +64,12 @@ for fn in sorted(glob.glob('wal/*.wal')):
    if t is None:R()
    else:t=None;rb+=1
   elif op=='SET':s[k]=int(p[2])
-  elif op=='ADD':
-   if k in s:s[k]+=int(p[2])
-   else:R()
+  elif k not in s:R()
+  elif op=='ADD':s[k]+=int(p[2])
   elif op=='SUB':
-   if k in s and int(p[2])<=s[k]:s[k]-=int(p[2])
+   if int(p[2])<=s[k]:s[k]-=int(p[2])
    else:R()
-  else:
-   if k in s:del s[k]
-   else:R()
+  else:del s[k]
 open('final.txt','w').write(''.join(f'{k} {v}\n'for k,v in sorted(c.items(),key=lambda x:(-x[1],x[0]))))
 open('rejected.txt','w').write(''.join(f'{n}:{i} {o}\n'for n,i,o in rej))
 open('stats.txt','w').write(f'malformed {mf}\nrejected {len(rej)}\ncommitted {cm}\nrolled_back {rb}\n')
