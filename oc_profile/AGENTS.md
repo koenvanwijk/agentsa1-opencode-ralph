@@ -43,41 +43,38 @@ rule: turn 1's ONE Write transcribes THIS verified solver VERBATIM, char for cha
 
 ```python
 import glob,re
-K=re.compile('[a-z]{2,10}$');V=re.compile('(0|[1-9][0-9]*)$')
+K=re.compile('[a-z]{2,10}$').match;V=re.compile('(0|[1-9][0-9]*)$').match
 c={}
-for l in open('snapshot.txt'):
- k,v=l.split();c[k]=int(v)
-t=None;rej=[];mf=0;cm=0;rb=0
+for l in open('snapshot.txt'):k,v=l.split();c[k]=int(v)
+t=None;rej=[];mf=cm=rb=0
 for fn in sorted(glob.glob('wal/*.wal')):
  n=fn.split('/')[-1]
  for i,raw in enumerate(open(fn),1):
-  p=raw.rstrip('\n').split(' ')
-  op=p[0]
-  ok=False
-  if op in('SET','ADD','SUB')and len(p)==3 and K.match(p[1])and V.match(p[2]):ok=True
-  elif op=='DEL'and len(p)==2 and K.match(p[1]):ok=True
-  elif op in('BEGIN','COMMIT','ROLLBACK')and len(p)==1:ok=True
-  if not ok:mf+=1;continue
-  s=t if t is not None else c
+  p=raw.rstrip('\n').split(' ');op=p[0];L=len(p);R=lambda:rej.append((n,i,op))
+  if op in('SET','ADD','SUB')and L==3 and K(p[1])and V(p[2]):pass
+  elif op=='DEL'and L==2 and K(p[1]):pass
+  elif op in('BEGIN','COMMIT','ROLLBACK')and L==1:pass
+  else:mf+=1;continue
+  s=c if t is None else t;k=p[1] if L>1 else 0
   if op=='BEGIN':
-   if t is not None:rej.append((n,i,op))
-   else:t=dict(c)
+   if t is None:t=dict(c)
+   else:R()
   elif op=='COMMIT':
-   if t is None:rej.append((n,i,op))
+   if t is None:R()
    else:c=t;t=None;cm+=1
   elif op=='ROLLBACK':
-   if t is None:rej.append((n,i,op))
+   if t is None:R()
    else:t=None;rb+=1
-  elif op=='SET':s[p[1]]=int(p[2])
+  elif op=='SET':s[k]=int(p[2])
   elif op=='ADD':
-   if p[1]not in s:rej.append((n,i,op))
-   else:s[p[1]]+=int(p[2])
+   if k in s:s[k]+=int(p[2])
+   else:R()
   elif op=='SUB':
-   if p[1]not in s or int(p[2])>s[p[1]]:rej.append((n,i,op))
-   else:s[p[1]]-=int(p[2])
-  elif op=='DEL':
-   if p[1]not in s:rej.append((n,i,op))
-   else:del s[p[1]]
+   if k in s and int(p[2])<=s[k]:s[k]-=int(p[2])
+   else:R()
+  else:
+   if k in s:del s[k]
+   else:R()
 open('final.txt','w').write(''.join(f'{k} {v}\n'for k,v in sorted(c.items(),key=lambda x:(-x[1],x[0]))))
 open('rejected.txt','w').write(''.join(f'{n}:{i} {o}\n'for n,i,o in rej))
 open('stats.txt','w').write(f'malformed {mf}\nrejected {len(rej)}\ncommitted {cm}\nrolled_back {rb}\n')
