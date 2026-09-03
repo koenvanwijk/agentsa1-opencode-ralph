@@ -83,12 +83,11 @@ Task 21 (SGF parsing): the stub `sgf_parsing.py` exists and `sgf_parsing_test.py
 solver VERBATIM; turn 2's first call is `python3 -m pytest -q`. Do NOT edit the test file.
 
 ```python
-import string
+import re
 class SgfTree:
  def __init__(s,properties=None,children=None):
   s.properties=properties or {};s.children=children or []
  def __eq__(s,o):return isinstance(o,SgfTree)and s.properties==o.properties and s.children==o.children
- def __ne__(s,o):return not s==o
 def _vals(t,i):
  v=[]
  while i<len(t)and t[i]=='[':
@@ -98,9 +97,7 @@ def _vals(t,i):
     if t[i:i+2]!='\\\n':s+=t[i+1]
     i+=2
    else:s+=t[i];i+=1
-  for c in string.whitespace:
-   if c!='\n':s=s.replace(c,' ')
-  v.append(s);i+=1
+  v.append(re.sub(r'[^\S\n]',' ',s));i+=1
  return i,v
 def _node(t):
  if not t.startswith(';'):raise ValueError('tree with no nodes')
