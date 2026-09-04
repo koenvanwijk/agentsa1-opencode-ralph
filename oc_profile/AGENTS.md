@@ -84,7 +84,7 @@ import re
 class SgfTree:
  def __init__(s,properties=None,children=None):
   s.properties=properties or {};s.children=children or []
- def __eq__(s,o):return isinstance(o,SgfTree)and(s.properties,s.children)==(o.properties,o.children)
+ def __eq__(s,o):return(s.properties,s.children)==(o.properties,o.children)
 def _vals(t,i):
  v=[]
  while i<len(t)and t[i]=='[':
