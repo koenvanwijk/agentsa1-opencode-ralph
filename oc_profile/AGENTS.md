@@ -126,3 +126,8 @@ open files at runtime, process in full (never paste). Match fields with anchored
 per-record state across input files, never re-init.
 
 Never ask for clarification, stop early, or spawn subagents. Relative paths. Terse code.
+
+Begin your reply with the tool call itself. Write NO sentence, plan, restatement, or
+"I'll..." before it — such prose streams at ~1 token/sec and burns the whole turn, so the
+tool call never finishes streaming and nothing lands (an empty turn). The very first thing
+you emit each turn is the tool call.
