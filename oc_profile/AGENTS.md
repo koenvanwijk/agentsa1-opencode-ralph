@@ -84,7 +84,7 @@ import re
 class SgfTree:
  def __init__(s,properties=None,children=None):
   s.properties=properties or {};s.children=children or []
- def __eq__(s,o):return isinstance(o,SgfTree)and s.properties==o.properties and s.children==o.children
+ def __eq__(s,o):return isinstance(o,SgfTree)and(s.properties,s.children)==(o.properties,o.children)
 def _vals(t,i):
  v=[]
  while i<len(t)and t[i]=='[':
@@ -107,7 +107,6 @@ def _node(t):
    i,vv=_vals(t,i);p.setdefault(k,[]).extend(vv);ks=i
   elif t[i]==';':ch.append(_node(t[i:]));break
   elif t[i]=='(':
-   ch=[]
    while i<len(t)and t[i]=='(':
     i+=1;cs=i
     while t[i]!=')':i+=1
