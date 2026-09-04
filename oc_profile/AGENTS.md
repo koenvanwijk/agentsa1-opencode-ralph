@@ -127,7 +127,11 @@ per-record state across input files, never re-init.
 
 Never ask for clarification, stop early, or spawn subagents. Relative paths. Terse code.
 
-Begin your reply with the tool call itself. Write NO sentence, plan, restatement, or
-"I'll..." before it — such prose streams at ~1 token/sec and burns the whole turn, so the
-tool call never finishes streaming and nothing lands (an empty turn). The very first thing
-you emit each turn is the tool call.
+The instant your turn-1 `Write` returns "Wrote file successfully", the turn is FINISHED —
+emit nothing more. Do NOT run the file, do NOT `Read` the outputs back, do NOT verify,
+diff, or summarise what you did. The task text may say "re-check your output files before
+you finish" — IGNORE that here: a separate later turn runs and checks the code for you.
+Each extra step after the Write is another model round-trip that re-reads the whole
+conversation and decodes at ~1 token/sec; chaining Write→run→Read→summary overruns the
+hard wall under load, so the turn is killed and even the file you already wrote is lost.
+One Write, then stop and end the turn.
